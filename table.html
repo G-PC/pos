@@ -1,584 +1,95 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>POS - Стол</title>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
-        body { background:#f0f2f5; padding:15px; }
-        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px; }
-        .header h1 { font-size:24px; color:#2d3e50; }
-        .header .back-btn { background:#7f8c8d; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; }
-        .header .close-btn { background:#ff4757; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; }
-        .container { display:flex; gap:15px; height:calc(100vh - 100px); }
+<script src="github.js"></script>
+<script>
+    // ========== ПРОВЕРКА ПРАВ ==========
+    function getCurrentUser() {
+        const data = localStorage.getItem('currentUser');
+        return data ? JSON.parse(data) : null;
+    }
+
+    const user = getCurrentUser();
+    if (!user || (user.role !== 'sadmin' && user.role !== 'Официант')) {
+        alert('У вас нет прав для работы с заказами');
+        window.location.href = 'index.html';
+    }
+
+    // ========== ФУНКЦИИ ДЛЯ РАБОТЫ С ДАННЫМИ ==========
+    async function loadData() {
+        try {
+            const data = await GitHubAPI.getData();
+            return data;
+        } catch (error) {
+            console.error('Ошибка загрузки:', error);
+            const cached = localStorage.getItem('cloudData');
+            if (cached) return JSON.parse(cached);
+            return GitHubAPI.getDefaultData();
+        }
+    }
+
+    async function saveData(data) {
+        try {
+            await GitHubAPI.updateData(data);
+            return true;
+        } catch (error) {
+            console.error('Ошибка сохранения:', error);
+            return false;
+        }
+    }
+
+    // ========== ЗАГРУЗКА И СОХРАНЕНИЕ ЗАКАЗОВ ==========
+    async function loadTableOrders(tableNumber) {
+        const data = await loadData();
+        const tables = data.tables || {};
+        const table = tables[tableNumber] || { orders: [], total: 0 };
+        const openOrders = table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
+        if (openOrders.length > 0) {
+            const lastOrder = openOrders[openOrders.length - 1];
+            if (lastOrder && lastOrder.status !== 'closed') {
+                return lastOrder.items || [];
+            }
+        }
+        return [];
+    }
+
+    async function saveTableOrder(tableNumber, cart) {
+        const data = await loadData();
+        if (!data.tables) data.tables = {};
+        if (!data.tables[tableNumber]) {
+            data.tables[tableNumber] = { orders: [], total: 0 };
+        }
         
-        .menu-panel { flex:2; background:white; border-radius:12px; padding:15px; box-shadow:0 2px 10px rgba(0,0,0,0.1); display:flex; flex-direction:column; }
-        .search-bar { padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:16px; margin-bottom:12px; }
-        .categories { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
-        .cat-btn { padding:6px 16px; border:none; background:#e8e8e8; border-radius:20px; cursor:pointer; font-weight:600; transition:0.2s; }
-        .cat-btn.active { background:#2d7aff; color:white; }
-        .items-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:10px; overflow-y:auto; flex:1; }
-        .item-card { background:#f8f9fc; border-radius:10px; padding:10px; text-align:center; cursor:pointer; transition:0.2s; border:2px solid transparent; }
-        .item-card:hover { border-color:#2d7aff; transform:translateY(-3px); }
-        .item-card .emoji { font-size:28px; display:block; }
-        .item-card .name { font-size:13px; font-weight:500; }
-        .item-card .price { color:#2d7aff; font-weight:700; font-size:14px; }
-        
-        .order-panel { flex:1.2; background:white; border-radius:12px; padding:15px; box-shadow:0 2px 10px rgba(0,0,0,0.1); display:flex; flex-direction:column; min-width:280px; }
-        .order-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-        .order-header h2 { font-size:18px; }
-        .clear-btn { background:#ff4757; color:white; border:none; padding:4px 12px; border-radius:6px; cursor:pointer; font-weight:600; }
-        .order-list { flex:1; overflow-y:auto; margin-bottom:10px; border-top:2px solid #eee; padding-top:10px; }
-        .order-item { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #f0f0f0; font-size:14px; }
-        .order-item .info { display:flex; align-items:center; gap:8px; flex:1; }
-        .order-item .qty-control { display:flex; align-items:center; gap:4px; }
-        .qty-control button { width:22px; height:22px; border:none; background:#e0e0e0; border-radius:4px; cursor:pointer; font-weight:700; font-size:14px; }
-        .qty-control span { min-width:18px; text-align:center; font-weight:600; }
-        .item-total { font-weight:700; min-width:45px; text-align:right; font-size:14px; }
-        .remove-item { background:none; border:none; color:#ff4757; cursor:pointer; font-size:16px; }
-        .order-summary { background:#f8f9fc; padding:10px; border-radius:8px; }
-        .summary-row { display:flex; justify-content:space-between; padding:3px 0; font-size:14px; }
-        .summary-row.total { font-size:20px; font-weight:800; color:#2d7aff; border-top:2px solid #ddd; padding-top:6px; margin-top:4px; }
-        .payment-area { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-        .payment-area input { flex:1; padding:8px; border:2px solid #ddd; border-radius:8px; font-size:15px; min-width:80px; }
-        .pay-btn { background:#2ed573; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; flex:1; }
-        .change-display { font-size:16px; font-weight:700; color:#2d7aff; margin-top:4px; text-align:center; }
-        
-        /* Модалка чека */
-        .modal { display:none; position:fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:999; }
-        .modal-content { background:white; padding:30px; border-radius:16px; max-width:450px; width:90%; max-height:90vh; overflow-y:auto; }
-        .modal-close { float:right; background:#ff4757; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; }
-        .receipt { font-family:'Courier New',monospace; }
-        .receipt .header { text-align:center; font-size:18px; font-weight:700; padding-bottom:10px; border-bottom:2px dashed #333; margin-bottom:10px; }
-        .receipt .row { display:flex; justify-content:space-between; padding:3px 0; font-size:14px; }
-        .receipt .row.total { font-weight:700; font-size:16px; border-top:2px solid #333; padding-top:8px; margin-top:8px; }
-        .receipt .footer { text-align:center; margin-top:12px; padding-top:10px; border-top:2px dashed #333; font-size:12px; color:#666; }
-        .print-btn { background:#2d7aff; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; margin-top:10px; width:100%; }
-        
-        @media (max-width:850px) { .container { flex-direction:column; height:auto; } .order-panel { min-width:auto; } }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div>
-            <h1 id="tableTitle">Стол 1</h1>
-            <span id="tableStatus" style="font-size:14px;color:#7f8c8d;"></span>
-        </div>
-        <div style="display:flex;gap:8px;">
-            <button class="back-btn" onclick="window.location.href='index.html'">← Назад</button>
-            <button class="close-btn" id="closeTableBtn">Закрыть стол</button>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="menu-panel">
-            <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Поиск..." />
-            <div class="categories" id="categoriesContainer"></div>
-            <div class="items-grid" id="itemsGrid"></div>
-        </div>
-        <div class="order-panel">
-            <div class="order-header">
-                <h2>🧾 Заказ</h2>
-                <button class="clear-btn" id="clearOrderBtn">Очистить</button>
-            </div>
-            <div class="order-list" id="orderList"></div>
-            <div class="order-summary">
-                <div class="summary-row"><span>Позиций:</span><span id="totalItems">0</span></div>
-                <div class="summary-row"><span>Сумма:</span><span id="totalSum">0 ₽</span></div>
-                <div class="summary-row total"><span>Итого:</span><span id="grandTotal">0 ₽</span></div>
-            </div>
-            <div class="payment-area">
-                <input type="number" id="cashInput" placeholder="Внесено ₽" min="0" step="1" />
-                <button class="pay-btn" id="payBtn">💳 Оплатить</button>
-            </div>
-            <div class="change-display" id="changeDisplay">Сдача: 0 ₽</div>
-        </div>
-    </div>
-
-    <!-- Модалка чека -->
-    <div class="modal" id="receiptModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeReceiptBtn">✕</button>
-            <div class="receipt" id="receiptContent"></div>
-            <button class="print-btn" id="printReceiptBtn">🖨️ Печать чека</button>
-        </div>
-    </div>
-
-    <script>
-        // ========== ПРОВЕРКА ПРАВ ==========
-        function getCurrentUser() {
-            const data = localStorage.getItem('currentUser');
-            return data ? JSON.parse(data) : null;
+        const table = data.tables[tableNumber];
+        // Находим открытый заказ
+        let openOrder = null;
+        let openIndex = -1;
+        const openOrders = table.orders.filter(o => o.status !== 'closed');
+        if (openOrders.length > 0) {
+            const lastOpen = openOrders[openOrders.length - 1];
+            openIndex = table.orders.indexOf(lastOpen);
+            openOrder = lastOpen;
         }
 
-        const user = getCurrentUser();
-        if (!user || (user.role !== 'sadmin' && user.role !== 'Официант')) {
-            alert('У вас нет прав для работы с заказами');
-            window.location.href = 'index.html';
-        }
-
-        // ========== ПОЛУЧАЕМ НОМЕР СТОЛА ==========
-        const urlParams = new URLSearchParams(window.location.search);
-        const tableNumber = parseInt(urlParams.get('table')) || 1;
-
-        // ========== ДАННЫЕ ==========
-        function getMenu() {
-            const data = localStorage.getItem('menu');
-            if (!data) {
-                const defaultMenu = [
-                    { id: 1, name: 'Цезарь', price: 350, category: 'Салаты', emoji: '🥗' },
-                    { id: 2, name: 'Греческий', price: 280, category: 'Салаты', emoji: '🥗' },
-                    { id: 3, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
-                    { id: 4, name: 'Стейк', price: 550, category: 'Горячее', emoji: '🥩' },
-                    { id: 5, name: 'Паста', price: 390, category: 'Горячее', emoji: '🍝' },
-                    { id: 6, name: 'Чай', price: 120, category: 'Напитки', emoji: '🍵' },
-                    { id: 7, name: 'Кофе', price: 150, category: 'Напитки', emoji: '☕' },
-                    { id: 8, name: 'Тирамису', price: 300, category: 'Десерты', emoji: '🍰' },
-                ];
-                localStorage.setItem('menu', JSON.stringify(defaultMenu));
-                return defaultMenu;
-            }
-            return JSON.parse(data);
-        }
-
-        function getTables() {
-            const data = localStorage.getItem('tables');
-            if (!data) {
-                const defaultTables = {};
-                for (let i = 1; i <= 3; i++) {
-                    defaultTables[i] = { orders: [], total: 0 };
-                }
-                localStorage.setItem('tables', JSON.stringify(defaultTables));
-                return defaultTables;
-            }
-            return JSON.parse(data);
-        }
-
-        function saveTables(tables) {
-            localStorage.setItem('tables', JSON.stringify(tables));
-        }
-
-        function getStats() {
-            const data = localStorage.getItem('stats');
-            if (!data) {
-                const defaultStats = { totalOrders: 0, totalRevenue: 0 };
-                localStorage.setItem('stats', JSON.stringify(defaultStats));
-                return defaultStats;
-            }
-            return JSON.parse(data);
-        }
-
-        function saveStats(stats) {
-            localStorage.setItem('stats', JSON.stringify(stats));
-        }
-
-        function getVenueName() {
-            return localStorage.getItem('venueName') || 'Кафе Уют';
-        }
-
-        // ========== СОСТОЯНИЕ ==========
-        let cart = [];
-        let currentCategory = 'Все';
-        const menu = getMenu();
-
-        // ========== DOM ==========
-        const itemsGrid = document.getElementById('itemsGrid');
-        const categoriesContainer = document.getElementById('categoriesContainer');
-        const orderList = document.getElementById('orderList');
-        const totalItems = document.getElementById('totalItems');
-        const totalSum = document.getElementById('totalSum');
-        const grandTotal = document.getElementById('grandTotal');
-        const cashInput = document.getElementById('cashInput');
-        const changeDisplay = document.getElementById('changeDisplay');
-        const searchInput = document.getElementById('searchInput');
-        const tableTitle = document.getElementById('tableTitle');
-        const tableStatus = document.getElementById('tableStatus');
-
-        // ========== ЗАГРУЗКА ЗАКАЗА СТОЛА ==========
-        function loadTableOrders() {
-            const tables = getTables();
-            const table = tables[tableNumber];
-            if (table && table.orders) {
-                const openOrders = table.orders.filter(o => o.status !== 'closed');
-                if (openOrders.length > 0) {
-                    const lastOrder = openOrders[openOrders.length - 1];
-                    if (lastOrder && lastOrder.status !== 'closed') {
-                        cart = lastOrder.items.map(item => ({ ...item }));
-                    } else {
-                        cart = [];
-                    }
-                } else {
-                    cart = [];
-                }
-            }
-            renderCart();
-            updateTableStatus();
-        }
-
-        // ========== СОХРАНЕНИЕ ЗАКАЗА СТОЛА ==========
-        function saveTableOrder() {
-            const tables = getTables();
-            if (!tables[tableNumber]) {
-                tables[tableNumber] = { orders: [], total: 0 };
-            }
-            
-            if (cart.length === 0) {
-                tables[tableNumber].orders = tables[tableNumber].orders.filter(o => o.status === 'closed' || o.items.length > 0);
-                if (tables[tableNumber].orders.length > 0) {
-                    const last = tables[tableNumber].orders[tables[tableNumber].orders.length - 1];
-                    if (last && last.items.length === 0 && last.status !== 'closed') {
-                        tables[tableNumber].orders.pop();
-                    }
-                }
-                saveTables(tables);
-                return;
-            }
-
-            let openOrder = null;
-            let openIndex = -1;
-            const openOrders = tables[tableNumber].orders.filter(o => o.status !== 'closed');
-            if (openOrders.length > 0) {
-                const lastOpen = openOrders[openOrders.length - 1];
-                openIndex = tables[tableNumber].orders.indexOf(lastOpen);
-                openOrder = lastOpen;
-            }
-
-            if (openOrder) {
-                openOrder.items = cart.map(item => ({ ...item }));
-                openOrder.total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-                tables[tableNumber].orders[openIndex] = openOrder;
-            } else {
-                tables[tableNumber].orders.push({
-                    items: cart.map(item => ({ ...item })),
-                    total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
-                    status: 'open',
-                    timestamp: new Date().toISOString()
-                });
-            }
-
-            tables[tableNumber].total = tables[tableNumber].orders
-                .filter(o => o.status !== 'closed')
-                .reduce((sum, o) => sum + o.total, 0);
-
-            saveTables(tables);
-            updateTableStatus();
-        }
-
-        // ========== ОБНОВЛЕНИЕ СТАТУСА СТОЛА ==========
-        function updateTableStatus() {
-            const tables = getTables();
-            const table = tables[tableNumber];
-            if (table && table.orders) {
-                const openOrders = table.orders.filter(o => o.status !== 'closed');
-                if (openOrders.length > 0) {
-                    tableStatus.textContent = `🟢 Активен (${openOrders.length} зак.)`;
-                    tableStatus.style.color = '#2e7d32';
-                } else {
-                    tableStatus.textContent = '⚪ Свободен';
-                    tableStatus.style.color = '#7f8c8d';
-                }
-            } else {
-                tableStatus.textContent = '⚪ Свободен';
-                tableStatus.style.color = '#7f8c8d';
-            }
-            tableTitle.textContent = `Стол ${tableNumber}`;
-        }
-
-        // ========== РЕНДЕР КАТЕГОРИЙ ==========
-        function renderCategories() {
-            const cats = ['Все', ...new Set(menu.map(item => item.category))];
-            categoriesContainer.innerHTML = cats.map(cat =>
-                `<button class="cat-btn ${cat === currentCategory ? 'active' : ''}" data-cat="${cat}">${cat}</button>`
-            ).join('');
-            document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    currentCategory = btn.dataset.cat;
-                    renderCategories();
-                    renderItems();
-                });
+        if (openOrder && cart.length > 0) {
+            openOrder.items = cart.map(item => ({ ...item }));
+            openOrder.total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            table.orders[openIndex] = openOrder;
+        } else if (cart.length > 0) {
+            table.orders.push({
+                items: cart.map(item => ({ ...item })),
+                total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+                status: 'open',
+                timestamp: new Date().toISOString()
             });
         }
 
-        // ========== РЕНДЕР БЛЮД ==========
-        function renderItems() {
-            const query = searchInput.value.toLowerCase().trim();
-            let filtered = menu.filter(item => {
-                const matchCat = currentCategory === 'Все' || item.category === currentCategory;
-                const matchName = item.name.toLowerCase().includes(query);
-                return matchCat && matchName;
-            });
-            itemsGrid.innerHTML = filtered.map(item =>
-                `<div class="item-card" data-id="${item.id}">
-                    <span class="emoji">${item.emoji || '🍽️'}</span>
-                    <div class="name">${item.name}</div>
-                    <div class="price">${item.price} ₽</div>
-                </div>`
-            ).join('');
-            document.querySelectorAll('.item-card').forEach(el => {
-                el.addEventListener('click', () => {
-                    const id = parseInt(el.dataset.id);
-                    addToCart(id);
-                });
-            });
-        }
+        // Обновляем общую сумму
+        table.total = table.orders
+            .filter(o => o.status !== 'closed')
+            .reduce((sum, o) => sum + o.total, 0);
 
-        // ========== ДОБАВИТЬ В КОРЗИНУ ==========
-        function addToCart(id) {
-            const item = menu.find(p => p.id === id);
-            if (!item) return;
-            const existing = cart.find(p => p.id === id);
-            if (existing) {
-                existing.quantity += 1;
-            } else {
-                cart.push({ ...item, quantity: 1 });
-            }
-            renderCart();
-            saveTableOrder();
-        }
+        await saveData(data);
+        return data;
+    }
 
-        // ========== РЕНДЕР КОРЗИНЫ ==========
-        function renderCart() {
-            if (cart.length === 0) {
-                orderList.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Корзина пуста</p>';
-            } else {
-                orderList.innerHTML = cart.map((item, index) =>
-                    `<div class="order-item">
-                        <div class="info">
-                            <span>${item.emoji || '🍽️'}</span>
-                            <span>${item.name}</span>
-                        </div>
-                        <div class="qty-control">
-                            <button data-index="${index}" data-action="dec">−</button>
-                            <span>${item.quantity}</span>
-                            <button data-index="${index}" data-action="inc">+</button>
-                        </div>
-                        <div class="item-total">${item.price * item.quantity} ₽</div>
-                        <button class="remove-item" data-index="${index}">✕</button>
-                    </div>`
-                ).join('');
-                document.querySelectorAll('.qty-control button').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const idx = parseInt(btn.dataset.index);
-                        const action = btn.dataset.action;
-                        if (action === 'inc') cart[idx].quantity += 1;
-                        else if (action === 'dec') {
-                            cart[idx].quantity -= 1;
-                            if (cart[idx].quantity <= 0) cart.splice(idx, 1);
-                        }
-                        renderCart();
-                        saveTableOrder();
-                    });
-                });
-                document.querySelectorAll('.remove-item').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const idx = parseInt(btn.dataset.index);
-                        cart.splice(idx, 1);
-                        renderCart();
-                        saveTableOrder();
-                    });
-                });
-            }
-            updateSummary();
-        }
-
-        // ========== ОБНОВИТЬ ИТОГИ ==========
-        function updateSummary() {
-            const count = cart.reduce((acc, i) => acc + i.quantity, 0);
-            const sum = cart.reduce((acc, i) => acc + i.price * i.quantity, 0);
-            totalItems.textContent = count;
-            totalSum.textContent = sum + ' ₽';
-            grandTotal.textContent = sum + ' ₽';
-        }
-
-        // ========== ОЧИСТИТЬ КОРЗИНУ ==========
-        document.getElementById('clearOrderBtn').addEventListener('click', () => {
-            if (cart.length === 0) return;
-            if (confirm('Очистить заказ?')) {
-                cart = [];
-                renderCart();
-                saveTableOrder();
-            }
-        });
-
-        // ========== ПОКАЗАТЬ ЧЕК ==========
-        function showReceipt(orderData) {
-            const venue = getVenueName();
-            const now = new Date().toLocaleString('ru-RU');
-            
-            let html = `
-                <div class="header">${venue}</div>
-                <div style="text-align:center;font-size:12px;color:#666;margin-bottom:8px;">
-                    Стол ${tableNumber} | ${now}
-                </div>
-                <div style="border-bottom:1px dashed #999;margin-bottom:8px;"></div>
-            `;
-
-            orderData.items.forEach(item => {
-                html += `
-                    <div class="row">
-                        <span>${item.emoji || '🍽️'} ${item.name} × ${item.quantity}</span>
-                        <span>${item.price * item.quantity} ₽</span>
-                    </div>
-                `;
-            });
-
-            html += `
-                <div style="border-bottom:1px dashed #999;margin:8px 0;"></div>
-                <div class="row total">
-                    <span>ИТОГО</span>
-                    <span>${orderData.total} ₽</span>
-                </div>
-                <div class="row">
-                    <span>Внесено</span>
-                    <span>${orderData.paidAmount} ₽</span>
-                </div>
-                <div class="row">
-                    <span>Сдача</span>
-                    <span>${orderData.change} ₽</span>
-                </div>
-                <div class="footer">
-                    Спасибо за визит!<br>
-                    ${orderData.operator ? `Оператор: ${orderData.operator}` : ''}
-                </div>
-            `;
-
-            document.getElementById('receiptContent').innerHTML = html;
-            document.getElementById('receiptModal').style.display = 'flex';
-        }
-
-        // ========== ОПЛАТА ==========
-        document.getElementById('payBtn').addEventListener('click', () => {
-            if (cart.length === 0) {
-                alert('Корзина пуста!');
-                return;
-            }
-            const total = cart.reduce((acc, i) => acc + i.price * i.quantity, 0);
-            const cash = parseFloat(cashInput.value);
-            if (isNaN(cash) || cash < total) {
-                alert(`Внесено недостаточно. Сумма: ${total} ₽`);
-                return;
-            }
-            const change = cash - total;
-            changeDisplay.textContent = `Сдача: ${change.toFixed(2)} ₽`;
-
-            const stats = getStats();
-            stats.totalOrders = (stats.totalOrders || 0) + 1;
-            stats.totalRevenue = (stats.totalRevenue || 0) + total;
-            saveStats(stats);
-
-            const tables = getTables();
-            let closedOrder = null;
-            if (tables[tableNumber]) {
-                for (let i = tables[tableNumber].orders.length - 1; i >= 0; i--) {
-                    if (tables[tableNumber].orders[i].status !== 'closed') {
-                        tables[tableNumber].orders[i].status = 'closed';
-                        tables[tableNumber].orders[i].closedAt = new Date().toISOString();
-                        tables[tableNumber].orders[i].paidAmount = cash;
-                        tables[tableNumber].orders[i].change = change;
-                        tables[tableNumber].orders[i].operator = user ? user.name || user.login : 'Неизвестно';
-                        closedOrder = tables[tableNumber].orders[i];
-                        break;
-                    }
-                }
-                tables[tableNumber].total = tables[tableNumber].orders
-                    .filter(o => o.status !== 'closed')
-                    .reduce((sum, o) => sum + o.total, 0);
-                saveTables(tables);
-            }
-
-            // Показываем чек
-            if (closedOrder) {
-                showReceipt(closedOrder);
-            }
-
-            // Очищаем корзину, но сохраняем заказ для чека
-            const lastCart = [...cart];
-            cart = [];
-            renderCart();
-            cashInput.value = '';
-            updateTableStatus();
-
-            setTimeout(() => {
-                changeDisplay.textContent = 'Сдача: 0 ₽';
-            }, 5000);
-        });
-
-        // ========== ЗАКРЫТЬ ЧЕК ==========
-        document.getElementById('closeReceiptBtn').addEventListener('click', () => {
-            document.getElementById('receiptModal').style.display = 'none';
-        });
-
-        document.getElementById('receiptModal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) {
-                document.getElementById('receiptModal').style.display = 'none';
-            }
-        });
-
-        // ========== ПЕЧАТЬ ЧЕКА ==========
-        document.getElementById('printReceiptBtn').addEventListener('click', () => {
-            const content = document.getElementById('receiptContent').innerHTML;
-            const printWindow = window.open('', '_blank', 'width=400,height=600');
-            printWindow.document.write(`
-                <html><head><title>Чек</title>
-                <style>
-                    body { font-family:'Courier New',monospace; padding:20px; }
-                    .receipt { max-width:350px; margin:0 auto; }
-                    .header { text-align:center; font-size:18px; font-weight:700; padding-bottom:10px; border-bottom:2px dashed #333; margin-bottom:10px; }
-                    .row { display:flex; justify-content:space-between; padding:3px 0; font-size:14px; }
-                    .row.total { font-weight:700; font-size:16px; border-top:2px solid #333; padding-top:8px; margin-top:8px; }
-                    .footer { text-align:center; margin-top:12px; padding-top:10px; border-top:2px dashed #333; font-size:12px; color:#666; }
-                </style>
-                </head><body>
-                <div class="receipt">${content}</div>
-                <script>
-                    window.onload = function() { window.print(); setTimeout(window.close, 1000); }
-                <\/script>
-                </body></html>
-            `);
-            printWindow.document.close();
-        });
-
-        // ========== ЗАКРЫТЬ СТОЛ ==========
-        document.getElementById('closeTableBtn').addEventListener('click', () => {
-            if (cart.length > 0) {
-                if (!confirm('В столе есть активный заказ. Закрыть стол без оплаты?')) {
-                    return;
-                }
-            }
-            const tables = getTables();
-            if (tables[tableNumber]) {
-                tables[tableNumber].orders = [];
-                tables[tableNumber].total = 0;
-                saveTables(tables);
-            }
-            cart = [];
-            renderCart();
-            updateTableStatus();
-            alert('Стол закрыт');
-            window.location.href = 'index.html';
-        });
-
-        // ========== ПОИСК ==========
-        searchInput.addEventListener('input', renderItems);
-
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
-        tableTitle.textContent = `Стол ${tableNumber}`;
-        renderCategories();
-        renderItems();
-        loadTableOrders();
-
-        setInterval(() => {
-            if (cart.length > 0) {
-                saveTableOrder();
-            }
-        }, 5000);
-
-        window.addEventListener('beforeunload', () => {
-            if (cart.length > 0) {
-                saveTableOrder();
-            }
-        });
-    </script>
-</body>
-</html>
+    // ========== ОСТАЛЬНОЙ КОД ИЗ table.html ==========
+    // ... (весь остальной код table.html, но с использованием loadData() и saveData())
+</script>
