@@ -1,154 +1,48 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>POS Общепит - Выбор стола</title>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
-        body { background: #f0f2f5; display:flex; justify-content:center; align-items:center; min-height:100vh; }
-        .container { max-width:700px; width:100%; padding:30px; }
-        h1 { text-align:center; font-size:32px; margin-bottom:8px; color:#2d3e50; }
-        .subtitle { text-align:center; color:#7f8c8d; margin-bottom:30px; }
-        .tables-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:20px; margin-bottom:30px; }
-        .table-card { background:white; border-radius:16px; padding:30px 20px; text-align:center; box-shadow:0 4px 15px rgba(0,0,0,0.08); cursor:pointer; transition:0.3s; border:3px solid transparent; }
-        .table-card:hover { transform:translateY(-5px); border-color:#2d7aff; box-shadow:0 8px 25px rgba(45,122,255,0.15); }
-        .table-card .icon { font-size:48px; display:block; margin-bottom:10px; }
-        .table-card .number { font-size:24px; font-weight:700; color:#2d3e50; }
-        .table-card .status { font-size:14px; margin-top:6px; padding:4px 12px; border-radius:20px; display:inline-block; }
-        .status.free { background:#e8f5e9; color:#2e7d32; }
-        .status.occupied { background:#ffebee; color:#c62828; }
-        .admin-link { display:block; text-align:center; margin-top:20px; color:#2d7aff; text-decoration:none; font-weight:600; padding:12px; border:2px dashed #2d7aff; border-radius:12px; transition:0.3s; }
-        .admin-link:hover { background:#2d7aff; color:white; }
-        .stats-mini { background:white; border-radius:12px; padding:15px 20px; margin-bottom:25px; display:flex; justify-content:space-around; flex-wrap:wrap; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
-        .stats-mini div { text-align:center; }
-        .stats-mini .label { font-size:13px; color:#7f8c8d; }
-        .stats-mini .value { font-size:20px; font-weight:700; color:#2d3e50; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🍽️ Кафе Уют</h1>
-        <p class="subtitle" id="venueSubtitle">Выберите стол для работы</p>
+function renderTables() {
+    const tables = getTables();
+    const grid = document.getElementById('tablesGrid');
+    
+    grid.innerHTML = '';
+    for (let i = 1; i <= TABLES_COUNT; i++) {
+        const table = tables[i] || { orders: [], total: 0 };
+        
+        // ✅ Считаем ТОЛЬКО открытые заказы
+        const openOrders = table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
+        const orderCount = openOrders.length;
+        const isOccupied = orderCount > 0;
+        const totalSum = openOrders.reduce((sum, o) => sum + o.total, 0);
 
-        <div class="stats-mini" id="statsMini">
-            <div><div class="label">Всего заказов</div><div class="value" id="totalOrders">0</div></div>
-            <div><div class="label">Выручка</div><div class="value" id="totalRevenue">0 ₽</div></div>
-            <div><div class="label">Активных столов</div><div class="value" id="activeTables">0</div></div>
-        </div>
-
-        <div class="tables-grid" id="tablesGrid"></div>
-
-        <a href="admin.html" class="admin-link">⚙️ Управление меню (Админ-панель)</a>
-    </div>
-
-    <script>
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
-        const TABLES_COUNT = 3;
-
-        // Структура данных
-        function getDefaultMenu() {
-            return [
-                { id: 1, name: 'Цезарь', price: 350, category: 'Салаты', emoji: '🥗' },
-                { id: 2, name: 'Греческий', price: 280, category: 'Салаты', emoji: '🥗' },
-                { id: 3, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
-                { id: 4, name: 'Стейк', price: 550, category: 'Горячее', emoji: '🥩' },
-                { id: 5, name: 'Паста', price: 390, category: 'Горячее', emoji: '🍝' },
-                { id: 6, name: 'Чай', price: 120, category: 'Напитки', emoji: '🍵' },
-                { id: 7, name: 'Кофе', price: 150, category: 'Напитки', emoji: '☕' },
-                { id: 8, name: 'Тирамису', price: 300, category: 'Десерты', emoji: '🍰' },
-            ];
-        }
-
-        function getTables() {
-            let tables = localStorage.getItem('tables');
-            if (!tables) {
-                const defaultTables = {};
-                for (let i = 1; i <= TABLES_COUNT; i++) {
-                    defaultTables[i] = { orders: [], total: 0 };
-                }
-                localStorage.setItem('tables', JSON.stringify(defaultTables));
-                return defaultTables;
-            }
-            return JSON.parse(tables);
-        }
-
-        function getMenu() {
-            let menu = localStorage.getItem('menu');
-            if (!menu) {
-                localStorage.setItem('menu', JSON.stringify(getDefaultMenu()));
-                return getDefaultMenu();
-            }
-            return JSON.parse(menu);
-        }
-
-        function getStats() {
-            let stats = localStorage.getItem('stats');
-            if (!stats) {
-                const defaultStats = { totalOrders: 0, totalRevenue: 0 };
-                localStorage.setItem('stats', JSON.stringify(defaultStats));
-                return defaultStats;
-            }
-            return JSON.parse(stats);
-        }
-
-        function getVenueName() {
-            return localStorage.getItem('venueName') || 'Кафе Уют';
-        }
-
-        // ========== ОТОБРАЖЕНИЕ ==========
-        function renderTables() {
-            const tables = getTables();
-            const grid = document.getElementById('tablesGrid');
-            
-            grid.innerHTML = '';
-            for (let i = 1; i <= TABLES_COUNT; i++) {
-                const table = tables[i] || { orders: [], total: 0 };
-                const orderCount = table.orders ? table.orders.length : 0;
-                const isOccupied = orderCount > 0;
-                const totalSum = table.total || 0;
-
-                const card = document.createElement('div');
-                card.className = 'table-card';
-                card.innerHTML = `
-                    <span class="icon">${isOccupied ? '🟢' : '⚪'}</span>
-                    <div class="number">Стол ${i}</div>
-                    <span class="status ${isOccupied ? 'occupied' : 'free'}">
-                        ${isOccupied ? `Занят (${orderCount} зак.)` : 'Свободен'}
-                    </span>
-                    ${isOccupied ? `<div style="margin-top:8px;font-weight:600;color:#2d7aff;">${totalSum} ₽</div>` : ''}
-                `;
-                card.addEventListener('click', () => {
-                    window.location.href = `table.html?table=${i}`;
-                });
-                grid.appendChild(card);
-            }
-
-            // Обновляем статистику
-            const stats = getStats();
-            document.getElementById('totalOrders').textContent = stats.totalOrders || 0;
-            document.getElementById('totalRevenue').textContent = (stats.totalRevenue || 0) + ' ₽';
-            
-            let active = 0;
-            for (let i = 1; i <= TABLES_COUNT; i++) {
-                if (tables[i] && tables[i].orders && tables[i].orders.length > 0) active++;
-            }
-            document.getElementById('activeTables').textContent = active;
-            
-            // Название заведения
-            document.querySelector('h1').textContent = '🍽️ ' + getVenueName();
-            document.getElementById('venueSubtitle').textContent = `Выберите стол для работы`;
-        }
-
-        // ========== ЗАПУСК ==========
-        renderTables();
-
-        // Обновление при возврате на страницу
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'tables' || e.key === 'stats' || e.key === 'venueName') {
-                renderTables();
-            }
+        const card = document.createElement('div');
+        card.className = 'table-card';
+        card.innerHTML = `
+            <span class="icon">${isOccupied ? '🟢' : '⚪'}</span>
+            <div class="number">Стол ${i}</div>
+            <span class="status ${isOccupied ? 'occupied' : 'free'}">
+                ${isOccupied ? `Занят (${orderCount} зак.)` : 'Свободен'}
+            </span>
+            ${isOccupied ? `<div style="margin-top:8px;font-weight:600;color:#2d7aff;">${totalSum} ₽</div>` : ''}
+        `;
+        card.addEventListener('click', () => {
+            window.location.href = `table.html?table=${i}`;
         });
-    </script>
-</body>
-</html>
+        grid.appendChild(card);
+    }
+
+    // Обновляем статистику
+    const stats = getStats();
+    document.getElementById('totalOrders').textContent = stats.totalOrders || 0;
+    document.getElementById('totalRevenue').textContent = (stats.totalRevenue || 0) + ' ₽';
+    
+    let active = 0;
+    for (let i = 1; i <= TABLES_COUNT; i++) {
+        if (tables[i] && tables[i].orders) {
+            const openOrders = tables[i].orders.filter(o => o.status !== 'closed');
+            if (openOrders.length > 0) active++;
+        }
+    }
+    document.getElementById('activeTables').textContent = active;
+    
+    // Название заведения
+    document.querySelector('h1').textContent = '🍽️ ' + getVenueName();
+    document.getElementById('venueSubtitle').textContent = `Выберите стол для работы`;
+}
