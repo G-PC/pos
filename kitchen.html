@@ -57,10 +57,9 @@
         .refresh-btn:hover {
             background: #1a5fd0;
         }
-
         .orders-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 20px;
         }
         .order-card {
@@ -71,18 +70,12 @@
             border-left: 4px solid #2d7aff;
             transition: 0.3s;
         }
-        .order-card.completed {
-            border-left-color: #2ed573;
-            opacity: 0.8;
-        }
         .order-card .header {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
             padding-bottom: 8px;
             border-bottom: 2px solid #eee;
-            background: transparent;
-            padding: 0 0 8px 0;
         }
         .order-card .table {
             font-weight: 700;
@@ -98,56 +91,9 @@
         .order-card .item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 6px 8px;
-            border-radius: 6px;
+            padding: 4px 0;
             border-bottom: 1px solid #f5f5f5;
             font-size: 14px;
-            transition: 0.3s;
-            cursor: pointer;
-        }
-        .order-card .item:hover {
-            background: #f0f2f5;
-        }
-        .order-card .item.done {
-            background: #e8f5e9;
-            text-decoration: line-through;
-            color: #888;
-        }
-        .order-card .item .item-name {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .order-card .item .check-btn {
-            width: 28px;
-            height: 28px;
-            border: 2px solid #ddd;
-            border-radius: 50%;
-            background: white;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s;
-            flex-shrink: 0;
-        }
-        .order-card .item .check-btn:hover {
-            border-color: #2d7aff;
-            transform: scale(1.1);
-        }
-        .order-card .item .check-btn.done {
-            background: #2ed573;
-            border-color: #2ed573;
-            color: white;
-        }
-        .order-card .item .qty {
-            background: #e8e8e8;
-            padding: 0 8px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 600;
         }
         .order-card .total {
             font-weight: 700;
@@ -155,8 +101,6 @@
             margin-top: 10px;
             padding-top: 8px;
             border-top: 2px solid #eee;
-            display: flex;
-            justify-content: space-between;
         }
         .order-card .status {
             display: inline-block;
@@ -169,9 +113,11 @@
             background: #fff3cd;
             color: #856404;
         }
-        .status.completed {
-            background: #d4edda;
-            color: #155724;
+        .empty {
+            text-align: center;
+            color: #888;
+            padding: 50px;
+            font-size: 18px;
         }
         .badge {
             background: #ff6b35;
@@ -179,12 +125,6 @@
             padding: 2px 8px;
             border-radius: 10px;
             font-size: 11px;
-        }
-        .empty {
-            text-align: center;
-            color: #888;
-            padding: 50px;
-            font-size: 18px;
         }
         .notification {
             position: fixed;
@@ -228,17 +168,6 @@
             font-size: 14px;
             font-weight: 600;
         }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #2d3e50;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            z-index: 9999;
-            animation: slideIn 0.5s ease;
-        }
     </style>
 </head>
 <body>
@@ -271,9 +200,14 @@
             return {
                 venueName: 'Кафе Уют',
                 menu: getDefaultMenu(),
-                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
-                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 },
-                '3': { orders: [], total: 0 } },
+                users: {
+                    'sadmin': { password: '123', role: 'sadmin', name: 'Главный' }
+                },
+                tables: {
+                    '1': { orders: [], total: 0 },
+                    '2': { orders: [], total: 0 },
+                    '3': { orders: [], total: 0 }
+                },
                 stats: { totalOrders: 0, totalRevenue: 0 }
             };
         }
@@ -286,10 +220,6 @@
             const defaultData = getDefaultData();
             localStorage.setItem('cloudData', JSON.stringify(defaultData));
             return defaultData;
-        }
-
-        function saveData(data) {
-            localStorage.setItem('cloudData', JSON.stringify(data));
         }
 
         function getCurrentUser() {
@@ -307,46 +237,6 @@
         // ========== СОСТОЯНИЕ ==========
         let previousOrderIds = new Set();
 
-        // ========== ТОСТ ==========
-        function showToast(msg) {
-            const t = document.createElement('div');
-            t.className = 'toast';
-            t.textContent = msg;
-            document.body.appendChild(t);
-            setTimeout(() => { t.remove(); }, 3000);
-        }
-
-        // ========== ОТМЕТИТЬ БЛЮДО КАК ГОТОВОЕ ==========
-        function toggleItemDone(tableNum, orderTimestamp, itemIndex) {
-            const data = loadData();
-            const table = data.tables[tableNum];
-            if (!table) return;
-
-            const order = table.orders.find(o => o.timestamp === orderTimestamp);
-            if (!order) return;
-
-            // Переключаем статус
-            if (!order.items[itemIndex].done) {
-                order.items[itemIndex].done = true;
-                showToast('✅ Блюдо готово!');
-            } else {
-                order.items[itemIndex].done = false;
-                showToast('↩️ Отмечено как неготовое');
-            }
-
-            // Проверяем все ли блюда готовы
-            const allDone = order.items.every(item => item.done === true);
-            if (allDone && order.status !== 'closed') {
-                order.status = 'completed';
-                showToast('🎉 Все блюда готовы!');
-            } else {
-                order.status = 'open';
-            }
-
-            saveData(data);
-            renderOrders();
-        }
-
         // ========== РЕНДЕР ==========
         function renderOrders() {
             const data = loadData();
@@ -357,8 +247,8 @@
             for (let tableNum = 1; tableNum <= 3; tableNum++) {
                 const table = tables[tableNum];
                 if (table && table.orders) {
-                    const visibleOrders = table.orders.filter(o => o.status !== 'closed');
-                    visibleOrders.forEach(order => {
+                    const openOrders = table.orders.filter(o => o.status !== 'closed');
+                    openOrders.forEach(order => {
                         const orderId = `${tableNum}_${order.timestamp}`;
                         allOrders.push({
                             id: orderId,
@@ -387,43 +277,29 @@
                 return;
             }
 
-            grid.innerHTML = allOrders.map(order => {
-                const isCompleted = order.status === 'completed';
-                const allItemsDone = order.items.every(item => item.done === true);
-
-                return `
-                    <div class="order-card ${isCompleted ? 'completed' : ''}">
-                        <div class="header">
-                            <span class="table">🪑 Стол ${order.table}</span>
-                            <span class="time">${new Date(order.timestamp).toLocaleTimeString('ru-RU')}</span>
-                        </div>
-                        <div style="margin-bottom:8px;">
-                            <span class="status ${isCompleted ? 'completed' : 'open'}">
-                                ${isCompleted ? '✅ Все готово!' : '🟡 В работе'}
-                            </span>
-                            <span class="badge">${order.items.length} позиций</span>
-                            ${allItemsDone && !isCompleted ? '<span style="color:#2ed573;font-size:12px;font-weight:600;margin-left:8px;">⚡ Всё готово!</span>' : ''}
-                        </div>
-                        <div class="items">
-                            ${order.items.map((item, idx) => `
-                                <div class="item ${item.done ? 'done' : ''}" onclick="toggleItemDone(${order.table}, '${order.timestamp}', ${idx})">
-                                    <div class="item-name">
-                                        <button class="check-btn ${item.done ? 'done' : ''}">
-                                            ${item.done ? '✓' : ''}
-                                        </button>
-                                        <span>${item.emoji || '🍽️'} ${item.name}</span>
-                                    </div>
-                                    <span class="qty">×${item.quantity}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <div class="total">
-                            <span>Итого:</span>
-                            <span>${order.total} ₽</span>
-                        </div>
+            grid.innerHTML = allOrders.map(order => `
+                <div class="order-card">
+                    <div class="header">
+                        <span class="table">🪑 Стол ${order.table}</span>
+                        <span class="time">${new Date(order.timestamp).toLocaleTimeString('ru-RU')}</span>
                     </div>
-                `;
-            }).join('');
+                    <div style="margin-bottom:8px;">
+                        <span class="status open">🟡 В работе</span>
+                        <span class="badge">${order.items.length} позиций</span>
+                    </div>
+                    <div class="items">
+                        ${order.items.map(item => `
+                            <div class="item">
+                                <span>${item.emoji || '🍽️'} ${item.name}</span>
+                                <span>× ${item.quantity}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="total">
+                        Итого: ${order.total} ₽
+                    </div>
+                </div>
+            `).join('');
         }
 
         // ========== УВЕДОМЛЕНИЯ ==========
@@ -446,9 +322,7 @@
         setInterval(refresh, 5000);
         refresh();
 
-        window.toggleItemDone = toggleItemDone;
-
-        console.log('✅ Кухня с галочками загружена! Меню из menu.js');
+        console.log('✅ Кухня загружена!');
     </script>
 </body>
 </html>
