@@ -204,10 +204,6 @@
             background: #ff4757;
             color: white;
         }
-        .list-item .actions .done {
-            background: #2ed573;
-            color: white;
-        }
 
         .empty {
             text-align: center;
@@ -249,25 +245,37 @@
             margin-top: 15px;
         }
 
-        .receipt {
-            font-family: 'Courier New', monospace;
-            background: #f8f9fc;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 10px 0;
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2d3e50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            animation: slideIn 0.5s ease;
         }
-        .receipt .row {
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
-            font-size: 14px;
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
-        .receipt .row.total {
-            font-weight: 700;
-            font-size: 16px;
-            border-top: 2px solid #333;
-            padding-top: 8px;
-            margin-top: 8px;
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
         }
 
         @media (max-width: 768px) {
@@ -377,7 +385,7 @@
 
     <script>
         // ============================================================
-        // ВСЯ ЛОГИКА ВНУТРИ — НИКАКИХ ВНЕШНИХ JS ФАЙЛОВ!
+        // ВСЯ ЛОГИКА ВНУТРИ
         // ============================================================
 
         // ========== ДАННЫЕ ==========
@@ -423,6 +431,22 @@
         function getCurrentUser() {
             const data = localStorage.getItem('currentUser');
             return data ? JSON.parse(data) : null;
+        }
+
+        // ========== ТОСТ ==========
+        function showToast(message) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.5s ease';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
         }
 
         // ========== ПРОВЕРКА ПРАВ ==========
@@ -548,6 +572,7 @@
                         saveData(data);
                         renderMenu();
                         renderDashboard();
+                        showToast('✅ Блюдо удалено');
                     }
                 });
             });
@@ -585,6 +610,7 @@
                                 renderMenu();
                                 renderDashboard();
                                 closeEditModal();
+                                showToast('✅ Блюдо обновлено');
                             }
                         });
                     }
@@ -610,6 +636,7 @@
             saveData(data);
             renderMenu();
             renderDashboard();
+            showToast('✅ Блюдо добавлено');
 
             document.getElementById('addName').value = '';
             document.getElementById('addPrice').value = '';
@@ -716,6 +743,7 @@
                 renderTablesAdmin();
                 renderDashboard();
                 renderOrders();
+                showToast('✅ Стол очищен');
             }
         };
 
@@ -729,7 +757,7 @@
                 renderTablesAdmin();
                 renderDashboard();
                 renderOrders();
-                alert('Все столы сброшены');
+                showToast('✅ Все столы сброшены');
             }
         });
 
@@ -740,7 +768,7 @@
             const data = loadData();
             data.venueName = name;
             saveData(data);
-            alert('Название сохранено: ' + name);
+            showToast('✅ Название сохранено: ' + name);
         });
 
         document.getElementById('clearAllData').addEventListener('click', () => {
@@ -754,7 +782,7 @@
                 renderDashboard();
                 renderOrders();
                 renderTablesAdmin();
-                alert('Все данные очищены');
+                showToast('✅ Все данные очищены');
             }
         });
 
@@ -767,7 +795,7 @@
         }
         init();
 
-        console.log('✅ Админ-панель загружена! (БЕЗ ВНЕШНИХ JS)');
+        console.log('✅ Админ-панель загружена!');
     </script>
 </body>
 </html>
