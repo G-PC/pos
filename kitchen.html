@@ -7,13 +7,20 @@
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
         body { background:#f0f2f5; padding:20px; }
-        .container { max-width:1000px; margin:0 auto; }
-        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+        .container { max-width:1200px; margin:0 auto; }
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; background:white; padding:15px 25px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
         .header h1 { color:#2d3e50; }
         .back-btn { background:#7f8c8d; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; text-decoration:none; display:inline-block; }
+        .sync-status { display:inline-block; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; margin-left:10px; }
+        .sync-status.online { background:#d4edda; color:#155724; }
+        .sync-status.offline { background:#f8d7da; color:#721c24; }
+        .sync-status.syncing { background:#fff3cd; color:#856404; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity:1; } 50% { opacity:0.5; } 100% { opacity:1; } }
         
-        .orders-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
-        .order-card { background:white; border-radius:12px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.08); border-left:4px solid #2d7aff; }
+        .orders-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; }
+        .order-card { background:white; border-radius:12px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.08); border-left:4px solid #2d7aff; transition:0.3s; }
+        .order-card.new { animation: flash 1s ease; border-left-color: #ff6b35; }
+        @keyframes flash { 0% { background:#fff3cd; } 50% { background:#fff8e1; } 100% { background:white; } }
         .order-card .header { display:flex; justify-content:space-between; margin-bottom:10px; padding-bottom:8px; border-bottom:2px solid #eee; }
         .order-card .table { font-weight:700; font-size:18px; }
         .order-card .time { color:#888; font-size:14px; }
@@ -22,11 +29,12 @@
         .order-card .total { font-weight:700; font-size:16px; margin-top:10px; padding-top:8px; border-top:2px solid #eee; }
         .order-card .status { display:inline-block; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; }
         .status.open { background:#fff3cd; color:#856404; }
-        .status.closed { background:#d4edda; color:#155724; }
         .empty { text-align:center; color:#888; padding:50px; font-size:18px; }
         .badge { background:#ff6b35; color:white; padding:2px 8px; border-radius:10px; font-size:11px; }
         .refresh-btn { background:#2d7aff; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; }
         .refresh-btn:hover { background:#1a5fd0; }
+        .notification { position:fixed; top:20px; right:20px; background:#ff6b35; color:white; padding:15px 25px; border-radius:12px; box-shadow:0 4px 20px rgba(255,107,53,0.4); z-index:999; animation: slideIn 0.5s ease; display:none; }
+        @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
         .auto-refresh { font-size:12px; color:#888; margin-top:5px; }
     </style>
 </head>
@@ -35,9 +43,10 @@
         <div class="header">
             <div>
                 <h1>🍳 Кухня — Активные заказы</h1>
-                <div class="auto-refresh">Автообновление каждые 10 секунд</div>
+                <div class="auto-refresh">Автообновление каждые 5 секунд</div>
             </div>
-            <div style="display:flex;gap:10px;">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                <span class="sync-status online" id="syncStatus">🟢 Онлайн</span>
                 <button class="refresh-btn" id="refreshBtn">🔄 Обновить</button>
                 <a href="index.html" class="back-btn">← На главную</a>
             </div>
@@ -46,6 +55,9 @@
         <div class="orders-grid" id="ordersGrid"></div>
     </div>
 
+    <div class="notification" id="notification">🆕 Новый заказ!</div>
+
+    <script src="github.js"></script>
     <script>
         // ========== ПРОВЕРКА ПРАВ ==========
         function getCurrentUser() {
@@ -59,37 +71,44 @@
             window.location.href = 'index.html';
         }
 
-        // ========== ДАННЫЕ ==========
-        function getTables() {
-            const data = localStorage.getItem('tables');
-            if (!data) {
-                const defaultTables = {};
-                for (let i = 1; i <= 3; i++) {
-                    defaultTables[i] = { orders: [], total: 0 };
-                }
-                localStorage.setItem('tables', JSON.stringify(defaultTables));
-                return defaultTables;
+        // ========== СОСТОЯНИЕ ==========
+        let previousOrderIds = new Set();
+        let isSyncing = false;
+
+        // ========== ЗАГРУЗКА ДАННЫХ ==========
+        async function loadData() {
+            try {
+                const data = await GitHubAPI.getData();
+                updateSyncStatus('online', '🟢 Онлайн');
+                return data;
+            } catch (error) {
+                updateSyncStatus('offline', '🔴 Офлайн');
+                const cached = localStorage.getItem('cloudData');
+                if (cached) return JSON.parse(cached);
+                return GitHubAPI.getDefaultData();
             }
-            return JSON.parse(data);
         }
 
-        function getVenueName() {
-            return localStorage.getItem('venueName') || 'Кафе Уют';
+        function updateSyncStatus(status, label) {
+            const el = document.getElementById('syncStatus');
+            el.className = `sync-status ${status}`;
+            el.textContent = label;
         }
 
-        // ========== РЕНДЕР ==========
-        function renderOrders() {
-            const tables = getTables();
+        // ========== РЕНДЕР ЗАКАЗОВ ==========
+        function renderOrders(data) {
             const grid = document.getElementById('ordersGrid');
+            const tables = data.tables || {};
             
             let allOrders = [];
             for (let tableNum = 1; tableNum <= 3; tableNum++) {
                 const table = tables[tableNum];
                 if (table && table.orders) {
-                    // Показываем только открытые заказы
                     const openOrders = table.orders.filter(o => o.status !== 'closed');
                     openOrders.forEach(order => {
+                        const orderId = `${tableNum}_${order.timestamp}`;
                         allOrders.push({
+                            id: orderId,
                             table: tableNum,
                             ...order,
                             items: order.items || []
@@ -98,16 +117,28 @@
                 }
             }
 
-            // Сортируем по времени (новые сверху)
             allOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
+            // Проверяем новые заказы
+            const currentIds = new Set(allOrders.map(o => o.id));
+            const newOrders = [...currentIds].filter(id => !previousOrderIds.has(id));
+            if (newOrders.length > 0) {
+                showNotification(`🆕 ${newOrders.length} новый(ых) заказ(а)!`);
+            }
+            previousOrderIds = currentIds;
+
             if (allOrders.length === 0) {
-                grid.innerHTML = '<div class="empty">🎉 Все заказы выполнены!<br><span style="font-size:14px;color:#aaa;">Новых заказов нет</span></div>';
+                grid.innerHTML = `
+                    <div class="empty" style="grid-column:1/-1;">
+                        🎉 Все заказы выполнены!<br>
+                        <span style="font-size:14px;color:#aaa;">Новых заказов нет</span>
+                    </div>
+                `;
                 return;
             }
 
             grid.innerHTML = allOrders.map(order => `
-                <div class="order-card">
+                <div class="order-card ${newOrders.includes(order.id) ? 'new' : ''}">
                     <div class="header">
                         <span class="table">🪑 Стол ${order.table}</span>
                         <span class="time">${new Date(order.timestamp).toLocaleTimeString('ru-RU')}</span>
@@ -131,26 +162,43 @@
             `).join('');
         }
 
-        // ========== ОБНОВЛЕНИЕ ==========
-        function refresh() {
-            renderOrders();
+        // ========== УВЕДОМЛЕНИЯ ==========
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
         }
 
-        document.getElementById('refreshBtn').addEventListener('click', refresh);
+        // ========== ОБНОВЛЕНИЕ ==========
+        async function refresh() {
+            if (isSyncing) return;
+            isSyncing = true;
+            try {
+                const data = await loadData();
+                renderOrders(data);
+            } catch (error) {
+                console.error('Ошибка обновления:', error);
+            } finally {
+                isSyncing = false;
+            }
+        }
 
-        // Автообновление каждые 10 секунд
-        setInterval(refresh, 10000);
+        // ========== ЗАПУСК ==========
+        document.getElementById('refreshBtn').addEventListener('click', refresh);
+        
+        // Автообновление
+        refresh();
+        setInterval(refresh, 5000);
 
         // Обновление при изменении данных
         window.addEventListener('storage', (e) => {
-            if (e.key === 'tables') {
-                renderOrders();
+            if (e.key === 'cloudData') {
+                refresh();
             }
         });
-
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
-        document.title = `Кухня - ${getVenueName()}`;
-        renderOrders();
     </script>
 </body>
 </html>
