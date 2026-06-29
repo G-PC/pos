@@ -164,10 +164,10 @@
             const tables = getTables();
             const table = tables[tableNumber];
             if (table && table.orders) {
-                // Восстанавливаем корзину из сохраненных заказов (последний активный)
-                if (table.orders.length > 0) {
-                    // Берем последний незакрытый заказ
-                    const lastOrder = table.orders[table.orders.length - 1];
+                // Берем только открытые заказы
+                const openOrders = table.orders.filter(o => o.status !== 'closed');
+                if (openOrders.length > 0) {
+                    const lastOrder = openOrders[openOrders.length - 1];
                     if (lastOrder && lastOrder.status !== 'closed') {
                         cart = lastOrder.items.map(item => ({ ...item }));
                     } else {
@@ -188,9 +188,10 @@
                 tables[tableNumber] = { orders: [], total: 0 };
             }
             
-            // Если корзина пуста — не сохраняем
             if (cart.length === 0) {
-                // Если нет заказов, просто удаляем последний пустой
+                // Удаляем пустые открытые заказы
+                tables[tableNumber].orders = tables[tableNumber].orders.filter(o => o.status === 'closed' || o.items.length > 0);
+                // Если последний заказ пустой и открытый - удаляем
                 if (tables[tableNumber].orders.length > 0) {
                     const last = tables[tableNumber].orders[tables[tableNumber].orders.length - 1];
                     if (last && last.items.length === 0 && last.status !== 'closed') {
@@ -204,21 +205,19 @@
             // Проверяем, есть ли открытый заказ
             let openOrder = null;
             let openIndex = -1;
-            for (let i = tables[tableNumber].orders.length - 1; i >= 0; i--) {
-                if (tables[tableNumber].orders[i].status !== 'closed') {
-                    openOrder = tables[tableNumber].orders[i];
-                    openIndex = i;
-                    break;
-                }
+            const openOrders = tables[tableNumber].orders.filter(o => o.status !== 'closed');
+            if (openOrders.length > 0) {
+                // Берем последний открытый
+                const lastOpen = openOrders[openOrders.length - 1];
+                openIndex = tables[tableNumber].orders.indexOf(lastOpen);
+                openOrder = lastOpen;
             }
 
             if (openOrder) {
-                // Обновляем существующий заказ
                 openOrder.items = cart.map(item => ({ ...item }));
                 openOrder.total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
                 tables[tableNumber].orders[openIndex] = openOrder;
             } else {
-                // Создаем новый заказ
                 tables[tableNumber].orders.push({
                     items: cart.map(item => ({ ...item })),
                     total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
@@ -227,7 +226,7 @@
                 });
             }
 
-            // Обновляем общую сумму стола
+            // Обновляем общую сумму стола (только открытые)
             tables[tableNumber].total = tables[tableNumber].orders
                 .filter(o => o.status !== 'closed')
                 .reduce((sum, o) => sum + o.total, 0);
@@ -240,7 +239,7 @@
         function updateTableStatus() {
             const tables = getTables();
             const table = tables[tableNumber];
-            if (table && table.orders && table.orders.length > 0) {
+            if (table && table.orders) {
                 const openOrders = table.orders.filter(o => o.status !== 'closed');
                 if (openOrders.length > 0) {
                     tableStatus.textContent = `🟢 Активен (${openOrders.length} зак.)`;
@@ -387,16 +386,13 @@
             const change = cash - total;
             changeDisplay.textContent = `Сдача: ${change.toFixed(2)} ₽`;
 
-            // Сохраняем в статистику
             const stats = getStats();
             stats.totalOrders = (stats.totalOrders || 0) + 1;
             stats.totalRevenue = (stats.totalRevenue || 0) + total;
             saveStats(stats);
 
-            // Закрываем заказ в столе
             const tables = getTables();
             if (tables[tableNumber]) {
-                // Находим открытый заказ и закрываем его
                 for (let i = tables[tableNumber].orders.length - 1; i >= 0; i--) {
                     if (tables[tableNumber].orders[i].status !== 'closed') {
                         tables[tableNumber].orders[i].status = 'closed';
@@ -406,14 +402,12 @@
                         break;
                     }
                 }
-                // Пересчитываем общую сумму стола (только открытые)
                 tables[tableNumber].total = tables[tableNumber].orders
                     .filter(o => o.status !== 'closed')
                     .reduce((sum, o) => sum + o.total, 0);
                 saveTables(tables);
             }
 
-            // Очищаем корзину
             cart = [];
             renderCart();
             cashInput.value = '';
@@ -424,7 +418,7 @@
             }, 5000);
         });
 
-        // ========== ЗАКРЫТЬ СТОЛ ==========
+        // ========== ЗАКРЫТЬ СТОЛ (ИСПРАВЛЕНО) ==========
         document.getElementById('closeTableBtn').addEventListener('click', () => {
             if (cart.length > 0) {
                 if (!confirm('В столе есть активный заказ. Закрыть стол без оплаты?')) {
@@ -433,8 +427,8 @@
             }
             const tables = getTables();
             if (tables[tableNumber]) {
-                // Закрываем все открытые заказы
-                tables[tableNumber].orders = tables[tableNumber].orders.filter(o => o.status === 'closed');
+                // ✅ УДАЛЯЕМ ВСЕ ЗАКАЗЫ ПОЛНОСТЬЮ
+                tables[tableNumber].orders = [];
                 tables[tableNumber].total = 0;
                 saveTables(tables);
             }
@@ -454,14 +448,12 @@
         renderItems();
         loadTableOrders();
 
-        // Автосохранение при изменениях
         setInterval(() => {
             if (cart.length > 0) {
                 saveTableOrder();
             }
         }, 5000);
 
-        // Сохранять при закрытии страницы
         window.addEventListener('beforeunload', () => {
             if (cart.length > 0) {
                 saveTableOrder();
