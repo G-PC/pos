@@ -18,7 +18,15 @@ const DEFAULT_MENU = [
     { id: 16, name: 'Яичница "Глазунья"', price: 85, category: 'Другое', emoji: '🍳' },
     { id: 17, name: 'Плов', price: 275, category: 'Гарниры', emoji: '🍚' },
     { id: 18, name: 'Морс', price: 70, category: 'Напитки', emoji: '🍹' },
-    { id: 19, name: 'Лимонад', price: 70, category: 'Напитки', emoji: '🥤' }
+    { id: 19, name: 'Лимонад', price: 70, category: 'Напитки', emoji: '🥤' },
+    { id: 20, name: 'Картофель фри', price: 120, category: 'Гарниры', emoji: '🍟' },
+    { id: 21, name: 'Картофель по-деревенски', price: 130, category: 'Гарниры', emoji: '🥔' },
+    { id: 22, name: 'Грибной суп', price: 220, category: 'Супы', emoji: '🍄' },
+    { id: 23, name: 'Картофельное пюре', price: 100, category: 'Гарниры', emoji: '🥔' },
+    { id: 24, name: 'Суп-пюре', price: 200, category: 'Супы', emoji: '🍲' },
+    { id: 25, name: 'Бургер', price: 250, category: 'Мясные изделия', emoji: '🍔' },
+    { id: 26, name: 'Нагетсы', price: 180, category: 'Мясные изделия', emoji: '🍗' },
+    { id: 27, name: 'Сырные нагетсы', price: 200, category: 'Мясные изделия', emoji: '🧀' }
 ];
 
 // ========== ФУНКЦИИ ДЛЯ РАБОТЫ С МЕНЮ ==========
@@ -36,7 +44,6 @@ function loadMenuFromStorage() {
             }
         } catch (e) {}
     }
-    // Если нет — сохраняем дефолтное
     const defaultMenu = getDefaultMenu();
     const fullData = {
         venueName: 'Кафе Уют',
@@ -64,24 +71,23 @@ function saveMenuToStorage(menu) {
 
 // ========== ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ==========
 function forceUpdateMenu() {
+    const defaultMenu = getDefaultMenu();
     const data = localStorage.getItem('cloudData');
     if (data) {
         try {
             const parsed = JSON.parse(data);
-            parsed.menu = getDefaultMenu();
+            parsed.menu = defaultMenu;
             localStorage.setItem('cloudData', JSON.stringify(parsed));
-            console.log('✅ Меню ПРИНУДИТЕЛЬНО обновлено!');
+            console.log('✅ Меню принудительно обновлено! Блюд:', defaultMenu.length);
             return true;
-        } catch (e) {
-            console.error('Ошибка обновления:', e);
-        }
+        } catch (e) {}
     }
     return false;
 }
 
-// ВЫПОЛНЯЕМ ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ
 forceUpdateMenu();
 
 console.log('📦 menu.js загружен!');
 console.log('🍽️ Блюд в меню:', DEFAULT_MENU.length);
 console.log('📋 Первое блюдо:', DEFAULT_MENU[0].name);
+console.log('📋 Последнее блюдо:', DEFAULT_MENU[DEFAULT_MENU.length - 1].name);
