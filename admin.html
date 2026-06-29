@@ -19,7 +19,6 @@
             max-width: 1400px;
             margin: 0 auto;
         }
-
         .header {
             display: flex;
             justify-content: space-between;
@@ -60,7 +59,6 @@
             text-decoration: none;
             display: inline-block;
         }
-
         .tabs {
             display: flex;
             gap: 5px;
@@ -88,7 +86,6 @@
             background: #2d7aff;
             color: white;
         }
-
         .tab-content {
             display: none;
             background: white;
@@ -99,7 +96,6 @@
         .tab-content.active {
             display: block;
         }
-
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -121,7 +117,6 @@
             font-weight: 700;
             color: #2d3e50;
         }
-
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -148,13 +143,6 @@
         .form-grid button:hover {
             background: #1a5fd0;
         }
-        .form-grid button.danger {
-            background: #ff4757;
-        }
-        .form-grid button.danger:hover {
-            background: #c0392b;
-        }
-
         .list-item {
             display: flex;
             justify-content: space-between;
@@ -204,13 +192,11 @@
             background: #ff4757;
             color: white;
         }
-
         .empty {
             text-align: center;
             color: #888;
             padding: 30px;
         }
-
         .modal {
             display: none;
             position: fixed;
@@ -244,7 +230,6 @@
         .modal-content .form-grid {
             margin-top: 15px;
         }
-
         .toast {
             position: fixed;
             bottom: 20px;
@@ -253,7 +238,6 @@
             color: white;
             padding: 15px 25px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             z-index: 9999;
             animation: slideIn 0.5s ease;
         }
@@ -267,17 +251,6 @@
                 opacity: 1;
             }
         }
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
-
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -308,7 +281,6 @@
             <button class="tab-btn" data-tab="settings">⚙️ Настройки</button>
         </div>
 
-        <!-- ВКЛАДКА: СТАТИСТИКА -->
         <div class="tab-content active" id="tab-dashboard">
             <div class="stats-grid">
                 <div class="stat-card"><div class="label">Всего заказов</div><div class="value" id="statOrders">0</div></div>
@@ -316,13 +288,12 @@
                 <div class="stat-card"><div class="label">Активных столов</div><div class="value" id="statActiveTables">0</div></div>
                 <div class="stat-card"><div class="label">Всего блюд</div><div class="value" id="statDishes">0</div></div>
             </div>
-            <div id="recentOrders" style="margin-top:15px;">
+            <div id="recentOrders">
                 <h3>📋 Последние заказы</h3>
                 <div id="recentOrdersList"></div>
             </div>
         </div>
 
-        <!-- ВКЛАДКА: МЕНЮ -->
         <div class="tab-content" id="tab-menu">
             <h3 style="margin-bottom:15px;">➕ Добавить блюдо</h3>
             <div class="form-grid">
@@ -336,30 +307,27 @@
             <div id="menuList"></div>
         </div>
 
-        <!-- ВКЛАДКА: ЗАКАЗЫ -->
         <div class="tab-content" id="tab-orders">
             <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;">
-                <button id="viewAllOrders" class="tab-btn" style="background:#2d7aff;color:white;padding:8px 20px;">Все заказы</button>
+                <button id="viewAllOrders" class="tab-btn" style="background:#2d7aff;color:white;padding:8px 20px;">Все</button>
                 <button id="viewActiveOrders" class="tab-btn" style="background:#ffc107;padding:8px 20px;">Активные</button>
                 <button id="viewClosedOrders" class="tab-btn" style="background:#2ed573;padding:8px 20px;">Закрытые</button>
             </div>
             <div id="ordersList"></div>
         </div>
 
-        <!-- ВКЛАДКА: СТОЛЫ -->
         <div class="tab-content" id="tab-tables">
             <div class="stats-grid" style="margin-bottom:20px;">
                 <div class="stat-card"><div class="label">Стол 1</div><div class="value" id="table1Status">Свободен</div></div>
                 <div class="stat-card"><div class="label">Стол 2</div><div class="value" id="table2Status">Свободен</div></div>
                 <div class="stat-card"><div class="label">Стол 3</div><div class="value" id="table3Status">Свободен</div></div>
             </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <button class="tab-btn" style="background:#ff4757;color:white;padding:8px 20px;" id="resetAllTables">🔄 Сбросить все столы</button>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+                <button class="tab-btn" style="background:#ff4757;color:white;padding:8px 20px;" id="resetAllTables">🔄 Сбросить все</button>
             </div>
-            <div id="tablesDetail" style="margin-top:20px;"></div>
+            <div id="tablesDetail"></div>
         </div>
 
-        <!-- ВКЛАДКА: НАСТРОЙКИ -->
         <div class="tab-content" id="tab-settings">
             <h3 style="margin-bottom:15px;">🏷️ Настройки заведения</h3>
             <div class="form-grid" style="max-width:500px;">
@@ -369,12 +337,11 @@
             <div style="margin-top:20px;border-top:2px solid #eee;padding-top:20px;">
                 <h3 style="margin-bottom:10px;">🗑️ Опасные операции</h3>
                 <button id="clearAllData" style="background:#ff4757;color:white;border:none;padding:10px 25px;border-radius:8px;cursor:pointer;font-weight:700;">Очистить все данные</button>
-                <p style="font-size:12px;color:#888;margin-top:8px;">Удаляет все заказы и статистику, но сохраняет меню</p>
+                <p style="font-size:12px;color:#888;margin-top:8px;">Удаляет заказы и статистику, меню сохраняется</p>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛКА -->
     <div class="modal" id="editModal">
         <div class="modal-content">
             <button class="modal-close" id="closeEditModal">✕</button>
@@ -383,33 +350,16 @@
         </div>
     </div>
 
+    <script src="menu.js"></script>
     <script>
-        // ============================================================
-        // ВСЯ ЛОГИКА ВНУТРИ
-        // ============================================================
-
         // ========== ДАННЫЕ ==========
         function getDefaultData() {
             return {
                 venueName: 'Кафе Уют',
-                menu: [
-                    { id: 1, name: 'Цезарь', price: 350, category: 'Салаты', emoji: '🥗' },
-                    { id: 2, name: 'Греческий', price: 280, category: 'Салаты', emoji: '🥗' },
-                    { id: 3, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
-                    { id: 4, name: 'Стейк', price: 550, category: 'Горячее', emoji: '🥩' },
-                    { id: 5, name: 'Паста', price: 390, category: 'Горячее', emoji: '🍝' },
-                    { id: 6, name: 'Чай', price: 120, category: 'Напитки', emoji: '🍵' },
-                    { id: 7, name: 'Кофе', price: 150, category: 'Напитки', emoji: '☕' },
-                    { id: 8, name: 'Тирамису', price: 300, category: 'Десерты', emoji: '🍰' },
-                ],
-                users: {
-                    'sadmin': { password: '123', role: 'sadmin', name: 'Главный администратор' }
-                },
-                tables: {
-                    '1': { orders: [], total: 0 },
-                    '2': { orders: [], total: 0 },
-                    '3': { orders: [], total: 0 }
-                },
+                menu: getDefaultMenu(),
+                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
+                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 },
+                '3': { orders: [], total: 0 } },
                 stats: { totalOrders: 0, totalRevenue: 0 }
             };
         }
@@ -424,32 +374,14 @@
             return defaultData;
         }
 
-        function saveData(data) {
-            localStorage.setItem('cloudData', JSON.stringify(data));
-        }
+        function saveData(data) { localStorage.setItem('cloudData', JSON.stringify(data)); }
 
         function getCurrentUser() {
             const data = localStorage.getItem('currentUser');
             return data ? JSON.parse(data) : null;
         }
 
-        // ========== ТОСТ ==========
-        function showToast(message) {
-            const existing = document.querySelector('.toast');
-            if (existing) existing.remove();
-
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.animation = 'slideOut 0.5s ease';
-                setTimeout(() => toast.remove(), 500);
-            }, 3000);
-        }
-
-        // ========== ПРОВЕРКА ПРАВ ==========
+        // ========== ПРОВЕРКА ==========
         const user = getCurrentUser();
         if (!user || user.role !== 'sadmin') {
             alert('Доступ запрещен. Только для sadmin');
@@ -461,13 +393,22 @@
 
         // ========== ВКЛАДКИ ==========
         document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.onclick = () => {
                 document.querySelectorAll('.tab-btn[data-tab]').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
                 document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-            });
+            };
         });
+
+        // ========== ТОСТ ==========
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => { t.remove(); }, 3000);
+        }
 
         // ========== МОДАЛКА ==========
         function openEditModal(title, body) {
@@ -479,11 +420,8 @@
         function closeEditModal() {
             document.getElementById('editModal').style.display = 'none';
         }
-
-        document.getElementById('closeEditModal').addEventListener('click', closeEditModal);
-        document.getElementById('editModal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) closeEditModal();
-        });
+        document.getElementById('closeEditModal').onclick = closeEditModal;
+        document.getElementById('editModal').onclick = (e) => { if (e.target === e.currentTarget) closeEditModal(); };
 
         // ========== СТАТИСТИКА ==========
         function renderDashboard() {
@@ -505,13 +443,10 @@
             document.getElementById('statActiveTables').textContent = active;
             document.getElementById('statDishes').textContent = menu.length;
 
-            // Последние заказы
             let allOrders = [];
             for (let i = 1; i <= 3; i++) {
                 if (tables[i] && tables[i].orders) {
-                    tables[i].orders.forEach(order => {
-                        allOrders.push({ table: i, ...order });
-                    });
+                    tables[i].orders.forEach(order => { allOrders.push({ table: i, ...order }); });
                 }
             }
             allOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -521,18 +456,16 @@
             if (recent.length === 0) {
                 container.innerHTML = '<div class="empty">Заказов пока нет</div>';
             } else {
-                container.innerHTML = recent.map(order => `
-                    <div class="list-item">
+                container.innerHTML = recent.map(order =>
+                    `<div class="list-item">
                         <div class="info">
                             <span class="name">Стол ${order.table}</span>
                             <span class="detail">${new Date(order.timestamp).toLocaleString('ru-RU')}</span>
                             <span class="badge" style="background:${order.status === 'closed' ? '#d4edda' : '#fff3cd'};">${order.status === 'closed' ? '✅ Оплачен' : '🟡 Активен'}</span>
                         </div>
-                        <div class="info">
-                            <span style="font-weight:700;">${order.total} ₽</span>
-                        </div>
-                    </div>
-                `).join('');
+                        <div class="info"><span style="font-weight:700;">${order.total} ₽</span></div>
+                    </div>`
+                ).join('');
             }
         }
 
@@ -547,8 +480,8 @@
                 return;
             }
 
-            container.innerHTML = menu.map(item => `
-                <div class="list-item">
+            container.innerHTML = menu.map(item =>
+                `<div class="list-item">
                     <div class="info">
                         <span style="font-size:24px;">${item.emoji || '🍽️'}</span>
                         <span class="name">${item.name}</span>
@@ -559,12 +492,11 @@
                         <button class="edit" data-id="${item.id}">✏️</button>
                         <button class="delete" data-id="${item.id}">🗑️</button>
                     </div>
-                </div>
-            `).join('');
+                </div>`
+            ).join('');
 
-            // Удаление
             document.querySelectorAll('#menuList .delete').forEach(btn => {
-                btn.addEventListener('click', () => {
+                btn.onclick = () => {
                     const id = parseInt(btn.dataset.id);
                     if (confirm('Удалить блюдо?')) {
                         const data = loadData();
@@ -574,34 +506,30 @@
                         renderDashboard();
                         showToast('✅ Блюдо удалено');
                     }
-                });
+                };
             });
 
-            // Редактирование
             document.querySelectorAll('#menuList .edit').forEach(btn => {
-                btn.addEventListener('click', () => {
+                btn.onclick = () => {
                     const id = parseInt(btn.dataset.id);
                     const data = loadData();
                     const item = data.menu.find(i => i.id === id);
                     if (item) {
-                        openEditModal('Редактировать блюдо', `
-                            <div class="form-grid">
+                        openEditModal('Редактировать блюдо',
+                            `<div class="form-grid">
                                 <input type="text" id="editName" value="${item.name}" placeholder="Название" />
                                 <input type="number" id="editPrice" value="${item.price}" placeholder="Цена" min="0" />
                                 <input type="text" id="editCategory" value="${item.category}" placeholder="Категория" />
                                 <input type="text" id="editEmoji" value="${item.emoji || ''}" placeholder="Эмодзи" />
                                 <button id="saveEditDish" data-id="${id}">Сохранить</button>
-                            </div>
-                        `);
-                        document.getElementById('saveEditDish').addEventListener('click', () => {
+                            </div>`
+                        );
+                        document.getElementById('saveEditDish').onclick = () => {
                             const name = document.getElementById('editName').value.trim();
                             const price = parseFloat(document.getElementById('editPrice').value);
                             const category = document.getElementById('editCategory').value.trim();
                             const emoji = document.getElementById('editEmoji').value.trim();
-                            if (!name || isNaN(price) || !category) {
-                                alert('Заполните все поля!');
-                                return;
-                            }
+                            if (!name || isNaN(price) || !category) { alert('Заполните все поля!'); return; }
                             const data = loadData();
                             const idx = data.menu.findIndex(i => i.id === id);
                             if (idx !== -1) {
@@ -612,26 +540,26 @@
                                 closeEditModal();
                                 showToast('✅ Блюдо обновлено');
                             }
-                        });
+                        };
                     }
-                });
+                };
             });
         }
 
         // ========== ДОБАВЛЕНИЕ БЛЮДА ==========
-        document.getElementById('addDishBtn').addEventListener('click', () => {
+        document.getElementById('addDishBtn').onclick = () => {
             const name = document.getElementById('addName').value.trim();
             const price = parseFloat(document.getElementById('addPrice').value);
             const category = document.getElementById('addCategory').value.trim();
             const emoji = document.getElementById('addEmoji').value.trim();
 
             if (!name || isNaN(price) || price < 0 || !category) {
-                alert('Заполните все поля корректно!');
+                alert('Заполните все поля!');
                 return;
             }
 
             const data = loadData();
-            const newId = data.menu.length > 0 ? Math.max(...data.menu.map(item => item.id)) + 1 : 1;
+            const newId = data.menu.length > 0 ? Math.max(...data.menu.map(i => i.id)) + 1 : 1;
             data.menu.push({ id: newId, name, price, category, emoji: emoji || '🍽️' });
             saveData(data);
             renderMenu();
@@ -642,7 +570,7 @@
             document.getElementById('addPrice').value = '';
             document.getElementById('addCategory').value = '';
             document.getElementById('addEmoji').value = '';
-        });
+        };
 
         // ========== ЗАКАЗЫ ==========
         let ordersFilter = 'all';
@@ -655,27 +583,22 @@
             let allOrders = [];
             for (let i = 1; i <= 3; i++) {
                 if (tables[i] && tables[i].orders) {
-                    tables[i].orders.forEach(order => {
-                        allOrders.push({ table: i, ...order });
-                    });
+                    tables[i].orders.forEach(order => { allOrders.push({ table: i, ...order }); });
                 }
             }
             allOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
             let filtered = allOrders;
-            if (ordersFilter === 'active') {
-                filtered = allOrders.filter(o => o.status !== 'closed');
-            } else if (ordersFilter === 'closed') {
-                filtered = allOrders.filter(o => o.status === 'closed');
-            }
+            if (ordersFilter === 'active') filtered = allOrders.filter(o => o.status !== 'closed');
+            else if (ordersFilter === 'closed') filtered = allOrders.filter(o => o.status === 'closed');
 
             if (filtered.length === 0) {
                 container.innerHTML = '<div class="empty">Заказов не найдено</div>';
                 return;
             }
 
-            container.innerHTML = filtered.map(order => `
-                <div class="list-item" style="flex-direction:column;align-items:stretch;border-bottom:2px solid #eee;padding:15px 0;">
+            container.innerHTML = filtered.map(order =>
+                `<div class="list-item" style="flex-direction:column;align-items:stretch;border-bottom:2px solid #eee;padding:15px 0;">
                     <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
                         <div class="info">
                             <span class="name">🪑 Стол ${order.table}</span>
@@ -688,22 +611,18 @@
                         </div>
                     </div>
                     <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;">
-                        ${order.items.map(item => `
-                            <span style="background:#f0f2f5;padding:2px 10px;border-radius:12px;font-size:13px;">
-                                ${item.emoji || '🍽️'} ${item.name} × ${item.quantity}
-                            </span>
-                        `).join('')}
+                        ${order.items.map(item => `<span style="background:#f0f2f5;padding:2px 10px;border-radius:12px;font-size:13px;">${item.emoji || '🍽️'} ${item.name} × ${item.quantity}</span>`).join('')}
                     </div>
-                </div>
-            `).join('');
+                </div>`
+            ).join('');
         }
 
-        document.getElementById('viewAllOrders').addEventListener('click', () => { ordersFilter = 'all';
-            renderOrders(); });
-        document.getElementById('viewActiveOrders').addEventListener('click', () => { ordersFilter = 'active';
-            renderOrders(); });
-        document.getElementById('viewClosedOrders').addEventListener('click', () => { ordersFilter = 'closed';
-            renderOrders(); });
+        document.getElementById('viewAllOrders').onclick = () => { ordersFilter = 'all';
+            renderOrders(); };
+        document.getElementById('viewActiveOrders').onclick = () => { ordersFilter = 'active';
+            renderOrders(); };
+        document.getElementById('viewClosedOrders').onclick = () => { ordersFilter = 'closed';
+            renderOrders(); };
 
         // ========== СТОЛЫ ==========
         function renderTablesAdmin() {
@@ -728,7 +647,7 @@
                         <h4>🪑 Стол ${i}</h4>
                         <div>Активных заказов: ${openOrders.length}</div>
                         <div style="font-weight:700;color:#2d7aff;">Сумма: ${openOrders.reduce((sum, o) => sum + o.total, 0)} ₽</div>
-                        <button class="tab-btn" style="background:#ff4757;color:white;padding:4px 12px;font-size:12px;margin-top:8px;" onclick="clearTable(${i})">Очистить стол</button>
+                        <button class="tab-btn" style="background:#ff4757;color:white;padding:4px 12px;font-size:12px;margin-top:8px;" onclick="clearTable(${i})">Очистить</button>
                     </div>
                 `;
             }
@@ -736,7 +655,7 @@
         }
 
         window.clearTable = function(tableNum) {
-            if (confirm(`Очистить стол ${tableNum}? Все заказы будут удалены!`)) {
+            if (confirm(`Очистить стол ${tableNum}?`)) {
                 const data = loadData();
                 data.tables[tableNum] = { orders: [], total: 0 };
                 saveData(data);
@@ -747,36 +666,32 @@
             }
         };
 
-        document.getElementById('resetAllTables').addEventListener('click', () => {
-            if (confirm('Сбросить все столы? Все заказы будут удалены безвозвратно!')) {
+        document.getElementById('resetAllTables').onclick = () => {
+            if (confirm('Сбросить все столы?')) {
                 const data = loadData();
-                for (let i = 1; i <= 3; i++) {
-                    data.tables[i] = { orders: [], total: 0 };
-                }
+                for (let i = 1; i <= 3; i++) { data.tables[i] = { orders: [], total: 0 }; }
                 saveData(data);
                 renderTablesAdmin();
                 renderDashboard();
                 renderOrders();
                 showToast('✅ Все столы сброшены');
             }
-        });
+        };
 
         // ========== НАСТРОЙКИ ==========
         document.getElementById('settingsVenueName').value = loadData().venueName || 'Кафе Уют';
-        document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+        document.getElementById('saveSettingsBtn').onclick = () => {
             const name = document.getElementById('settingsVenueName').value.trim() || 'Кафе Уют';
             const data = loadData();
             data.venueName = name;
             saveData(data);
             showToast('✅ Название сохранено: ' + name);
-        });
+        };
 
-        document.getElementById('clearAllData').addEventListener('click', () => {
-            if (confirm('Очистить все данные? Это удалит все заказы и статистику! Меню сохранится.')) {
+        document.getElementById('clearAllData').onclick = () => {
+            if (confirm('Очистить все данные? Заказы и статистика будут удалены! Меню сохранится.')) {
                 const data = loadData();
-                for (let i = 1; i <= 3; i++) {
-                    data.tables[i] = { orders: [], total: 0 };
-                }
+                for (let i = 1; i <= 3; i++) { data.tables[i] = { orders: [], total: 0 }; }
                 data.stats = { totalOrders: 0, totalRevenue: 0 };
                 saveData(data);
                 renderDashboard();
@@ -784,9 +699,9 @@
                 renderTablesAdmin();
                 showToast('✅ Все данные очищены');
             }
-        });
+        };
 
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        // ========== ЗАПУСК ==========
         function init() {
             renderDashboard();
             renderMenu();
@@ -795,7 +710,7 @@
         }
         init();
 
-        console.log('✅ Админ-панель загружена!');
+        console.log('✅ Админ-панель загружена! Меню из menu.js');
     </script>
 </body>
 </html>
