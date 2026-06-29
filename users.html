@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Управление пользователями</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+        body { background:#f0f2f5; padding:20px; }
+        .container { max-width:800px; margin:0 auto; }
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+        .header h1 { color:#2d3e50; }
+        .back-btn { background:#7f8c8d; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; text-decoration:none; display:inline-block; }
+        
+        .add-form { background:white; border-radius:12px; padding:20px; margin-bottom:20px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+        .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; }
+        .form-grid input, .form-grid select { padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px; }
+        .form-grid button { background:#2d7aff; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:700; transition:0.2s; }
+        .form-grid button:hover { background:#1a5fd0; }
+        
+        .users-list { background:white; border-radius:12px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+        .user-item { display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #f0f0f0; }
+        .user-item:last-child { border-bottom:none; }
+        .user-item .info { display:flex; align-items:center; gap:15px; flex-wrap:wrap; }
+        .user-item .info .login { font-weight:600; }
+        .user-item .info .name { color:#555; }
+        .user-item .info .role { background:#e8e8e8; padding:2px 12px; border-radius:12px; font-size:12px; font-weight:600; }
+        .user-item .actions button { padding:4px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:600; }
+        .delete-btn { background:#ff4757; color:white; }
+        .empty { text-align:center; color:#888; padding:30px; }
+        .stats { background:white; border-radius:12px; padding:15px 20px; margin-bottom:20px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+        .stats span { font-weight:600; }
+        .stats .val { color:#2d7aff; }
+        .role-badge.sadmin { background:#ff6b35; color:white; }
+        .role-badge.Официант { background:#2d7aff; color:white; }
+        .role-badge.Повар { background:#2ed573; color:white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👥 Управление пользователями</h1>
+            <a href="index.html" class="back-btn">← На главную</a>
+        </div>
+
+        <div class="stats">
+            <span>Всего пользователей: <span class="val" id="totalUsers">0</span></span>
+        </div>
+
+        <div class="add-form">
+            <h3 style="margin-bottom:10px;">➕ Добавить пользователя</h3>
+            <div class="form-grid" id="addForm">
+                <input type="text" id="addLogin" placeholder="Логин" />
+                <input type="password" id="addPassword" placeholder="Пароль" />
+                <input type="text" id="addName" placeholder="Имя" />
+                <select id="addRole">
+                    <option value="Официант">Официант</option>
+                    <option value="Повар">Повар</option>
+                    <option value="sadmin">sadmin</option>
+                </select>
+                <button id="addBtn">Добавить</button>
+            </div>
+        </div>
+
+        <div class="users-list">
+            <h3 style="margin-bottom:15px;">📋 Список пользователей</h3>
+            <div id="usersContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // ========== ПРОВЕРКА ПРАВ ==========
+        function getCurrentUser() {
+            const data = localStorage.getItem('currentUser');
+            return data ? JSON.parse(data) : null;
+        }
+
+        const user = getCurrentUser();
+        if (!user || user.role !== 'sadmin') {
+            alert('Доступ запрещен. Только для sadmin');
+            window.location.href = 'index.html';
+        }
+
+        // ========== ФУНКЦИИ ==========
+        function getUsers() {
+            const data = localStorage.getItem('users');
+            if (!data) {
+                const defaultUsers = {
+                    'sadmin': { password: '123', role: 'sadmin', name: 'Главный администратор' }
+                };
+                localStorage.setItem('users', JSON.stringify(defaultUsers));
+                return defaultUsers;
+            }
+            return JSON.parse(data);
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        // ========== РЕНДЕР ==========
+        function renderUsers() {
+            const users = getUsers();
+            const container = document.getElementById('usersContainer');
+            document.getElementById('totalUsers').textContent = Object.keys(users).length;
+
+            if (Object.keys(users).length === 0) {
+                container.innerHTML = '<div class="empty">Нет пользователей</div>';
+                return;
+            }
+
+            container.innerHTML = Object.entries(users).map(([login, data]) => `
+                <div class="user-item">
+                    <div class="info">
+                        <span class="login">${login}</span>
+                        <span class="name">${data.name || ''}</span>
+                        <span class="role role-badge ${data.role}">${data.role}</span>
+                        ${login === 'sadmin' ? '<span style="color:#ff6b35;font-size:12px;">🔒</span>' : ''}
+                    </div>
+                    <div class="actions">
+                        ${login !== 'sadmin' ? `<button class="delete-btn" data-login="${login}">🗑️ Удалить</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const login = btn.dataset.login;
+                    if (confirm(`Удалить пользователя "${login}"?`)) {
+                        const users = getUsers();
+                        delete users[login];
+                        saveUsers(users);
+                        renderUsers();
+                    }
+                });
+            });
+        }
+
+        // ========== ДОБАВЛЕНИЕ ==========
+        document.getElementById('addBtn').addEventListener('click', () => {
+            const login = document.getElementById('addLogin').value.trim();
+            const password = document.getElementById('addPassword').value.trim();
+            const name = document.getElementById('addName').value.trim();
+            const role = document.getElementById('addRole').value;
+
+            if (!login || !password) {
+                alert('Заполните логин и пароль!');
+                return;
+            }
+
+            const users = getUsers();
+            if (users[login]) {
+                alert('Пользователь с таким логином уже существует!');
+                return;
+            }
+
+            users[login] = { password, role, name: name || login };
+            saveUsers(users);
+            renderUsers();
+
+            document.getElementById('addLogin').value = '';
+            document.getElementById('addPassword').value = '';
+            document.getElementById('addName').value = '';
+        });
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        renderUsers();
+    </script>
+</body>
+</html>
