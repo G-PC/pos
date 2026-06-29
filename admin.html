@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Админ-панель меню</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+        body { background:#f0f2f5; padding:20px; }
+        .container { max-width:900px; margin:0 auto; }
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+        .header h1 { color:#2d3e50; }
+        .back-btn { background:#7f8c8d; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; text-decoration:none; display:inline-block; }
+        .add-form { background:white; border-radius:12px; padding:20px; margin-bottom:20px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+        .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; }
+        .form-grid input, .form-grid select { padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px; }
+        .form-grid button { background:#2d7aff; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:700; transition:0.2s; }
+        .form-grid button:hover { background:#1a5fd0; }
+        .menu-list { background:white; border-radius:12px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+        .menu-item { display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #f0f0f0; }
+        .menu-item:last-child { border-bottom:none; }
+        .menu-item .info { display:flex; align-items:center; gap:15px; flex-wrap:wrap; }
+        .menu-item .info .emoji { font-size:24px; }
+        .menu-item .info .name { font-weight:600; }
+        .menu-item .info .price { color:#2d7aff; font-weight:700; }
+        .menu-item .info .category { background:#e8e8e8; padding:2px 10px; border-radius:12px; font-size:12px; }
+        .menu-item .actions { display:flex; gap:8px; }
+        .menu-item .actions button { padding:4px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:600; }
+        .edit-btn { background:#ffc107; color:#333; }
+        .delete-btn { background:#ff4757; color:white; }
+        .edit-form { background:#f8f9fc; padding:15px; border-radius:8px; margin-top:10px; display:none; }
+        .edit-form .form-grid { grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); }
+        .empty { text-align:center; color:#888; padding:30px; }
+        .stats { background:white; border-radius:12px; padding:15px 20px; margin-bottom:20px; display:flex; gap:30px; flex-wrap:wrap; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
+        .stats span { font-weight:600; }
+        .stats .val { color:#2d7aff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Управление меню</h1>
+            <div>
+                <a href="index.html" class="back-btn">← На главную</a>
+            </div>
+        </div>
+
+        <div class="stats" id="statsBar">
+            <span>Всего блюд: <span class="val" id="totalDishes">0</span></span>
+            <span>Категорий: <span class="val" id="totalCategories">0</span></span>
+        </div>
+
+        <div class="add-form">
+            <h3 style="margin-bottom:10px;">➕ Добавить блюдо</h3>
+            <div class="form-grid" id="addForm">
+                <input type="text" id="addName" placeholder="Название" />
+                <input type="number" id="addPrice" placeholder="Цена" min="0" step="1" />
+                <input type="text" id="addCategory" placeholder="Категория" />
+                <input type="text" id="addEmoji" placeholder="Эмодзи (🥗)" />
+                <button id="addBtn">Добавить</button>
+            </div>
+        </div>
+
+        <div class="menu-list" id="menuList">
+            <h3 style="margin-bottom:15px;">📋 Список блюд</h3>
+            <div id="menuItems"></div>
+        </div>
+    </div>
+
+    <script>
+        // ========== ФУНКЦИИ ДАННЫХ ==========
+        function getMenu() {
+            const data = localStorage.getItem('menu');
+            if (!data) {
+                const defaultMenu = [
+                    { id: 1, name: 'Цезарь', price: 350, category: 'Салаты', emoji: '🥗' },
+                    { id: 2, name: 'Греческий', price: 280, category: 'Салаты', emoji: '🥗' },
+                    { id: 3, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
+                    { id: 4, name: 'Стейк', price: 550, category: 'Горячее', emoji: '🥩' },
+                    { id: 5, name: 'Паста', price: 390, category: 'Горячее', emoji: '🍝' },
+                    { id: 6, name: 'Чай', price: 120, category: 'Напитки', emoji: '🍵' },
+                    { id: 7, name: 'Кофе', price: 150, category: 'Напитки', emoji: '☕' },
+                    { id: 8, name: 'Тирамису', price: 300, category: 'Десерты', emoji: '🍰' },
+                ];
+                localStorage.setItem('menu', JSON.stringify(defaultMenu));
+                return defaultMenu;
+            }
+            return JSON.parse(data);
+        }
+
+        function saveMenu(menu) {
+            localStorage.setItem('menu', JSON.stringify(menu));
+            // Триггерим событие для обновления других вкладок
+            window.dispatchEvent(new Event('storage'));
+        }
+
+        // ========== РЕНДЕР МЕНЮ ==========
+        function renderMenu() {
+            const menu = getMenu();
+            const container = document.getElementById('menuItems');
+            
+            // Статистика
+            document.getElementById('totalDishes').textContent = menu.length;
+            const categories = new Set(menu.map(item => item.category));
+            document.getElementById('totalCategories').textContent = categories.size;
+
+            if (menu.length === 0) {
+                container.innerHTML = '<div class="empty">Меню пусто. Добавьте блюда!</div>';
+                return;
+            }
+
+            container.innerHTML = menu.map((item, index) => `
+                <div class="menu-item" data-id="${item.id}">
+                    <div class="info">
+                        <span class="emoji">${item.emoji || '🍽️'}</span>
+                        <span class="name">${item.name}</span>
+                        <span class="price">${item.price} ₽</span>
+                        <span class="category">${item.category}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="edit-btn" data-id="${item.id}">✏️</button>
+                        <button class="delete-btn" data-id="${item.id}">🗑️</button>
+                    </div>
+                </div>
+                <div class="edit-form" id="editForm_${item.id}">
+                    <div class="form-grid">
+                        <input type="text" class="editName" value="${item.name}" placeholder="Название" />
+                        <input type="number" class="editPrice" value="${item.price}" placeholder="Цена" min="0" step="1" />
+                        <input type="text" class="editCategory" value="${item.category}" placeholder="Категория" />
+                        <input type="text" class="editEmoji" value="${item.emoji || ''}" placeholder="Эмодзи" />
+                        <button class="saveEditBtn" data-id="${item.id}">💾 Сохранить</button>
+                        <button class="cancelEditBtn" data-id="${item.id}">Отмена</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Обработчики удаления
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    if (confirm('Удалить блюдо?')) {
+                        let menu = getMenu();
+                        menu = menu.filter(item => item.id !== id);
+                        saveMenu(menu);
+                        renderMenu();
+                    }
+                });
+            });
+
+            // Обработчики редактирования (показать форму)
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const form = document.getElementById(`editForm_${id}`);
+                    if (form.style.display === 'block') {
+                        form.style.display = 'none';
+                    } else {
+                        form.style.display = 'block';
+                    }
+                });
+            });
+
+            // Обработчики сохранения редактирования
+            document.querySelectorAll('.saveEditBtn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const parent = document.getElementById(`editForm_${id}`);
+                    const name = parent.querySelector('.editName').value.trim();
+                    const price = parseFloat(parent.querySelector('.editPrice').value);
+                    const category = parent.querySelector('.editCategory').value.trim();
+                    const emoji = parent.querySelector('.editEmoji').value.trim();
+
+                    if (!name || isNaN(price) || price < 0 || !category) {
+                        alert('Заполните все поля корректно!');
+                        return;
+                    }
+
+                    let menu = getMenu();
+                    const index = menu.findIndex(item => item.id === id);
+                    if (index !== -1) {
+                        menu[index] = { ...menu[index], name, price, category, emoji };
+                        saveMenu(menu);
+                        renderMenu();
+                    }
+                });
+            });
+
+            // Обработчики отмены редактирования
+            document.querySelectorAll('.cancelEditBtn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    document.getElementById(`editForm_${id}`).style.display = 'none';
+                });
+            });
+        }
+
+        // ========== ДОБАВЛЕНИЕ БЛЮДА ==========
+        document.getElementById('addBtn').addEventListener('click', () => {
+            const name = document.getElementById('addName').value.trim();
+            const price = parseFloat(document.getElementById('addPrice').value);
+            const category = document.getElementById('addCategory').value.trim();
+            const emoji = document.getElementById('addEmoji').value.trim();
+
+            if (!name || isNaN(price) || price < 0 || !category) {
+                alert('Заполните все поля корректно!');
+                return;
+            }
+
+            const menu = getMenu();
+            const newId = menu.length > 0 ? Math.max(...menu.map(item => item.id)) + 1 : 1;
+            menu.push({ id: newId, name, price, category, emoji: emoji || '🍽️' });
+            saveMenu(menu);
+            renderMenu();
+
+            // Очищаем форму
+            document.getElementById('addName').value = '';
+            document.getElementById('addPrice').value = '';
+            document.getElementById('addCategory').value = '';
+            document.getElementById('addEmoji').value = '';
+        });
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        renderMenu();
+
+        // Обновление при изменении в других вкладках
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'menu') {
+                renderMenu();
+            }
+        });
+    </script>
+</body>
+</html>
