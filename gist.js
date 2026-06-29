@@ -1,7 +1,7 @@
 // ========== GIST API (БЕЗ ТОКЕНА!) ==========
 const GIST_CONFIG = {
-    GIST_ID: 'СЮДА_ID_ТВОЕГО_ГИСТА',  // Например: 'abc123def456'
-    USERNAME: 'ТВОЙ_ЛОГИН'             // Например: 'G-PC'
+    GIST_ID: '7f2e5bf1a0f70e2574c8dfec78b49245',  // Например: 'abc123def456'
+    USERNAME: 'G-PC'             // Например: 'G-PC'
 };
 
 let cachedData = null;
