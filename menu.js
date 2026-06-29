@@ -62,6 +62,26 @@ function saveMenuToStorage(menu) {
     return false;
 }
 
+// ========== ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ==========
+function forceUpdateMenu() {
+    const data = localStorage.getItem('cloudData');
+    if (data) {
+        try {
+            const parsed = JSON.parse(data);
+            parsed.menu = getDefaultMenu();
+            localStorage.setItem('cloudData', JSON.stringify(parsed));
+            console.log('✅ Меню ПРИНУДИТЕЛЬНО обновлено!');
+            return true;
+        } catch (e) {
+            console.error('Ошибка обновления:', e);
+        }
+    }
+    return false;
+}
+
+// ВЫПОЛНЯЕМ ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ
+forceUpdateMenu();
+
 console.log('📦 menu.js загружен!');
 console.log('🍽️ Блюд в меню:', DEFAULT_MENU.length);
-console.log('📋 Категорий:', [...new Set(DEFAULT_MENU.map(i => i.category))]);
+console.log('📋 Первое блюдо:', DEFAULT_MENU[0].name);
