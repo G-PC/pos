@@ -5,37 +5,179 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Кухня - Заказы</title>
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
-        body { background:#f0f2f5; padding:20px; }
-        .container { max-width:1200px; margin:0 auto; }
-        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; background:white; padding:15px 25px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
-        .header h1 { color:#2d3e50; }
-        .back-btn { background:#7f8c8d; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; text-decoration:none; display:inline-block; }
-        .sync-status { display:inline-block; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; margin-left:10px; }
-        .sync-status.online { background:#d4edda; color:#155724; }
-        .sync-status.offline { background:#f8d7da; color:#721c24; }
-        .sync-status.syncing { background:#fff3cd; color:#856404; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity:1; } 50% { opacity:0.5; } 100% { opacity:1; } }
-        
-        .orders-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; }
-        .order-card { background:white; border-radius:12px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.08); border-left:4px solid #2d7aff; transition:0.3s; }
-        .order-card.new { animation: flash 1s ease; border-left-color: #ff6b35; }
-        @keyframes flash { 0% { background:#fff3cd; } 50% { background:#fff8e1; } 100% { background:white; } }
-        .order-card .header { display:flex; justify-content:space-between; margin-bottom:10px; padding-bottom:8px; border-bottom:2px solid #eee; }
-        .order-card .table { font-weight:700; font-size:18px; }
-        .order-card .time { color:#888; font-size:14px; }
-        .order-card .items { margin:10px 0; }
-        .order-card .item { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #f5f5f5; font-size:14px; }
-        .order-card .total { font-weight:700; font-size:16px; margin-top:10px; padding-top:8px; border-top:2px solid #eee; }
-        .order-card .status { display:inline-block; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; }
-        .status.open { background:#fff3cd; color:#856404; }
-        .empty { text-align:center; color:#888; padding:50px; font-size:18px; }
-        .badge { background:#ff6b35; color:white; padding:2px 8px; border-radius:10px; font-size:11px; }
-        .refresh-btn { background:#2d7aff; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; }
-        .refresh-btn:hover { background:#1a5fd0; }
-        .notification { position:fixed; top:20px; right:20px; background:#ff6b35; color:white; padding:15px 25px; border-radius:12px; box-shadow:0 4px 20px rgba(255,107,53,0.4); z-index:999; animation: slideIn 0.5s ease; display:none; }
-        @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
-        .auto-refresh { font-size:12px; color:#888; margin-top:5px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        .header h1 {
+            color: #2d3e50;
+        }
+        .back-btn {
+            background: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #2d7aff;
+            transition: 0.3s;
+        }
+        .order-card.new {
+            animation: flash 1s ease;
+            border-left-color: #ff6b35;
+        }
+        @keyframes flash {
+            0% { background: #fff3cd; }
+            50% { background: #fff8e1; }
+            100% { background: white; }
+        }
+        .order-card .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+        }
+        .order-card .table {
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .order-card .time {
+            color: #888;
+            font-size: 14px;
+        }
+        .order-card .items {
+            margin: 10px 0;
+        }
+        .order-card .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 14px;
+        }
+        .order-card .total {
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 2px solid #eee;
+        }
+        .order-card .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status.open {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .empty {
+            text-align: center;
+            color: #888;
+            padding: 50px;
+            font-size: 18px;
+        }
+        .badge {
+            background: #ff6b35;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        .refresh-btn {
+            background: #2d7aff;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .refresh-btn:hover {
+            background: #1a5fd0;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff6b35;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4);
+            z-index: 999;
+            animation: slideIn 0.5s ease;
+            display: none;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .auto-refresh {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .order-count {
+            background: #ff6b35;
+            color: white;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -45,8 +187,8 @@
                 <h1>🍳 Кухня — Активные заказы</h1>
                 <div class="auto-refresh">Автообновление каждые 5 секунд</div>
             </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                <span class="sync-status online" id="syncStatus">🟢 Онлайн</span>
+            <div class="status-bar">
+                <span class="order-count" id="orderCount">0</span>
                 <button class="refresh-btn" id="refreshBtn">🔄 Обновить</button>
                 <a href="index.html" class="back-btn">← На главную</a>
             </div>
@@ -57,14 +199,53 @@
 
     <div class="notification" id="notification">🆕 Новый заказ!</div>
 
-    <script src="local.js"></script>
     <script>
-        // ========== ПРОВЕРКА ПРАВ ==========
+        // ============================================================
+        // ВСЯ ЛОГИКА ВНУТРИ — НИКАКИХ ВНЕШНИХ JS ФАЙЛОВ!
+        // ============================================================
+
+        // ========== ДАННЫЕ ==========
+        function getDefaultData() {
+            return {
+                venueName: 'Кафе Уют',
+                menu: [
+                    { id: 1, name: 'Цезарь', price: 350, category: 'Салаты', emoji: '🥗' },
+                    { id: 2, name: 'Греческий', price: 280, category: 'Салаты', emoji: '🥗' },
+                    { id: 3, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
+                    { id: 4, name: 'Стейк', price: 550, category: 'Горячее', emoji: '🥩' },
+                    { id: 5, name: 'Паста', price: 390, category: 'Горячее', emoji: '🍝' },
+                    { id: 6, name: 'Чай', price: 120, category: 'Напитки', emoji: '🍵' },
+                    { id: 7, name: 'Кофе', price: 150, category: 'Напитки', emoji: '☕' },
+                    { id: 8, name: 'Тирамису', price: 300, category: 'Десерты', emoji: '🍰' },
+                ],
+                users: {
+                    'sadmin': { password: '123', role: 'sadmin', name: 'Главный администратор' }
+                },
+                tables: {
+                    '1': { orders: [], total: 0 },
+                    '2': { orders: [], total: 0 },
+                    '3': { orders: [], total: 0 }
+                },
+                stats: { totalOrders: 0, totalRevenue: 0 }
+            };
+        }
+
+        function loadData() {
+            const cached = localStorage.getItem('cloudData');
+            if (cached) {
+                try { return JSON.parse(cached); } catch (e) {}
+            }
+            const defaultData = getDefaultData();
+            localStorage.setItem('cloudData', JSON.stringify(defaultData));
+            return defaultData;
+        }
+
         function getCurrentUser() {
             const data = localStorage.getItem('currentUser');
             return data ? JSON.parse(data) : null;
         }
 
+        // ========== ПРОВЕРКА ПРАВ ==========
         const user = getCurrentUser();
         if (!user || (user.role !== 'sadmin' && user.role !== 'Повар')) {
             alert('Доступ запрещен. Только для поваров и sadmin');
@@ -73,33 +254,13 @@
 
         // ========== СОСТОЯНИЕ ==========
         let previousOrderIds = new Set();
-        let isSyncing = false;
-
-        // ========== ЗАГРУЗКА ДАННЫХ ==========
-        async function loadData() {
-            try {
-                const data = await GitHubAPI.getData();
-                updateSyncStatus('online', '🟢 Онлайн');
-                return data;
-            } catch (error) {
-                updateSyncStatus('offline', '🔴 Офлайн');
-                const cached = localStorage.getItem('cloudData');
-                if (cached) return JSON.parse(cached);
-                return GitHubAPI.getDefaultData();
-            }
-        }
-
-        function updateSyncStatus(status, label) {
-            const el = document.getElementById('syncStatus');
-            el.className = `sync-status ${status}`;
-            el.textContent = label;
-        }
 
         // ========== РЕНДЕР ЗАКАЗОВ ==========
-        function renderOrders(data) {
+        function renderOrders() {
+            const data = loadData();
             const grid = document.getElementById('ordersGrid');
             const tables = data.tables || {};
-            
+
             let allOrders = [];
             for (let tableNum = 1; tableNum <= 3; tableNum++) {
                 const table = tables[tableNum];
@@ -126,6 +287,9 @@
                 showNotification(`🆕 ${newOrders.length} новый(ых) заказ(а)!`);
             }
             previousOrderIds = currentIds;
+
+            // Обновляем счетчик
+            document.getElementById('orderCount').textContent = allOrders.length;
 
             if (allOrders.length === 0) {
                 grid.innerHTML = `
@@ -173,32 +337,16 @@
         }
 
         // ========== ОБНОВЛЕНИЕ ==========
-        async function refresh() {
-            if (isSyncing) return;
-            isSyncing = true;
-            try {
-                const data = await loadData();
-                renderOrders(data);
-            } catch (error) {
-                console.error('Ошибка обновления:', error);
-            } finally {
-                isSyncing = false;
-            }
+        function refresh() {
+            renderOrders();
         }
 
         // ========== ЗАПУСК ==========
         document.getElementById('refreshBtn').addEventListener('click', refresh);
-        
-        // Автообновление
-        refresh();
         setInterval(refresh, 5000);
+        refresh();
 
-        // Обновление при изменении данных
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'cloudData') {
-                refresh();
-            }
-        });
+        console.log('✅ Кухня загружена! (БЕЗ ВНЕШНИХ JS)');
     </script>
 </body>
 </html>
