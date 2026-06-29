@@ -5,65 +5,284 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Админ-панель</title>
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
-        body { background:#f0f2f5; padding:15px; }
-        .container { max-width:1400px; margin:0 auto; }
-        
-        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; background:white; padding:15px 25px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
-        .header h1 { color:#2d3e50; font-size:24px; }
-        .header .user-info { display:flex; align-items:center; gap:15px; }
-        .header .user-info .role { background:#2d7aff; color:white; padding:4px 14px; border-radius:12px; font-size:12px; font-weight:600; }
-        .header .back-btn { background:#7f8c8d; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; text-decoration:none; display:inline-block; }
-        
-        .tabs { display:flex; gap:5px; margin-bottom:20px; flex-wrap:wrap; background:white; padding:10px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
-        .tab-btn { padding:10px 25px; border:none; background:transparent; border-radius:8px; cursor:pointer; font-weight:600; transition:0.3s; font-size:14px; }
-        .tab-btn:hover { background:#f0f2f5; }
-        .tab-btn.active { background:#2d7aff; color:white; }
-        
-        .tab-content { display:none; background:white; border-radius:12px; padding:25px; box-shadow:0 2px 10px rgba(0,0,0,0.08); }
-        .tab-content.active { display:block; }
-        
-        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:15px; margin-bottom:25px; }
-        .stat-card { background:#f8f9fc; padding:15px 20px; border-radius:10px; border-left:4px solid #2d7aff; }
-        .stat-card .label { font-size:13px; color:#7f8c8d; }
-        .stat-card .value { font-size:24px; font-weight:700; color:#2d3e50; }
-        
-        .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:15px; }
-        .form-grid input, .form-grid select { padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px; }
-        .form-grid button { padding:10px; background:#2d7aff; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:700; transition:0.2s; }
-        .form-grid button:hover { background:#1a5fd0; }
-        .form-grid button.danger { background:#ff4757; }
-        .form-grid button.danger:hover { background:#c0392b; }
-        
-        .list-item { display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #f0f0f0; }
-        .list-item:last-child { border-bottom:none; }
-        .list-item .info { display:flex; align-items:center; gap:15px; flex-wrap:wrap; }
-        .list-item .info .name { font-weight:600; }
-        .list-item .info .detail { color:#666; font-size:14px; }
-        .list-item .info .badge { background:#e8e8e8; padding:2px 12px; border-radius:12px; font-size:12px; }
-        .list-item .actions { display:flex; gap:8px; }
-        .list-item .actions button { padding:4px 12px; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px; }
-        .list-item .actions .edit { background:#ffc107; color:#333; }
-        .list-item .actions .delete { background:#ff4757; color:white; }
-        .list-item .actions .done { background:#2ed573; color:white; }
-        
-        .empty { text-align:center; color:#888; padding:30px; }
-        
-        .modal { display:none; position:fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:999; }
-        .modal-content { background:white; padding:30px; border-radius:16px; max-width:600px; width:90%; max-height:90vh; overflow-y:auto; }
-        .modal-close { float:right; background:#ff4757; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; }
-        .modal-content .form-grid { margin-top:15px; }
-        
-        .receipt { font-family:'Courier New',monospace; background:#f8f9fc; padding:15px; border-radius:8px; margin:10px 0; }
-        .receipt .row { display:flex; justify-content:space-between; padding:3px 0; font-size:14px; }
-        .receipt .row.total { font-weight:700; font-size:16px; border-top:2px solid #333; padding-top:8px; margin-top:8px; }
-        
-        @media (max-width:768px) { .header { flex-direction:column; align-items:stretch; } .tabs { flex-direction:column; } }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            background: #f0f2f5;
+            padding: 15px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        .header h1 {
+            color: #2d3e50;
+            font-size: 24px;
+        }
+        .header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .header .user-info .role {
+            background: #2d7aff;
+            color: white;
+            padding: 4px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .header .back-btn {
+            background: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        .tab-btn {
+            padding: 10px 25px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+        .tab-btn:hover {
+            background: #f0f2f5;
+        }
+        .tab-btn.active {
+            background: #2d7aff;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: #f8f9fc;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border-left: 4px solid #2d7aff;
+        }
+        .stat-card .label {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3e50;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .form-grid input,
+        .form-grid select {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .form-grid button {
+            padding: 10px;
+            background: #2d7aff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+        .form-grid button:hover {
+            background: #1a5fd0;
+        }
+        .form-grid button.danger {
+            background: #ff4757;
+        }
+        .form-grid button.danger:hover {
+            background: #c0392b;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .list-item:last-child {
+            border-bottom: none;
+        }
+        .list-item .info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .list-item .info .name {
+            font-weight: 600;
+        }
+        .list-item .info .detail {
+            color: #666;
+            font-size: 14px;
+        }
+        .list-item .info .badge {
+            background: #e8e8e8;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .list-item .actions {
+            display: flex;
+            gap: 8px;
+        }
+        .list-item .actions button {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .list-item .actions .edit {
+            background: #ffc107;
+            color: #333;
+        }
+        .list-item .actions .delete {
+            background: #ff4757;
+            color: white;
+        }
+        .list-item .actions .done {
+            background: #2ed573;
+            color: white;
+        }
+
+        .empty {
+            text-align: center;
+            color: #888;
+            padding: 30px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-close {
+            float: right;
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .modal-content .form-grid {
+            margin-top: 15px;
+        }
+
+        .receipt {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .receipt .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            font-size: 14px;
+        }
+        .receipt .row.total {
+            font-weight: 700;
+            font-size: 16px;
+            border-top: 2px solid #333;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .tabs {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- ШАПКА -->
         <div class="header">
             <h1>⚙️ Админ-панель</h1>
             <div class="user-info">
@@ -73,24 +292,21 @@
             </div>
         </div>
 
-        <!-- ВКЛАДКИ -->
         <div class="tabs">
             <button class="tab-btn active" data-tab="dashboard">📊 Статистика</button>
             <button class="tab-btn" data-tab="menu">🍽️ Меню</button>
-            <button class="tab-btn" data-tab="users">👥 Пользователи</button>
             <button class="tab-btn" data-tab="orders">🧾 Заказы</button>
             <button class="tab-btn" data-tab="tables">🪑 Столы</button>
             <button class="tab-btn" data-tab="settings">⚙️ Настройки</button>
         </div>
 
-        <!-- ========== ВКЛАДКА 1: СТАТИСТИКА ========== -->
+        <!-- ВКЛАДКА: СТАТИСТИКА -->
         <div class="tab-content active" id="tab-dashboard">
             <div class="stats-grid">
                 <div class="stat-card"><div class="label">Всего заказов</div><div class="value" id="statOrders">0</div></div>
                 <div class="stat-card"><div class="label">Выручка</div><div class="value" id="statRevenue">0 ₽</div></div>
                 <div class="stat-card"><div class="label">Активных столов</div><div class="value" id="statActiveTables">0</div></div>
                 <div class="stat-card"><div class="label">Всего блюд</div><div class="value" id="statDishes">0</div></div>
-                <div class="stat-card"><div class="label">Пользователей</div><div class="value" id="statUsers">0</div></div>
             </div>
             <div id="recentOrders" style="margin-top:15px;">
                 <h3>📋 Последние заказы</h3>
@@ -98,7 +314,7 @@
             </div>
         </div>
 
-        <!-- ========== ВКЛАДКА 2: МЕНЮ ========== -->
+        <!-- ВКЛАДКА: МЕНЮ -->
         <div class="tab-content" id="tab-menu">
             <h3 style="margin-bottom:15px;">➕ Добавить блюдо</h3>
             <div class="form-grid">
@@ -112,25 +328,7 @@
             <div id="menuList"></div>
         </div>
 
-        <!-- ========== ВКЛАДКА 3: ПОЛЬЗОВАТЕЛИ ========== -->
-        <div class="tab-content" id="tab-users">
-            <h3 style="margin-bottom:15px;">➕ Добавить пользователя</h3>
-            <div class="form-grid">
-                <input type="text" id="addUserLogin" placeholder="Логин" />
-                <input type="password" id="addUserPassword" placeholder="Пароль" />
-                <input type="text" id="addUserName" placeholder="Имя" />
-                <select id="addUserRole">
-                    <option value="Официант">Официант</option>
-                    <option value="Повар">Повар</option>
-                    <option value="sadmin">sadmin</option>
-                </select>
-                <button id="addUserBtn">Добавить</button>
-            </div>
-            <h3 style="margin:20px 0 10px;">📋 Список пользователей</h3>
-            <div id="usersList"></div>
-        </div>
-
-        <!-- ========== ВКЛАДКА 4: ЗАКАЗЫ ========== -->
+        <!-- ВКЛАДКА: ЗАКАЗЫ -->
         <div class="tab-content" id="tab-orders">
             <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;">
                 <button id="viewAllOrders" class="tab-btn" style="background:#2d7aff;color:white;padding:8px 20px;">Все заказы</button>
@@ -140,7 +338,7 @@
             <div id="ordersList"></div>
         </div>
 
-        <!-- ========== ВКЛАДКА 5: СТОЛЫ ========== -->
+        <!-- ВКЛАДКА: СТОЛЫ -->
         <div class="tab-content" id="tab-tables">
             <div class="stats-grid" style="margin-bottom:20px;">
                 <div class="stat-card"><div class="label">Стол 1</div><div class="value" id="table1Status">Свободен</div></div>
@@ -153,7 +351,7 @@
             <div id="tablesDetail" style="margin-top:20px;"></div>
         </div>
 
-        <!-- ========== ВКЛАДКА 6: НАСТРОЙКИ ========== -->
+        <!-- ВКЛАДКА: НАСТРОЙКИ -->
         <div class="tab-content" id="tab-settings">
             <h3 style="margin-bottom:15px;">🏷️ Настройки заведения</h3>
             <div class="form-grid" style="max-width:500px;">
@@ -163,12 +361,12 @@
             <div style="margin-top:20px;border-top:2px solid #eee;padding-top:20px;">
                 <h3 style="margin-bottom:10px;">🗑️ Опасные операции</h3>
                 <button id="clearAllData" style="background:#ff4757;color:white;border:none;padding:10px 25px;border-radius:8px;cursor:pointer;font-weight:700;">Очистить все данные</button>
-                <p style="font-size:12px;color:#888;margin-top:8px;">Удаляет все заказы, статистику, но сохраняет меню и пользователей</p>
+                <p style="font-size:12px;color:#888;margin-top:8px;">Удаляет все заказы и статистику, но сохраняет меню</p>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛКА ДЛЯ РЕДАКТИРОВАНИЯ -->
+    <!-- МОДАЛКА -->
     <div class="modal" id="editModal">
         <div class="modal-content">
             <button class="modal-close" id="closeEditModal">✕</button>
@@ -178,12 +376,56 @@
     </div>
 
     <script>
-        // ========== ПРОВЕРКА ПРАВ ==========
+        // ============================================================
+        // ВСЯ ЛОГИКА ВНУТРИ — НИКАКИХ ВНЕШНИХ JS ФАЙЛОВ!
+        // ============================================================
+
+        // ========== ДАННЫЕ ==========
+        function getDefaultData() {
+            return {
+                venueName: 'Кафе Уют',
+                menu: [
+                    { id: 1, name: 'Цезарь', price: 350, category: 'Салаты', emoji: '🥗' },
+                    { id: 2, name: 'Греческий', price: 280, category: 'Салаты', emoji: '🥗' },
+                    { id: 3, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
+                    { id: 4, name: 'Стейк', price: 550, category: 'Горячее', emoji: '🥩' },
+                    { id: 5, name: 'Паста', price: 390, category: 'Горячее', emoji: '🍝' },
+                    { id: 6, name: 'Чай', price: 120, category: 'Напитки', emoji: '🍵' },
+                    { id: 7, name: 'Кофе', price: 150, category: 'Напитки', emoji: '☕' },
+                    { id: 8, name: 'Тирамису', price: 300, category: 'Десерты', emoji: '🍰' },
+                ],
+                users: {
+                    'sadmin': { password: '123', role: 'sadmin', name: 'Главный администратор' }
+                },
+                tables: {
+                    '1': { orders: [], total: 0 },
+                    '2': { orders: [], total: 0 },
+                    '3': { orders: [], total: 0 }
+                },
+                stats: { totalOrders: 0, totalRevenue: 0 }
+            };
+        }
+
+        function loadData() {
+            const cached = localStorage.getItem('cloudData');
+            if (cached) {
+                try { return JSON.parse(cached); } catch (e) {}
+            }
+            const defaultData = getDefaultData();
+            localStorage.setItem('cloudData', JSON.stringify(defaultData));
+            return defaultData;
+        }
+
+        function saveData(data) {
+            localStorage.setItem('cloudData', JSON.stringify(data));
+        }
+
         function getCurrentUser() {
             const data = localStorage.getItem('currentUser');
             return data ? JSON.parse(data) : null;
         }
 
+        // ========== ПРОВЕРКА ПРАВ ==========
         const user = getCurrentUser();
         if (!user || user.role !== 'sadmin') {
             alert('Доступ запрещен. Только для sadmin');
@@ -203,95 +445,32 @@
             });
         });
 
-        // ========== ФУНКЦИИ ДАННЫХ ==========
-        function getMenu() {
-            const data = localStorage.getItem('menu');
-            if (!data) {
-                const defaultMenu = [
-                    { id: 1, name: 'Цезарь', price: 350, category: 'Салаты', emoji: '🥗' },
-                    { id: 2, name: 'Греческий', price: 280, category: 'Салаты', emoji: '🥗' },
-                    { id: 3, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
-                    { id: 4, name: 'Стейк', price: 550, category: 'Горячее', emoji: '🥩' },
-                    { id: 5, name: 'Паста', price: 390, category: 'Горячее', emoji: '🍝' },
-                    { id: 6, name: 'Чай', price: 120, category: 'Напитки', emoji: '🍵' },
-                    { id: 7, name: 'Кофе', price: 150, category: 'Напитки', emoji: '☕' },
-                    { id: 8, name: 'Тирамису', price: 300, category: 'Десерты', emoji: '🍰' },
-                ];
-                localStorage.setItem('menu', JSON.stringify(defaultMenu));
-                return defaultMenu;
-            }
-            return JSON.parse(data);
+        // ========== МОДАЛКА ==========
+        function openEditModal(title, body) {
+            document.getElementById('editModalTitle').textContent = title;
+            document.getElementById('editModalBody').innerHTML = body;
+            document.getElementById('editModal').style.display = 'flex';
         }
 
-        function saveMenu(menu) {
-            localStorage.setItem('menu', JSON.stringify(menu));
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
         }
 
-        function getUsers() {
-            const data = localStorage.getItem('users');
-            if (!data) {
-                const defaultUsers = {
-                    'sadmin': { password: '123', role: 'sadmin', name: 'Главный администратор' }
-                };
-                localStorage.setItem('users', JSON.stringify(defaultUsers));
-                return defaultUsers;
-            }
-            return JSON.parse(data);
-        }
+        document.getElementById('closeEditModal').addEventListener('click', closeEditModal);
+        document.getElementById('editModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeEditModal();
+        });
 
-        function saveUsers(users) {
-            localStorage.setItem('users', JSON.stringify(users));
-        }
-
-        function getTables() {
-            const data = localStorage.getItem('tables');
-            if (!data) {
-                const defaultTables = {};
-                for (let i = 1; i <= 3; i++) {
-                    defaultTables[i] = { orders: [], total: 0 };
-                }
-                localStorage.setItem('tables', JSON.stringify(defaultTables));
-                return defaultTables;
-            }
-            return JSON.parse(data);
-        }
-
-        function saveTables(tables) {
-            localStorage.setItem('tables', JSON.stringify(tables));
-        }
-
-        function getStats() {
-            const data = localStorage.getItem('stats');
-            if (!data) {
-                const defaultStats = { totalOrders: 0, totalRevenue: 0 };
-                localStorage.setItem('stats', JSON.stringify(defaultStats));
-                return defaultStats;
-            }
-            return JSON.parse(data);
-        }
-
-        function saveStats(stats) {
-            localStorage.setItem('stats', JSON.stringify(stats));
-        }
-
-        function getVenueName() {
-            return localStorage.getItem('venueName') || 'Кафе Уют';
-        }
-
-        function saveVenueName(name) {
-            localStorage.setItem('venueName', name);
-        }
-
-        // ========== РЕНДЕР СТАТИСТИКИ ==========
+        // ========== СТАТИСТИКА ==========
         function renderDashboard() {
-            const stats = getStats();
-            const tables = getTables();
-            const menu = getMenu();
-            const users = getUsers();
+            const data = loadData();
+            const stats = data.stats || { totalOrders: 0, totalRevenue: 0 };
+            const tables = data.tables || {};
+            const menu = data.menu || [];
 
             document.getElementById('statOrders').textContent = stats.totalOrders || 0;
             document.getElementById('statRevenue').textContent = (stats.totalRevenue || 0) + ' ₽';
-            
+
             let active = 0;
             for (let i = 1; i <= 3; i++) {
                 if (tables[i] && tables[i].orders) {
@@ -301,7 +480,6 @@
             }
             document.getElementById('statActiveTables').textContent = active;
             document.getElementById('statDishes').textContent = menu.length;
-            document.getElementById('statUsers').textContent = Object.keys(users).length;
 
             // Последние заказы
             let allOrders = [];
@@ -324,7 +502,7 @@
                         <div class="info">
                             <span class="name">Стол ${order.table}</span>
                             <span class="detail">${new Date(order.timestamp).toLocaleString('ru-RU')}</span>
-                            <span class="badge ${order.status === 'closed' ? 'done' : ''}" style="background:${order.status === 'closed' ? '#d4edda' : '#fff3cd'};">${order.status === 'closed' ? '✅ Оплачен' : '🟡 Активен'}</span>
+                            <span class="badge" style="background:${order.status === 'closed' ? '#d4edda' : '#fff3cd'};">${order.status === 'closed' ? '✅ Оплачен' : '🟡 Активен'}</span>
                         </div>
                         <div class="info">
                             <span style="font-weight:700;">${order.total} ₽</span>
@@ -334,9 +512,10 @@
             }
         }
 
-        // ========== РЕНДЕР МЕНЮ ==========
+        // ========== МЕНЮ ==========
         function renderMenu() {
-            const menu = getMenu();
+            const data = loadData();
+            const menu = data.menu || [];
             const container = document.getElementById('menuList');
 
             if (menu.length === 0) {
@@ -364,9 +543,9 @@
                 btn.addEventListener('click', () => {
                     const id = parseInt(btn.dataset.id);
                     if (confirm('Удалить блюдо?')) {
-                        let menu = getMenu();
-                        menu = menu.filter(item => item.id !== id);
-                        saveMenu(menu);
+                        const data = loadData();
+                        data.menu = data.menu.filter(item => item.id !== id);
+                        saveData(data);
                         renderMenu();
                         renderDashboard();
                     }
@@ -377,8 +556,8 @@
             document.querySelectorAll('#menuList .edit').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = parseInt(btn.dataset.id);
-                    const menu = getMenu();
-                    const item = menu.find(i => i.id === id);
+                    const data = loadData();
+                    const item = data.menu.find(i => i.id === id);
                     if (item) {
                         openEditModal('Редактировать блюдо', `
                             <div class="form-grid">
@@ -398,11 +577,11 @@
                                 alert('Заполните все поля!');
                                 return;
                             }
-                            let menu = getMenu();
-                            const idx = menu.findIndex(i => i.id === id);
+                            const data = loadData();
+                            const idx = data.menu.findIndex(i => i.id === id);
                             if (idx !== -1) {
-                                menu[idx] = { ...menu[idx], name, price, category, emoji };
-                                saveMenu(menu);
+                                data.menu[idx] = { ...data.menu[idx], name, price, category, emoji };
+                                saveData(data);
                                 renderMenu();
                                 renderDashboard();
                                 closeEditModal();
@@ -413,90 +592,39 @@
             });
         }
 
-        // ========== РЕНДЕР ПОЛЬЗОВАТЕЛЕЙ ==========
-        function renderUsers() {
-            const users = getUsers();
-            const container = document.getElementById('usersList');
+        // ========== ДОБАВЛЕНИЕ БЛЮДА ==========
+        document.getElementById('addDishBtn').addEventListener('click', () => {
+            const name = document.getElementById('addName').value.trim();
+            const price = parseFloat(document.getElementById('addPrice').value);
+            const category = document.getElementById('addCategory').value.trim();
+            const emoji = document.getElementById('addEmoji').value.trim();
 
-            if (Object.keys(users).length === 0) {
-                container.innerHTML = '<div class="empty">Нет пользователей</div>';
+            if (!name || isNaN(price) || price < 0 || !category) {
+                alert('Заполните все поля корректно!');
                 return;
             }
 
-            container.innerHTML = Object.entries(users).map(([login, data]) => `
-                <div class="list-item">
-                    <div class="info">
-                        <span class="name">${login}</span>
-                        <span class="detail">${data.name || ''}</span>
-                        <span class="badge" style="background:${data.role === 'sadmin' ? '#ff6b35' : data.role === 'Повар' ? '#2ed573' : '#2d7aff'};color:white;">${data.role}</span>
-                        ${login === 'sadmin' ? '🔒' : ''}
-                    </div>
-                    <div class="actions">
-                        ${login !== 'sadmin' ? `<button class="edit" data-login="${login}">✏️</button><button class="delete" data-login="${login}">🗑️</button>` : ''}
-                    </div>
-                </div>
-            `).join('');
+            const data = loadData();
+            const newId = data.menu.length > 0 ? Math.max(...data.menu.map(item => item.id)) + 1 : 1;
+            data.menu.push({ id: newId, name, price, category, emoji: emoji || '🍽️' });
+            saveData(data);
+            renderMenu();
+            renderDashboard();
 
-            // Удаление
-            document.querySelectorAll('#usersList .delete').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const login = btn.dataset.login;
-                    if (confirm(`Удалить пользователя "${login}"?`)) {
-                        const users = getUsers();
-                        delete users[login];
-                        saveUsers(users);
-                        renderUsers();
-                        renderDashboard();
-                    }
-                });
-            });
+            document.getElementById('addName').value = '';
+            document.getElementById('addPrice').value = '';
+            document.getElementById('addCategory').value = '';
+            document.getElementById('addEmoji').value = '';
+        });
 
-            // Редактирование
-            document.querySelectorAll('#usersList .edit').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const login = btn.dataset.login;
-                    const users = getUsers();
-                    const user = users[login];
-                    if (user) {
-                        openEditModal('Редактировать пользователя', `
-                            <div class="form-grid">
-                                <input type="text" id="editUserName" value="${user.name || ''}" placeholder="Имя" />
-                                <input type="password" id="editUserPassword" placeholder="Новый пароль (оставьте пустым)" />
-                                <select id="editUserRole">
-                                    <option value="Официант" ${user.role === 'Официант' ? 'selected' : ''}>Официант</option>
-                                    <option value="Повар" ${user.role === 'Повар' ? 'selected' : ''}>Повар</option>
-                                    <option value="sadmin" ${user.role === 'sadmin' ? 'selected' : ''}>sadmin</option>
-                                </select>
-                                <button id="saveEditUser" data-login="${login}">Сохранить</button>
-                            </div>
-                        `);
-                        document.getElementById('saveEditUser').addEventListener('click', () => {
-                            const name = document.getElementById('editUserName').value.trim();
-                            const password = document.getElementById('editUserPassword').value.trim();
-                            const role = document.getElementById('editUserRole').value;
-                            let users = getUsers();
-                            if (users[login]) {
-                                users[login].name = name || login;
-                                if (password) users[login].password = password;
-                                users[login].role = role;
-                                saveUsers(users);
-                                renderUsers();
-                                renderDashboard();
-                                closeEditModal();
-                            }
-                        });
-                    }
-                });
-            });
-        }
-
-        // ========== РЕНДЕР ЗАКАЗОВ ==========
+        // ========== ЗАКАЗЫ ==========
         let ordersFilter = 'all';
 
         function renderOrders() {
-            const tables = getTables();
+            const data = loadData();
+            const tables = data.tables || {};
             const container = document.getElementById('ordersList');
-            
+
             let allOrders = [];
             for (let i = 1; i <= 3; i++) {
                 if (tables[i] && tables[i].orders) {
@@ -539,81 +667,30 @@
                             </span>
                         `).join('')}
                     </div>
-                    ${order.status === 'closed' ? `
-                        <div style="margin-top:8px;">
-                            <button class="tab-btn" style="background:#2d7aff;color:white;padding:4px 12px;font-size:12px;" onclick="showReceipt(${order.table}, '${order.timestamp}')">🧾 Показать чек</button>
-                        </div>
-                    ` : ''}
                 </div>
             `).join('');
         }
 
-        // ========== ПОКАЗАТЬ ЧЕК ИЗ АДМИНКИ ==========
-        window.showReceipt = function(tableNum, timestamp) {
-            const tables = getTables();
-            const table = tables[tableNum];
-            if (!table) return;
-            const order = table.orders.find(o => o.timestamp === timestamp);
-            if (!order) return;
+        document.getElementById('viewAllOrders').addEventListener('click', () => { ordersFilter = 'all';
+            renderOrders(); });
+        document.getElementById('viewActiveOrders').addEventListener('click', () => { ordersFilter = 'active';
+            renderOrders(); });
+        document.getElementById('viewClosedOrders').addEventListener('click', () => { ordersFilter = 'closed';
+            renderOrders(); });
 
-            const venue = getVenueName();
-            const now = new Date(timestamp).toLocaleString('ru-RU');
-            
-            let html = `
-                <div style="font-family:'Courier New',monospace;padding:10px;">
-                    <div style="text-align:center;font-size:18px;font-weight:700;padding-bottom:10px;border-bottom:2px dashed #333;margin-bottom:10px;">${venue}</div>
-                    <div style="text-align:center;font-size:12px;color:#666;margin-bottom:8px;">Стол ${tableNum} | ${now}</div>
-            `;
-
-            order.items.forEach(item => {
-                html += `
-                    <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:14px;">
-                        <span>${item.emoji || '🍽️'} ${item.name} × ${item.quantity}</span>
-                        <span>${item.price * item.quantity} ₽</span>
-                    </div>
-                `;
-            });
-
-            html += `
-                    <div style="border-bottom:1px dashed #999;margin:8px 0;"></div>
-                    <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:16px;font-weight:700;border-top:2px solid #333;padding-top:8px;margin-top:8px;">
-                        <span>ИТОГО</span>
-                        <span>${order.total} ₽</span>
-                    </div>
-                    ${order.paidAmount ? `
-                        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:14px;">
-                            <span>Внесено</span>
-                            <span>${order.paidAmount} ₽</span>
-                        </div>
-                        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:14px;">
-                            <span>Сдача</span>
-                            <span>${order.change || 0} ₽</span>
-                        </div>
-                    ` : ''}
-                    <div style="text-align:center;margin-top:12px;padding-top:10px;border-top:2px dashed #333;font-size:12px;color:#666;">
-                        Спасибо за визит!<br>
-                        ${order.operator ? `Оператор: ${order.operator}` : ''}
-                    </div>
-                </div>
-            `;
-
-            openEditModal('🧾 Чек', html);
-        };
-
-        // ========== РЕНДЕР СТОЛОВ ==========
+        // ========== СТОЛЫ ==========
         function renderTablesAdmin() {
-            const tables = getTables();
-            
+            const data = loadData();
+            const tables = data.tables || {};
+
             for (let i = 1; i <= 3; i++) {
                 const table = tables[i] || { orders: [], total: 0 };
                 const openOrders = table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
                 const status = openOrders.length > 0 ? `🟢 Занят (${openOrders.length} зак.)` : '⚪ Свободен';
-                const total = openOrders.reduce((sum, o) => sum + o.total, 0);
                 document.getElementById(`table${i}Status`).textContent = status;
                 document.getElementById(`table${i}Status`).style.color = openOrders.length > 0 ? '#2e7d32' : '#7f8c8d';
             }
 
-            // Детали по столам
             const container = document.getElementById('tablesDetail');
             let html = '';
             for (let i = 1; i <= 3; i++) {
@@ -633,97 +710,22 @@
 
         window.clearTable = function(tableNum) {
             if (confirm(`Очистить стол ${tableNum}? Все заказы будут удалены!`)) {
-                const tables = getTables();
-                tables[tableNum] = { orders: [], total: 0 };
-                saveTables(tables);
+                const data = loadData();
+                data.tables[tableNum] = { orders: [], total: 0 };
+                saveData(data);
                 renderTablesAdmin();
                 renderDashboard();
                 renderOrders();
             }
         };
 
-        // ========== МОДАЛКА ==========
-        function openEditModal(title, body) {
-            document.getElementById('editModalTitle').textContent = title;
-            document.getElementById('editModalBody').innerHTML = body;
-            document.getElementById('editModal').style.display = 'flex';
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
-
-        document.getElementById('closeEditModal').addEventListener('click', closeEditModal);
-        document.getElementById('editModal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) closeEditModal();
-        });
-
-        // ========== ДОБАВЛЕНИЕ БЛЮДА ==========
-        document.getElementById('addDishBtn').addEventListener('click', () => {
-            const name = document.getElementById('addName').value.trim();
-            const price = parseFloat(document.getElementById('addPrice').value);
-            const category = document.getElementById('addCategory').value.trim();
-            const emoji = document.getElementById('addEmoji').value.trim();
-
-            if (!name || isNaN(price) || price < 0 || !category) {
-                alert('Заполните все поля корректно!');
-                return;
-            }
-
-            const menu = getMenu();
-            const newId = menu.length > 0 ? Math.max(...menu.map(item => item.id)) + 1 : 1;
-            menu.push({ id: newId, name, price, category, emoji: emoji || '🍽️' });
-            saveMenu(menu);
-            renderMenu();
-            renderDashboard();
-
-            document.getElementById('addName').value = '';
-            document.getElementById('addPrice').value = '';
-            document.getElementById('addCategory').value = '';
-            document.getElementById('addEmoji').value = '';
-        });
-
-        // ========== ДОБАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯ ==========
-        document.getElementById('addUserBtn').addEventListener('click', () => {
-            const login = document.getElementById('addUserLogin').value.trim();
-            const password = document.getElementById('addUserPassword').value.trim();
-            const name = document.getElementById('addUserName').value.trim();
-            const role = document.getElementById('addUserRole').value;
-
-            if (!login || !password) {
-                alert('Заполните логин и пароль!');
-                return;
-            }
-
-            const users = getUsers();
-            if (users[login]) {
-                alert('Пользователь уже существует!');
-                return;
-            }
-
-            users[login] = { password, role, name: name || login };
-            saveUsers(users);
-            renderUsers();
-            renderDashboard();
-
-            document.getElementById('addUserLogin').value = '';
-            document.getElementById('addUserPassword').value = '';
-            document.getElementById('addUserName').value = '';
-        });
-
-        // ========== ФИЛЬТРЫ ЗАКАЗОВ ==========
-        document.getElementById('viewAllOrders').addEventListener('click', () => { ordersFilter = 'all'; renderOrders(); });
-        document.getElementById('viewActiveOrders').addEventListener('click', () => { ordersFilter = 'active'; renderOrders(); });
-        document.getElementById('viewClosedOrders').addEventListener('click', () => { ordersFilter = 'closed'; renderOrders(); });
-
-        // ========== СБРОС ВСЕХ СТОЛОВ ==========
         document.getElementById('resetAllTables').addEventListener('click', () => {
             if (confirm('Сбросить все столы? Все заказы будут удалены безвозвратно!')) {
-                const tables = {};
+                const data = loadData();
                 for (let i = 1; i <= 3; i++) {
-                    tables[i] = { orders: [], total: 0 };
+                    data.tables[i] = { orders: [], total: 0 };
                 }
-                saveTables(tables);
+                saveData(data);
                 renderTablesAdmin();
                 renderDashboard();
                 renderOrders();
@@ -732,22 +734,23 @@
         });
 
         // ========== НАСТРОЙКИ ==========
-        document.getElementById('settingsVenueName').value = getVenueName();
+        document.getElementById('settingsVenueName').value = loadData().venueName || 'Кафе Уют';
         document.getElementById('saveSettingsBtn').addEventListener('click', () => {
             const name = document.getElementById('settingsVenueName').value.trim() || 'Кафе Уют';
-            saveVenueName(name);
+            const data = loadData();
+            data.venueName = name;
+            saveData(data);
             alert('Название сохранено: ' + name);
         });
 
-        // ========== ОЧИСТКА ВСЕХ ДАННЫХ ==========
         document.getElementById('clearAllData').addEventListener('click', () => {
-            if (confirm('Очистить все данные? Это удалит все заказы и статистику! Меню и пользователи сохранятся.')) {
-                const tables = {};
+            if (confirm('Очистить все данные? Это удалит все заказы и статистику! Меню сохранится.')) {
+                const data = loadData();
                 for (let i = 1; i <= 3; i++) {
-                    tables[i] = { orders: [], total: 0 };
+                    data.tables[i] = { orders: [], total: 0 };
                 }
-                saveTables(tables);
-                saveStats({ totalOrders: 0, totalRevenue: 0 });
+                data.stats = { totalOrders: 0, totalRevenue: 0 };
+                saveData(data);
                 renderDashboard();
                 renderOrders();
                 renderTablesAdmin();
@@ -759,19 +762,12 @@
         function init() {
             renderDashboard();
             renderMenu();
-            renderUsers();
             renderOrders();
             renderTablesAdmin();
         }
-
         init();
 
-        // Обновление при изменении данных
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'tables' || e.key === 'stats' || e.key === 'menu' || e.key === 'users' || e.key === 'venueName') {
-                init();
-            }
-        });
+        console.log('✅ Админ-панель загружена! (БЕЗ ВНЕШНИХ JS)');
     </script>
 </body>
 </html>
