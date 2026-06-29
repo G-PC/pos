@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Кухня - Заказы</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+        body { background:#f0f2f5; padding:20px; }
+        .container { max-width:1000px; margin:0 auto; }
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+        .header h1 { color:#2d3e50; }
+        .back-btn { background:#7f8c8d; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; text-decoration:none; display:inline-block; }
+        
+        .orders-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+        .order-card { background:white; border-radius:12px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.08); border-left:4px solid #2d7aff; }
+        .order-card .header { display:flex; justify-content:space-between; margin-bottom:10px; padding-bottom:8px; border-bottom:2px solid #eee; }
+        .order-card .table { font-weight:700; font-size:18px; }
+        .order-card .time { color:#888; font-size:14px; }
+        .order-card .items { margin:10px 0; }
+        .order-card .item { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #f5f5f5; font-size:14px; }
+        .order-card .total { font-weight:700; font-size:16px; margin-top:10px; padding-top:8px; border-top:2px solid #eee; }
+        .order-card .status { display:inline-block; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; }
+        .status.open { background:#fff3cd; color:#856404; }
+        .status.closed { background:#d4edda; color:#155724; }
+        .empty { text-align:center; color:#888; padding:50px; font-size:18px; }
+        .badge { background:#ff6b35; color:white; padding:2px 8px; border-radius:10px; font-size:11px; }
+        .refresh-btn { background:#2d7aff; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; }
+        .refresh-btn:hover { background:#1a5fd0; }
+        .auto-refresh { font-size:12px; color:#888; margin-top:5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>🍳 Кухня — Активные заказы</h1>
+                <div class="auto-refresh">Автообновление каждые 10 секунд</div>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button class="refresh-btn" id="refreshBtn">🔄 Обновить</button>
+                <a href="index.html" class="back-btn">← На главную</a>
+            </div>
+        </div>
+
+        <div class="orders-grid" id="ordersGrid"></div>
+    </div>
+
+    <script>
+        // ========== ПРОВЕРКА ПРАВ ==========
+        function getCurrentUser() {
+            const data = localStorage.getItem('currentUser');
+            return data ? JSON.parse(data) : null;
+        }
+
+        const user = getCurrentUser();
+        if (!user || (user.role !== 'sadmin' && user.role !== 'Повар')) {
+            alert('Доступ запрещен. Только для поваров и sadmin');
+            window.location.href = 'index.html';
+        }
+
+        // ========== ДАННЫЕ ==========
+        function getTables() {
+            const data = localStorage.getItem('tables');
+            if (!data) {
+                const defaultTables = {};
+                for (let i = 1; i <= 3; i++) {
+                    defaultTables[i] = { orders: [], total: 0 };
+                }
+                localStorage.setItem('tables', JSON.stringify(defaultTables));
+                return defaultTables;
+            }
+            return JSON.parse(data);
+        }
+
+        function getVenueName() {
+            return localStorage.getItem('venueName') || 'Кафе Уют';
+        }
+
+        // ========== РЕНДЕР ==========
+        function renderOrders() {
+            const tables = getTables();
+            const grid = document.getElementById('ordersGrid');
+            
+            let allOrders = [];
+            for (let tableNum = 1; tableNum <= 3; tableNum++) {
+                const table = tables[tableNum];
+                if (table && table.orders) {
+                    // Показываем только открытые заказы
+                    const openOrders = table.orders.filter(o => o.status !== 'closed');
+                    openOrders.forEach(order => {
+                        allOrders.push({
+                            table: tableNum,
+                            ...order,
+                            items: order.items || []
+                        });
+                    });
+                }
+            }
+
+            // Сортируем по времени (новые сверху)
+            allOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            if (allOrders.length === 0) {
+                grid.innerHTML = '<div class="empty">🎉 Все заказы выполнены!<br><span style="font-size:14px;color:#aaa;">Новых заказов нет</span></div>';
+                return;
+            }
+
+            grid.innerHTML = allOrders.map(order => `
+                <div class="order-card">
+                    <div class="header">
+                        <span class="table">🪑 Стол ${order.table}</span>
+                        <span class="time">${new Date(order.timestamp).toLocaleTimeString('ru-RU')}</span>
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <span class="status open">🟡 В работе</span>
+                        <span class="badge">${order.items.length} позиций</span>
+                    </div>
+                    <div class="items">
+                        ${order.items.map(item => `
+                            <div class="item">
+                                <span>${item.emoji || '🍽️'} ${item.name}</span>
+                                <span>× ${item.quantity}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="total">
+                        Итого: ${order.total} ₽
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ========== ОБНОВЛЕНИЕ ==========
+        function refresh() {
+            renderOrders();
+        }
+
+        document.getElementById('refreshBtn').addEventListener('click', refresh);
+
+        // Автообновление каждые 10 секунд
+        setInterval(refresh, 10000);
+
+        // Обновление при изменении данных
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'tables') {
+                renderOrders();
+            }
+        });
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        document.title = `Кухня - ${getVenueName()}`;
+        renderOrders();
+    </script>
+</body>
+</html>
