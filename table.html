@@ -61,12 +61,30 @@
             flex-direction: column;
             overflow: hidden;
         }
-        .search-bar {
+        .menu-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .menu-header .search-bar {
+            flex: 1;
             padding: 10px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 16px;
-            margin-bottom: 12px;
+        }
+        .menu-header .refresh-btn {
+            padding: 10px 15px;
+            background: #2d7aff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        .menu-header .refresh-btn:hover {
+            background: #1a5fd0;
         }
         .categories {
             display: flex;
@@ -328,6 +346,39 @@
             width: 100%;
         }
 
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2d3e50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            animation: slideIn 0.5s ease;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
         @media (max-width: 850px) {
             .container {
                 flex-direction: column;
@@ -337,19 +388,10 @@
                 min-width: auto;
             }
         }
-        .error-msg {
-            background: #ff4757;
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            margin: 20px;
-        }
     </style>
 </head>
 <body>
     <div id="app">
-        <div id="errorDisplay" style="display:none;" class="error-msg"></div>
         <div id="mainContent">
             <div class="header">
                 <div>
@@ -364,7 +406,10 @@
 
             <div class="container">
                 <div class="menu-panel">
-                    <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Поиск..." />
+                    <div class="menu-header">
+                        <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Поиск..." />
+                        <button class="refresh-btn" id="refreshMenuBtn" title="Обновить меню">🔄</button>
+                    </div>
                     <div class="categories" id="categoriesContainer"></div>
                     <div class="items-grid" id="itemsGrid"></div>
                 </div>
@@ -400,7 +445,7 @@
 
     <script>
         // ============================================================
-        // ВСЯ ЛОГИКА ВНУТРИ — НИКАКИХ ВНЕШНИХ JS ФАЙЛОВ!
+        // ВСЯ ЛОГИКА ВНУТРИ
         // ============================================================
 
         // ========== ДАННЫЕ ==========
@@ -448,6 +493,22 @@
             return data ? JSON.parse(data) : null;
         }
 
+        // ========== ТОСТ ==========
+        function showToast(message) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.5s ease';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
         // ========== ПРОВЕРКА ПРАВ ==========
         const user = getCurrentUser();
         if (!user || (user.role !== 'sadmin' && user.role !== 'Официант')) {
@@ -477,8 +538,8 @@
         const tableTitle = document.getElementById('tableTitle');
         const tableStatus = document.getElementById('tableStatus');
 
-        // ========== ЗАГРУЗКА МЕНЮ ==========
-        function loadMenu() {
+        // ========== ЗАГРУЗКА МЕНЮ ИЗ LOCALSTORAGE ==========
+        function loadMenuFromStorage() {
             const data = loadData();
             menu = data.menu || [];
             return menu;
@@ -571,8 +632,12 @@
             tableTitle.textContent = `Стол ${tableNumber}`;
         }
 
-        // ========== РЕНДЕР КАТЕГОРИЙ ==========
+        // ========== РЕНДЕР КАТЕГОРИЙ (с загрузкой из localStorage) ==========
         function renderCategories() {
+            // ЗАГРУЖАЕМ СВЕЖИЕ ДАННЫЕ ИЗ LOCALSTORAGE
+            const data = loadData();
+            menu = data.menu || [];
+
             const cats = ['Все', ...new Set(menu.map(item => item.category || 'Без категории'))];
             categoriesContainer.innerHTML = cats.map(cat =>
                 `<button class="cat-btn ${cat === currentCategory ? 'active' : ''}" data-cat="${cat}">${cat}</button>`
@@ -586,8 +651,12 @@
             });
         }
 
-        // ========== РЕНДЕР БЛЮД ==========
+        // ========== РЕНДЕР БЛЮД (с загрузкой из localStorage) ==========
         function renderItems() {
+            // ЗАГРУЖАЕМ СВЕЖИЕ ДАННЫЕ ИЗ LOCALSTORAGE
+            const data = loadData();
+            menu = data.menu || [];
+
             const query = searchInput.value.toLowerCase().trim();
             let filtered = menu.filter(item => {
                 const matchCat = currentCategory === 'Все' || item.category === currentCategory;
@@ -607,6 +676,13 @@
                     addToCart(id);
                 });
             });
+        }
+
+        // ========== ОБНОВИТЬ МЕНЮ (кнопка) ==========
+        function refreshMenu() {
+            renderCategories();
+            renderItems();
+            showToast('✅ Меню обновлено');
         }
 
         // ========== ДОБАВИТЬ В КОРЗИНУ ==========
@@ -834,8 +910,21 @@
             window.location.href = 'index.html';
         });
 
+        // ========== ОЧИСТИТЬ КОРЗИНУ ==========
+        document.getElementById('clearOrderBtn').addEventListener('click', () => {
+            if (cart.length === 0) return;
+            if (confirm('Очистить заказ?')) {
+                cart = [];
+                renderCart();
+                saveTableOrder();
+            }
+        });
+
         // ========== ПОИСК ==========
         searchInput.addEventListener('input', renderItems);
+
+        // ========== ОБНОВЛЕНИЕ МЕНЮ ПО КНОПКЕ ==========
+        document.getElementById('refreshMenuBtn').addEventListener('click', refreshMenu);
 
         // ========== АВТОСОХРАНЕНИЕ ==========
         setInterval(() => {
@@ -844,15 +933,21 @@
             }
         }, 5000);
 
+        // ========== АВТООБНОВЛЕНИЕ МЕНЮ КАЖДЫЕ 10 СЕКУНД ==========
+        setInterval(() => {
+            renderCategories();
+            renderItems();
+        }, 10000);
+
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
-        loadMenu();
+        loadMenuFromStorage();
         renderCategories();
         renderItems();
         loadTableOrders();
         renderCart();
         updateTableStatus();
 
-        console.log(`✅ Стол ${tableNumber} загружен! (БЕЗ ВНЕШНИХ JS)`);
+        console.log(`✅ Стол ${tableNumber} загружен! Меню синхронизируется с админкой.`);
     </script>
 </body>
 </html>
