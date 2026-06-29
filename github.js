@@ -1,9 +1,9 @@
 // ========== НАСТРОЙКИ GITHUB ==========
 const GITHUB_CONFIG = {
     // ЗАМЕНИ НА СВОИ ДАННЫЕ!
-    REPO: 'USERNAME/REPO_NAME',     // Например: 'ivanov/pos-system'
+    REPO: 'G-PC/pos',     // Например: 'ivanov/pos-system'
     PATH: 'data.json',              // Путь к файлу в репозитории
-    TOKEN: 'github_pat_XXXXX'       // Personal Access Token
+    TOKEN: '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'       // Personal Access Token
 };
 
 // ========== БАЗОВЫЕ ДАННЫЕ ==========
