@@ -45,6 +45,17 @@
         .pay-btn { background:#2ed573; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; flex:1; }
         .change-display { font-size:16px; font-weight:700; color:#2d7aff; margin-top:4px; text-align:center; }
         
+        /* Модалка чека */
+        .modal { display:none; position:fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:999; }
+        .modal-content { background:white; padding:30px; border-radius:16px; max-width:450px; width:90%; max-height:90vh; overflow-y:auto; }
+        .modal-close { float:right; background:#ff4757; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; }
+        .receipt { font-family:'Courier New',monospace; }
+        .receipt .header { text-align:center; font-size:18px; font-weight:700; padding-bottom:10px; border-bottom:2px dashed #333; margin-bottom:10px; }
+        .receipt .row { display:flex; justify-content:space-between; padding:3px 0; font-size:14px; }
+        .receipt .row.total { font-weight:700; font-size:16px; border-top:2px solid #333; padding-top:8px; margin-top:8px; }
+        .receipt .footer { text-align:center; margin-top:12px; padding-top:10px; border-top:2px dashed #333; font-size:12px; color:#666; }
+        .print-btn { background:#2d7aff; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; margin-top:10px; width:100%; }
+        
         @media (max-width:850px) { .container { flex-direction:column; height:auto; } .order-panel { min-width:auto; } }
     </style>
 </head>
@@ -85,7 +96,28 @@
         </div>
     </div>
 
+    <!-- Модалка чека -->
+    <div class="modal" id="receiptModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeReceiptBtn">✕</button>
+            <div class="receipt" id="receiptContent"></div>
+            <button class="print-btn" id="printReceiptBtn">🖨️ Печать чека</button>
+        </div>
+    </div>
+
     <script>
+        // ========== ПРОВЕРКА ПРАВ ==========
+        function getCurrentUser() {
+            const data = localStorage.getItem('currentUser');
+            return data ? JSON.parse(data) : null;
+        }
+
+        const user = getCurrentUser();
+        if (!user || (user.role !== 'sadmin' && user.role !== 'Официант')) {
+            alert('У вас нет прав для работы с заказами');
+            window.location.href = 'index.html';
+        }
+
         // ========== ПОЛУЧАЕМ НОМЕР СТОЛА ==========
         const urlParams = new URLSearchParams(window.location.search);
         const tableNumber = parseInt(urlParams.get('table')) || 1;
@@ -141,6 +173,10 @@
             localStorage.setItem('stats', JSON.stringify(stats));
         }
 
+        function getVenueName() {
+            return localStorage.getItem('venueName') || 'Кафе Уют';
+        }
+
         // ========== СОСТОЯНИЕ ==========
         let cart = [];
         let currentCategory = 'Все';
@@ -164,7 +200,6 @@
             const tables = getTables();
             const table = tables[tableNumber];
             if (table && table.orders) {
-                // Берем только открытые заказы
                 const openOrders = table.orders.filter(o => o.status !== 'closed');
                 if (openOrders.length > 0) {
                     const lastOrder = openOrders[openOrders.length - 1];
@@ -189,9 +224,7 @@
             }
             
             if (cart.length === 0) {
-                // Удаляем пустые открытые заказы
                 tables[tableNumber].orders = tables[tableNumber].orders.filter(o => o.status === 'closed' || o.items.length > 0);
-                // Если последний заказ пустой и открытый - удаляем
                 if (tables[tableNumber].orders.length > 0) {
                     const last = tables[tableNumber].orders[tables[tableNumber].orders.length - 1];
                     if (last && last.items.length === 0 && last.status !== 'closed') {
@@ -202,12 +235,10 @@
                 return;
             }
 
-            // Проверяем, есть ли открытый заказ
             let openOrder = null;
             let openIndex = -1;
             const openOrders = tables[tableNumber].orders.filter(o => o.status !== 'closed');
             if (openOrders.length > 0) {
-                // Берем последний открытый
                 const lastOpen = openOrders[openOrders.length - 1];
                 openIndex = tables[tableNumber].orders.indexOf(lastOpen);
                 openOrder = lastOpen;
@@ -226,7 +257,6 @@
                 });
             }
 
-            // Обновляем общую сумму стола (только открытые)
             tables[tableNumber].total = tables[tableNumber].orders
                 .filter(o => o.status !== 'closed')
                 .reduce((sum, o) => sum + o.total, 0);
@@ -371,6 +401,52 @@
             }
         });
 
+        // ========== ПОКАЗАТЬ ЧЕК ==========
+        function showReceipt(orderData) {
+            const venue = getVenueName();
+            const now = new Date().toLocaleString('ru-RU');
+            
+            let html = `
+                <div class="header">${venue}</div>
+                <div style="text-align:center;font-size:12px;color:#666;margin-bottom:8px;">
+                    Стол ${tableNumber} | ${now}
+                </div>
+                <div style="border-bottom:1px dashed #999;margin-bottom:8px;"></div>
+            `;
+
+            orderData.items.forEach(item => {
+                html += `
+                    <div class="row">
+                        <span>${item.emoji || '🍽️'} ${item.name} × ${item.quantity}</span>
+                        <span>${item.price * item.quantity} ₽</span>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div style="border-bottom:1px dashed #999;margin:8px 0;"></div>
+                <div class="row total">
+                    <span>ИТОГО</span>
+                    <span>${orderData.total} ₽</span>
+                </div>
+                <div class="row">
+                    <span>Внесено</span>
+                    <span>${orderData.paidAmount} ₽</span>
+                </div>
+                <div class="row">
+                    <span>Сдача</span>
+                    <span>${orderData.change} ₽</span>
+                </div>
+                <div class="footer">
+                    Спасибо за визит!<br>
+                    ${orderData.operator ? `Оператор: ${orderData.operator}` : ''}
+                </div>
+            `;
+
+            document.getElementById('receiptContent').innerHTML = html;
+            document.getElementById('receiptModal').style.display = 'flex';
+        }
+
         // ========== ОПЛАТА ==========
         document.getElementById('payBtn').addEventListener('click', () => {
             if (cart.length === 0) {
@@ -392,6 +468,7 @@
             saveStats(stats);
 
             const tables = getTables();
+            let closedOrder = null;
             if (tables[tableNumber]) {
                 for (let i = tables[tableNumber].orders.length - 1; i >= 0; i--) {
                     if (tables[tableNumber].orders[i].status !== 'closed') {
@@ -399,6 +476,8 @@
                         tables[tableNumber].orders[i].closedAt = new Date().toISOString();
                         tables[tableNumber].orders[i].paidAmount = cash;
                         tables[tableNumber].orders[i].change = change;
+                        tables[tableNumber].orders[i].operator = user ? user.name || user.login : 'Неизвестно';
+                        closedOrder = tables[tableNumber].orders[i];
                         break;
                     }
                 }
@@ -408,6 +487,13 @@
                 saveTables(tables);
             }
 
+            // Показываем чек
+            if (closedOrder) {
+                showReceipt(closedOrder);
+            }
+
+            // Очищаем корзину, но сохраняем заказ для чека
+            const lastCart = [...cart];
             cart = [];
             renderCart();
             cashInput.value = '';
@@ -418,7 +504,42 @@
             }, 5000);
         });
 
-        // ========== ЗАКРЫТЬ СТОЛ (ИСПРАВЛЕНО) ==========
+        // ========== ЗАКРЫТЬ ЧЕК ==========
+        document.getElementById('closeReceiptBtn').addEventListener('click', () => {
+            document.getElementById('receiptModal').style.display = 'none';
+        });
+
+        document.getElementById('receiptModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                document.getElementById('receiptModal').style.display = 'none';
+            }
+        });
+
+        // ========== ПЕЧАТЬ ЧЕКА ==========
+        document.getElementById('printReceiptBtn').addEventListener('click', () => {
+            const content = document.getElementById('receiptContent').innerHTML;
+            const printWindow = window.open('', '_blank', 'width=400,height=600');
+            printWindow.document.write(`
+                <html><head><title>Чек</title>
+                <style>
+                    body { font-family:'Courier New',monospace; padding:20px; }
+                    .receipt { max-width:350px; margin:0 auto; }
+                    .header { text-align:center; font-size:18px; font-weight:700; padding-bottom:10px; border-bottom:2px dashed #333; margin-bottom:10px; }
+                    .row { display:flex; justify-content:space-between; padding:3px 0; font-size:14px; }
+                    .row.total { font-weight:700; font-size:16px; border-top:2px solid #333; padding-top:8px; margin-top:8px; }
+                    .footer { text-align:center; margin-top:12px; padding-top:10px; border-top:2px dashed #333; font-size:12px; color:#666; }
+                </style>
+                </head><body>
+                <div class="receipt">${content}</div>
+                <script>
+                    window.onload = function() { window.print(); setTimeout(window.close, 1000); }
+                <\/script>
+                </body></html>
+            `);
+            printWindow.document.close();
+        });
+
+        // ========== ЗАКРЫТЬ СТОЛ ==========
         document.getElementById('closeTableBtn').addEventListener('click', () => {
             if (cart.length > 0) {
                 if (!confirm('В столе есть активный заказ. Закрыть стол без оплаты?')) {
@@ -427,7 +548,6 @@
             }
             const tables = getTables();
             if (tables[tableNumber]) {
-                // ✅ УДАЛЯЕМ ВСЕ ЗАКАЗЫ ПОЛНОСТЬЮ
                 tables[tableNumber].orders = [];
                 tables[tableNumber].total = 0;
                 saveTables(tables);
