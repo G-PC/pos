@@ -5,58 +5,346 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>POS - Стол</title>
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
-        body { background:#f0f2f5; padding:15px; }
-        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px; }
-        .header h1 { font-size:24px; color:#2d3e50; }
-        .header .back-btn { background:#7f8c8d; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; }
-        .header .close-btn { background:#ff4757; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; }
-        .container { display:flex; gap:15px; height:calc(100vh - 100px); }
-        
-        .menu-panel { flex:2; background:white; border-radius:12px; padding:15px; box-shadow:0 2px 10px rgba(0,0,0,0.1); display:flex; flex-direction:column; overflow:hidden; }
-        .search-bar { padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:16px; margin-bottom:12px; }
-        .categories { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
-        .cat-btn { padding:6px 16px; border:none; background:#e8e8e8; border-radius:20px; cursor:pointer; font-weight:600; transition:0.2s; }
-        .cat-btn.active { background:#2d7aff; color:white; }
-        .items-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:10px; overflow-y:auto; flex:1; }
-        .item-card { background:#f8f9fc; border-radius:10px; padding:10px; text-align:center; cursor:pointer; transition:0.2s; border:2px solid transparent; }
-        .item-card:hover { border-color:#2d7aff; transform:translateY(-3px); }
-        .item-card .emoji { font-size:28px; display:block; }
-        .item-card .name { font-size:13px; font-weight:500; }
-        .item-card .price { color:#2d7aff; font-weight:700; font-size:14px; }
-        
-        .order-panel { flex:1.2; background:white; border-radius:12px; padding:15px; box-shadow:0 2px 10px rgba(0,0,0,0.1); display:flex; flex-direction:column; min-width:280px; }
-        .order-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-        .order-header h2 { font-size:18px; }
-        .clear-btn { background:#ff4757; color:white; border:none; padding:4px 12px; border-radius:6px; cursor:pointer; font-weight:600; }
-        .order-list { flex:1; overflow-y:auto; margin-bottom:10px; border-top:2px solid #eee; padding-top:10px; }
-        .order-item { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #f0f0f0; font-size:14px; }
-        .order-item .info { display:flex; align-items:center; gap:8px; flex:1; }
-        .order-item .qty-control { display:flex; align-items:center; gap:4px; }
-        .qty-control button { width:22px; height:22px; border:none; background:#e0e0e0; border-radius:4px; cursor:pointer; font-weight:700; font-size:14px; }
-        .qty-control span { min-width:18px; text-align:center; font-weight:600; }
-        .item-total { font-weight:700; min-width:45px; text-align:right; font-size:14px; }
-        .remove-item { background:none; border:none; color:#ff4757; cursor:pointer; font-size:16px; }
-        .order-summary { background:#f8f9fc; padding:10px; border-radius:8px; }
-        .summary-row { display:flex; justify-content:space-between; padding:3px 0; font-size:14px; }
-        .summary-row.total { font-size:20px; font-weight:800; color:#2d7aff; border-top:2px solid #ddd; padding-top:6px; margin-top:4px; }
-        .payment-area { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-        .payment-area input { flex:1; padding:8px; border:2px solid #ddd; border-radius:8px; font-size:15px; min-width:80px; }
-        .pay-btn { background:#2ed573; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; flex:1; }
-        .change-display { font-size:16px; font-weight:700; color:#2d7aff; margin-top:4px; text-align:center; }
-        
-        .modal { display:none; position:fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:999; }
-        .modal-content { background:white; padding:30px; border-radius:16px; max-width:450px; width:90%; max-height:90vh; overflow-y:auto; }
-        .modal-close { float:right; background:#ff4757; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; }
-        .receipt { font-family:'Courier New',monospace; }
-        .receipt .header { text-align:center; font-size:18px; font-weight:700; padding-bottom:10px; border-bottom:2px dashed #333; margin-bottom:10px; }
-        .receipt .row { display:flex; justify-content:space-between; padding:3px 0; font-size:14px; }
-        .receipt .row.total { font-weight:700; font-size:16px; border-top:2px solid #333; padding-top:8px; margin-top:8px; }
-        .receipt .footer { text-align:center; margin-top:12px; padding-top:10px; border-top:2px dashed #333; font-size:12px; color:#666; }
-        .print-btn { background:#2d7aff; color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:600; margin-top:10px; width:100%; }
-        
-        @media (max-width:850px) { .container { flex-direction:column; height:auto; } .order-panel { min-width:auto; } }
-        .error-msg { background:#ff4757; color:white; padding:20px; border-radius:12px; text-align:center; margin:20px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            background: #f0f2f5;
+            padding: 15px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #2d3e50;
+        }
+        .header .back-btn {
+            background: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .header .close-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .container {
+            display: flex;
+            gap: 15px;
+            height: calc(100vh - 100px);
+        }
+
+        .menu-panel {
+            flex: 2;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .search-bar {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        .categories {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .cat-btn {
+            padding: 6px 16px;
+            border: none;
+            background: #e8e8e8;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .cat-btn.active {
+            background: #2d7aff;
+            color: white;
+        }
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .item-card {
+            background: #f8f9fc;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 2px solid transparent;
+        }
+        .item-card:hover {
+            border-color: #2d7aff;
+            transform: translateY(-3px);
+        }
+        .item-card .emoji {
+            font-size: 28px;
+            display: block;
+        }
+        .item-card .name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .item-card .price {
+            color: #2d7aff;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .order-panel {
+            flex: 1.2;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            min-width: 280px;
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .order-header h2 {
+            font-size: 18px;
+        }
+        .clear-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .order-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border-top: 2px solid #eee;
+            padding-top: 10px;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        .order-item .info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+        .order-item .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .qty-control button {
+            width: 22px;
+            height: 22px;
+            border: none;
+            background: #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .qty-control span {
+            min-width: 18px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .item-total {
+            font-weight: 700;
+            min-width: 45px;
+            text-align: right;
+            font-size: 14px;
+        }
+        .remove-item {
+            background: none;
+            border: none;
+            color: #ff4757;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .order-summary {
+            background: #f8f9fc;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            font-size: 14px;
+        }
+        .summary-row.total {
+            font-size: 20px;
+            font-weight: 800;
+            color: #2d7aff;
+            border-top: 2px solid #ddd;
+            padding-top: 6px;
+            margin-top: 4px;
+        }
+        .payment-area {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .payment-area input {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            min-width: 80px;
+        }
+        .pay-btn {
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            flex: 1;
+        }
+        .change-display {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2d7aff;
+            margin-top: 4px;
+            text-align: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 450px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-close {
+            float: right;
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .receipt {
+            font-family: 'Courier New', monospace;
+        }
+        .receipt .header {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            padding-bottom: 10px;
+            border-bottom: 2px dashed #333;
+            margin-bottom: 10px;
+        }
+        .receipt .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            font-size: 14px;
+        }
+        .receipt .row.total {
+            font-weight: 700;
+            font-size: 16px;
+            border-top: 2px solid #333;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+        .receipt .footer {
+            text-align: center;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 2px dashed #333;
+            font-size: 12px;
+            color: #666;
+        }
+        .print-btn {
+            background: #2d7aff;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        @media (max-width: 850px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+            .order-panel {
+                min-width: auto;
+            }
+        }
+        .error-msg {
+            background: #ff4757;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px;
+        }
     </style>
 </head>
 <body>
@@ -110,14 +398,57 @@
         </div>
     </div>
 
-    <script src="local.js"></script>
     <script>
-        // ========== ПРОВЕРКА ПРАВ ==========
+        // ============================================================
+        // ВСЯ ЛОГИКА ВНУТРИ — НИКАКИХ ВНЕШНИХ JS ФАЙЛОВ!
+        // ============================================================
+
+        // ========== ДАННЫЕ ==========
+        function getDefaultData() {
+            return {
+                venueName: 'Кафе Уют',
+                menu: [
+                    { id: 1, name: 'Цезарь', price: 350, category: 'Салаты', emoji: '🥗' },
+                    { id: 2, name: 'Греческий', price: 280, category: 'Салаты', emoji: '🥗' },
+                    { id: 3, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
+                    { id: 4, name: 'Стейк', price: 550, category: 'Горячее', emoji: '🥩' },
+                    { id: 5, name: 'Паста', price: 390, category: 'Горячее', emoji: '🍝' },
+                    { id: 6, name: 'Чай', price: 120, category: 'Напитки', emoji: '🍵' },
+                    { id: 7, name: 'Кофе', price: 150, category: 'Напитки', emoji: '☕' },
+                    { id: 8, name: 'Тирамису', price: 300, category: 'Десерты', emoji: '🍰' },
+                ],
+                users: {
+                    'sadmin': { password: '123', role: 'sadmin', name: 'Главный администратор' }
+                },
+                tables: {
+                    '1': { orders: [], total: 0 },
+                    '2': { orders: [], total: 0 },
+                    '3': { orders: [], total: 0 }
+                },
+                stats: { totalOrders: 0, totalRevenue: 0 }
+            };
+        }
+
+        function loadData() {
+            const cached = localStorage.getItem('cloudData');
+            if (cached) {
+                try { return JSON.parse(cached); } catch (e) {}
+            }
+            const defaultData = getDefaultData();
+            localStorage.setItem('cloudData', JSON.stringify(defaultData));
+            return defaultData;
+        }
+
+        function saveData(data) {
+            localStorage.setItem('cloudData', JSON.stringify(data));
+        }
+
         function getCurrentUser() {
             const data = localStorage.getItem('currentUser');
             return data ? JSON.parse(data) : null;
         }
 
+        // ========== ПРОВЕРКА ПРАВ ==========
         const user = getCurrentUser();
         if (!user || (user.role !== 'sadmin' && user.role !== 'Официант')) {
             alert('У вас нет прав для работы с заказами');
@@ -127,97 +458,6 @@
         // ========== ПОЛУЧАЕМ НОМЕР СТОЛА ==========
         const urlParams = new URLSearchParams(window.location.search);
         const tableNumber = parseInt(urlParams.get('table')) || 1;
-
-        // ========== ФУНКЦИИ ДЛЯ РАБОТЫ С ДАННЫМИ ==========
-        async function loadData() {
-            try {
-                const data = await GitHubAPI.getData();
-                return data;
-            } catch (error) {
-                console.error('Ошибка загрузки:', error);
-                const cached = localStorage.getItem('cloudData');
-                if (cached) return JSON.parse(cached);
-                return GitHubAPI.getDefaultData();
-            }
-        }
-
-        async function saveData(data) {
-            try {
-                await GitHubAPI.updateData(data);
-                return true;
-            } catch (error) {
-                console.error('Ошибка сохранения:', error);
-                return false;
-            }
-        }
-
-        async function loadTableOrders(tableNumber) {
-            try {
-                const data = await loadData();
-                const tables = data.tables || {};
-                const table = tables[tableNumber] || { orders: [], total: 0 };
-                const openOrders = table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
-                if (openOrders.length > 0) {
-                    const lastOrder = openOrders[openOrders.length - 1];
-                    if (lastOrder && lastOrder.status !== 'closed') {
-                        return lastOrder.items || [];
-                    }
-                }
-                return [];
-            } catch (error) {
-                console.error('Ошибка загрузки заказов:', error);
-                return [];
-            }
-        }
-
-        async function saveTableOrder(tableNumber, cart) {
-            try {
-                const data = await loadData();
-                if (!data.tables) data.tables = {};
-                if (!data.tables[tableNumber]) {
-                    data.tables[tableNumber] = { orders: [], total: 0 };
-                }
-                
-                const table = data.tables[tableNumber];
-                let openOrder = null;
-                let openIndex = -1;
-                const openOrders = table.orders.filter(o => o.status !== 'closed');
-                if (openOrders.length > 0) {
-                    const lastOpen = openOrders[openOrders.length - 1];
-                    openIndex = table.orders.indexOf(lastOpen);
-                    openOrder = lastOpen;
-                }
-
-                if (openOrder && cart.length > 0) {
-                    openOrder.items = cart.map(item => ({ ...item }));
-                    openOrder.total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-                    table.orders[openIndex] = openOrder;
-                } else if (cart.length > 0) {
-                    table.orders.push({
-                        items: cart.map(item => ({ ...item })),
-                        total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
-                        status: 'open',
-                        timestamp: new Date().toISOString()
-                    });
-                }
-
-                table.total = table.orders
-                    .filter(o => o.status !== 'closed')
-                    .reduce((sum, o) => sum + o.total, 0);
-
-                await saveData(data);
-                return data;
-            } catch (error) {
-                console.error('Ошибка сохранения заказа:', error);
-                return null;
-            }
-        }
-
-        // ========== ФУНКЦИЯ ПОЛУЧЕНИЯ МЕНЮ ==========
-        async function getMenu() {
-            const data = await loadData();
-            return data.menu || [];
-        }
 
         // ========== СОСТОЯНИЕ ==========
         let cart = [];
@@ -236,6 +476,100 @@
         const searchInput = document.getElementById('searchInput');
         const tableTitle = document.getElementById('tableTitle');
         const tableStatus = document.getElementById('tableStatus');
+
+        // ========== ЗАГРУЗКА МЕНЮ ==========
+        function loadMenu() {
+            const data = loadData();
+            menu = data.menu || [];
+            return menu;
+        }
+
+        // ========== ЗАГРУЗКА ЗАКАЗОВ СТОЛА ==========
+        function loadTableOrders() {
+            const data = loadData();
+            const tables = data.tables || {};
+            const table = tables[tableNumber] || { orders: [], total: 0 };
+            const openOrders = table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
+            if (openOrders.length > 0) {
+                const lastOrder = openOrders[openOrders.length - 1];
+                if (lastOrder && lastOrder.status !== 'closed') {
+                    cart = lastOrder.items.map(item => ({ ...item }));
+                    return;
+                }
+            }
+            cart = [];
+        }
+
+        // ========== СОХРАНЕНИЕ ЗАКАЗА ==========
+        function saveTableOrder() {
+            const data = loadData();
+            if (!data.tables) data.tables = {};
+            if (!data.tables[tableNumber]) {
+                data.tables[tableNumber] = { orders: [], total: 0 };
+            }
+
+            const table = data.tables[tableNumber];
+
+            if (cart.length === 0) {
+                table.orders = table.orders.filter(o => o.status === 'closed' || o.items.length > 0);
+                if (table.orders.length > 0) {
+                    const last = table.orders[table.orders.length - 1];
+                    if (last && last.items.length === 0 && last.status !== 'closed') {
+                        table.orders.pop();
+                    }
+                }
+                saveData(data);
+                return;
+            }
+
+            let openOrder = null;
+            let openIndex = -1;
+            const openOrders = table.orders.filter(o => o.status !== 'closed');
+            if (openOrders.length > 0) {
+                const lastOpen = openOrders[openOrders.length - 1];
+                openIndex = table.orders.indexOf(lastOpen);
+                openOrder = lastOpen;
+            }
+
+            if (openOrder) {
+                openOrder.items = cart.map(item => ({ ...item }));
+                openOrder.total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+                table.orders[openIndex] = openOrder;
+            } else if (cart.length > 0) {
+                table.orders.push({
+                    items: cart.map(item => ({ ...item })),
+                    total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+                    status: 'open',
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            table.total = table.orders
+                .filter(o => o.status !== 'closed')
+                .reduce((sum, o) => sum + o.total, 0);
+
+            saveData(data);
+        }
+
+        // ========== ОБНОВЛЕНИЕ СТАТУСА СТОЛА ==========
+        function updateTableStatus() {
+            const data = loadData();
+            const table = data.tables ? data.tables[tableNumber] : null;
+            if (table && table.orders) {
+                const openOrders = table.orders.filter(o => o.status !== 'closed');
+                if (openOrders.length > 0) {
+                    tableStatus.textContent = `🟢 Активен (${openOrders.length} зак.)`;
+                    tableStatus.style.color = '#2e7d32';
+                } else {
+                    tableStatus.textContent = '⚪ Свободен';
+                    tableStatus.style.color = '#7f8c8d';
+                }
+            } else {
+                tableStatus.textContent = '⚪ Свободен';
+                tableStatus.style.color = '#7f8c8d';
+            }
+            tableTitle.textContent = `Стол ${tableNumber}`;
+        }
 
         // ========== РЕНДЕР КАТЕГОРИЙ ==========
         function renderCategories() {
@@ -286,7 +620,7 @@
                 cart.push({ ...item, quantity: 1 });
             }
             renderCart();
-            saveTableOrder(tableNumber, cart);
+            saveTableOrder();
         }
 
         // ========== РЕНДЕР КОРЗИНЫ ==========
@@ -319,7 +653,7 @@
                             if (cart[idx].quantity <= 0) cart.splice(idx, 1);
                         }
                         renderCart();
-                        saveTableOrder(tableNumber, cart);
+                        saveTableOrder();
                     });
                 });
                 document.querySelectorAll('.remove-item').forEach(btn => {
@@ -327,7 +661,7 @@
                         const idx = parseInt(btn.dataset.index);
                         cart.splice(idx, 1);
                         renderCart();
-                        saveTableOrder(tableNumber, cart);
+                        saveTableOrder();
                     });
                 });
             }
@@ -343,78 +677,12 @@
             grandTotal.textContent = sum + ' ₽';
         }
 
-        // ========== ОБНОВЛЕНИЕ СТАТУСА СТОЛА ==========
-        async function updateTableStatus() {
-            try {
-                const data = await loadData();
-                const table = data.tables ? data.tables[tableNumber] : null;
-                if (table && table.orders) {
-                    const openOrders = table.orders.filter(o => o.status !== 'closed');
-                    if (openOrders.length > 0) {
-                        tableStatus.textContent = `🟢 Активен (${openOrders.length} зак.)`;
-                        tableStatus.style.color = '#2e7d32';
-                    } else {
-                        tableStatus.textContent = '⚪ Свободен';
-                        tableStatus.style.color = '#7f8c8d';
-                    }
-                } else {
-                    tableStatus.textContent = '⚪ Свободен';
-                    tableStatus.style.color = '#7f8c8d';
-                }
-                tableTitle.textContent = `Стол ${tableNumber}`;
-            } catch (error) {
-                console.error('Ошибка обновления статуса:', error);
-            }
-        }
-
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
-        async function init() {
-            try {
-                // Загружаем меню
-                menu = await getMenu();
-                renderCategories();
-                renderItems();
-                
-                // Загружаем заказы стола
-                const orderItems = await loadTableOrders(tableNumber);
-                cart = orderItems.map(item => ({ ...item }));
-                renderCart();
-                await updateTableStatus();
-
-                // Настройка автосохранения
-                setInterval(() => {
-                    if (cart.length > 0) {
-                        saveTableOrder(tableNumber, cart);
-                    }
-                }, 5000);
-
-                window.addEventListener('beforeunload', () => {
-                    if (cart.length > 0) {
-                        saveTableOrder(tableNumber, cart);
-                    }
-                });
-            } catch (error) {
-                console.error('Ошибка инициализации:', error);
-                document.getElementById('errorDisplay').style.display = 'block';
-                document.getElementById('errorDisplay').textContent = 'Ошибка загрузки: ' + error.message;
-            }
-        }
-
-        // ========== ОЧИСТИТЬ КОРЗИНУ ==========
-        document.getElementById('clearOrderBtn').addEventListener('click', () => {
-            if (cart.length === 0) return;
-            if (confirm('Очистить заказ?')) {
-                cart = [];
-                renderCart();
-                saveTableOrder(tableNumber, cart);
-            }
-        });
-
         // ========== ПОКАЗАТЬ ЧЕК ==========
         function showReceipt(orderData) {
-            const venue = localStorage.getItem('venueName') || 'Кафе Уют';
+            const data = loadData();
+            const venue = data.venueName || 'Кафе Уют';
             const now = new Date().toLocaleString('ru-RU');
-            
+
             let html = `
                 <div class="header">${venue}</div>
                 <div style="text-align:center;font-size:12px;color:#666;margin-bottom:8px;">
@@ -457,7 +725,7 @@
         }
 
         // ========== ОПЛАТА ==========
-        document.getElementById('payBtn').addEventListener('click', async () => {
+        document.getElementById('payBtn').addEventListener('click', () => {
             if (cart.length === 0) {
                 alert('Корзина пуста!');
                 return;
@@ -471,51 +739,44 @@
             const change = cash - total;
             changeDisplay.textContent = `Сдача: ${change.toFixed(2)} ₽`;
 
-            try {
-                const data = await loadData();
-                if (!data.stats) data.stats = { totalOrders: 0, totalRevenue: 0 };
-                data.stats.totalOrders = (data.stats.totalOrders || 0) + 1;
-                data.stats.totalRevenue = (data.stats.totalRevenue || 0) + total;
-                await saveData(data);
+            const data = loadData();
+            if (!data.stats) data.stats = { totalOrders: 0, totalRevenue: 0 };
+            data.stats.totalOrders = (data.stats.totalOrders || 0) + 1;
+            data.stats.totalRevenue = (data.stats.totalRevenue || 0) + total;
+            saveData(data);
 
-                // Закрываем заказ
-                const tableData = await loadData();
-                let closedOrder = null;
-                if (tableData.tables && tableData.tables[tableNumber]) {
-                    const table = tableData.tables[tableNumber];
-                    for (let i = table.orders.length - 1; i >= 0; i--) {
-                        if (table.orders[i].status !== 'closed') {
-                            table.orders[i].status = 'closed';
-                            table.orders[i].closedAt = new Date().toISOString();
-                            table.orders[i].paidAmount = cash;
-                            table.orders[i].change = change;
-                            table.orders[i].operator = user ? user.name || user.login : 'Неизвестно';
-                            closedOrder = table.orders[i];
-                            break;
-                        }
+            let closedOrder = null;
+            if (data.tables && data.tables[tableNumber]) {
+                const table = data.tables[tableNumber];
+                for (let i = table.orders.length - 1; i >= 0; i--) {
+                    if (table.orders[i].status !== 'closed') {
+                        table.orders[i].status = 'closed';
+                        table.orders[i].closedAt = new Date().toISOString();
+                        table.orders[i].paidAmount = cash;
+                        table.orders[i].change = change;
+                        table.orders[i].operator = user ? user.name || user.login : 'Неизвестно';
+                        closedOrder = table.orders[i];
+                        break;
                     }
-                    table.total = table.orders
-                        .filter(o => o.status !== 'closed')
-                        .reduce((sum, o) => sum + o.total, 0);
-                    await saveData(tableData);
                 }
-
-                if (closedOrder) {
-                    showReceipt(closedOrder);
-                }
-
-                cart = [];
-                renderCart();
-                cashInput.value = '';
-                await updateTableStatus();
-
-                setTimeout(() => {
-                    changeDisplay.textContent = 'Сдача: 0 ₽';
-                }, 5000);
-            } catch (error) {
-                console.error('Ошибка оплаты:', error);
-                alert('Ошибка при оплате. Попробуйте еще раз.');
+                table.total = table.orders
+                    .filter(o => o.status !== 'closed')
+                    .reduce((sum, o) => sum + o.total, 0);
+                saveData(data);
             }
+
+            if (closedOrder) {
+                showReceipt(closedOrder);
+            }
+
+            cart = [];
+            renderCart();
+            cashInput.value = '';
+            updateTableStatus();
+
+            setTimeout(() => {
+                changeDisplay.textContent = 'Сдача: 0 ₽';
+            }, 5000);
         });
 
         // ========== ЗАКРЫТЬ ЧЕК ==========
@@ -554,35 +815,44 @@
         });
 
         // ========== ЗАКРЫТЬ СТОЛ ==========
-        document.getElementById('closeTableBtn').addEventListener('click', async () => {
+        document.getElementById('closeTableBtn').addEventListener('click', () => {
             if (cart.length > 0) {
                 if (!confirm('В столе есть активный заказ. Закрыть стол без оплаты?')) {
                     return;
                 }
             }
-            try {
-                const data = await loadData();
-                if (data.tables && data.tables[tableNumber]) {
-                    data.tables[tableNumber].orders = [];
-                    data.tables[tableNumber].total = 0;
-                    await saveData(data);
-                }
-                cart = [];
-                renderCart();
-                await updateTableStatus();
-                alert('Стол закрыт');
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('Ошибка закрытия стола:', error);
-                alert('Ошибка при закрытии стола');
+            const data = loadData();
+            if (data.tables && data.tables[tableNumber]) {
+                data.tables[tableNumber].orders = [];
+                data.tables[tableNumber].total = 0;
+                saveData(data);
             }
+            cart = [];
+            renderCart();
+            updateTableStatus();
+            alert('Стол закрыт');
+            window.location.href = 'index.html';
         });
 
         // ========== ПОИСК ==========
         searchInput.addEventListener('input', renderItems);
 
-        // ========== ЗАПУСК ==========
-        init();
+        // ========== АВТОСОХРАНЕНИЕ ==========
+        setInterval(() => {
+            if (cart.length > 0) {
+                saveTableOrder();
+            }
+        }, 5000);
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        loadMenu();
+        renderCategories();
+        renderItems();
+        loadTableOrders();
+        renderCart();
+        updateTableStatus();
+
+        console.log(`✅ Стол ${tableNumber} загружен! (БЕЗ ВНЕШНИХ JS)`);
     </script>
 </body>
 </html>
