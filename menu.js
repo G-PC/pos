@@ -1,19 +1,24 @@
 // ========== ОБЩЕЕ МЕНЮ ДЛЯ ВСЕЙ СИСТЕМЫ ==========
 const DEFAULT_MENU = [
     { id: 1, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
-    { id: 2, name: 'Стейк', price: 450, category: 'Горячее', emoji: '🥩' },
-    { id: 3, name: 'Паста', price: 390, category: 'Горячее', emoji: '🍝' },
+    { id: 2, name: 'Стейк', price: 300, category: 'Мясные изделия', emoji: '🥩' },
+    { id: 3, name: 'Паста', price: 250, category: 'Гарниры', emoji: '🍝' },
     { id: 4, name: 'Чай', price: 100, category: 'Напитки', emoji: '🍵' },
-    { id: 5, name: 'Кофе', price: 150, category: 'Напитки', emoji: '☕' },
+    { id: 5, name: 'Кофе', price: 130, category: 'Напитки', emoji: '☕' },
     { id: 6, name: 'Сырники', price: 75, category: 'Десерты', emoji: '🧀' },
-    { id: 7, name: 'Фруктовый салат', price: 250, category: 'Салаты', emoji: '🥗' },
+    { id: 7, name: 'Фруктовый салат', price: 200, category: 'Салаты', emoji: '🥗' },
     { id: 8, name: 'Овощной салат', price: 200, category: 'Салаты', emoji: '🥗' },
     { id: 9, name: 'Горячий шоколад', price: 130, category: 'Напитки', emoji: '🍫' },
     { id: 10, name: 'Чай с молоком', price: 130, category: 'Напитки', emoji: '🍵' },
     { id: 11, name: 'Какао', price: 130, category: 'Напитки', emoji: '☕' },
     { id: 12, name: 'Пончик', price: 50, category: 'Десерты', emoji: '🍩' },
     { id: 13, name: 'Круассан', price: 50, category: 'Десерты', emoji: '🥐' },
-    { id: 14, name: 'Шарлотка', price: 70, category: 'Десерты', emoji: '🍰' }
+    { id: 14, name: 'Кекс "Шарлотка"', price: 70, category: 'Десерты', emoji: '🍰' },
+    { id: 15, name: 'Сосиска', price: 80, category: 'Мясные изделия', emoji: '🌭' },
+    { id: 16, name: 'Яичница "Глазунья"', price: 85, category: 'Другое', emoji: '🍳' },
+    { id: 17, name: 'Плов', price: 275, category: 'Гарниры', emoji: '🍚' },
+    { id: 18, name: 'Морс', price: 70, category: 'Напитки', emoji: '🍹' },
+    { id: 19, name: 'Лимонад', price: 70, category: 'Напитки', emoji: '🥤' }
 ];
 
 // ========== ФУНКЦИИ ДЛЯ РАБОТЫ С МЕНЮ ==========
@@ -59,3 +64,4 @@ function saveMenuToStorage(menu) {
 
 console.log('📦 menu.js загружен!');
 console.log('🍽️ Блюд в меню:', DEFAULT_MENU.length);
+console.log('📋 Категорий:', [...new Set(DEFAULT_MENU.map(i => i.category))]);
