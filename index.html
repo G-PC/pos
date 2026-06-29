@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Симулятор ресторана</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>Симулятор ресторана</h1>
+
+    <!-- Выбор стола -->
+    <nav>
+        <button class="table-btn active-table" disabled>Стол 1</button>
+        <button class="table-btn">Стол 2</button>
+        <button class="table-btn">Стол 3</button>
+        <!-- Еще 7 кнопок -->
+    </nav>
+
+    <!-- Меню -->
+    <section class="menu">
+        <!-- Закуски -->
+        <div class="category-title">Закуски</div>
+        <div class="dish-card">
+            <h3>Карпаччо</h3>
+            <span>₽ 350</span>
+            <button class="add-to-cart" data-id="1">Добавить</button>
+        </div>
+        <!-- Другие блюда -->
+    </section>
+
+    <!-- Корзина -->
+    <aside class="cart">
+        <h3>Заказ для стола 1</h3>
+        <ul></ul>
+        <strong>Итого:</strong><span id="total-sum">0 ₽</span>
+        <button onclick="payOrder()">Оплатить</button>
+    </aside>
+
+    <script src="/script.js"></script>
+</body>
+</html>
