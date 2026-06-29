@@ -352,29 +352,36 @@
 
     <script src="menu.js"></script>
     <script>
-        // ========== ДАННЫЕ ==========
-        function getDefaultData() {
-            return {
-                venueName: 'Кафе Уют',
-                menu: getDefaultMenu(),
-                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
-                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 },
-                '3': { orders: [], total: 0 } },
-                stats: { totalOrders: 0, totalRevenue: 0 }
-            };
-        }
+        // ============================================================
+        // ВСЯ ЛОГИКА ВНУТРИ
+        // ============================================================
 
+        // ========== ЕДИНАЯ ЗАГРУЗКА ДАННЫХ ==========
         function loadData() {
             const cached = localStorage.getItem('cloudData');
             if (cached) {
-                try { return JSON.parse(cached); } catch (e) {}
+                try {
+                    const parsed = JSON.parse(cached);
+                    if (parsed.menu && parsed.menu.length > 0) {
+                        return parsed;
+                    }
+                } catch (e) { console.warn('Ошибка парсинга'); }
             }
-            const defaultData = getDefaultData();
+            const defaultMenu = typeof getDefaultMenu === 'function' ? getDefaultMenu() : DEFAULT_MENU;
+            const defaultData = {
+                venueName: 'Кафе Уют',
+                menu: defaultMenu,
+                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
+                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
+                stats: { totalOrders: 0, totalRevenue: 0 }
+            };
             localStorage.setItem('cloudData', JSON.stringify(defaultData));
             return defaultData;
         }
 
-        function saveData(data) { localStorage.setItem('cloudData', JSON.stringify(data)); }
+        function saveData(data) {
+            localStorage.setItem('cloudData', JSON.stringify(data));
+        }
 
         function getCurrentUser() {
             const data = localStorage.getItem('currentUser');
@@ -710,7 +717,7 @@
         }
         init();
 
-        console.log('✅ Админ-панель загружена! Меню из menu.js');
+        console.log('✅ Админ-панель загружена!');
     </script>
 </body>
 </html>
