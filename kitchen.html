@@ -1,61 +1,454 @@
-// ========== ОБЩЕЕ МЕНЮ ДЛЯ ВСЕЙ СИСТЕМЫ ==========
-const DEFAULT_MENU = [
-    { id: 1, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
-    { id: 2, name: 'Стейк', price: 450, category: 'Горячее', emoji: '🥩' },
-    { id: 3, name: 'Паста', price: 390, category: 'Горячее', emoji: '🍝' },
-    { id: 4, name: 'Чай', price: 100, category: 'Напитки', emoji: '🍵' },
-    { id: 5, name: 'Кофе', price: 150, category: 'Напитки', emoji: '☕' },
-    { id: 6, name: 'Сырники', price: 75, category: 'Десерты', emoji: '🧀' },
-    { id: 7, name: 'Фруктовый салат', price: 250, category: 'Салаты', emoji: '🥗' },
-    { id: 8, name: 'Овощной салат', price: 200, category: 'Салаты', emoji: '🥗' },
-    { id: 9, name: 'Горячий шоколад', price: 130, category: 'Напитки', emoji: '🍫' },
-    { id: 10, name: 'Чай с молоком', price: 130, category: 'Напитки', emoji: '🍵' },
-    { id: 11, name: 'Какао', price: 130, category: 'Напитки', emoji: '☕' },
-    { id: 12, name: 'Пончик', price: 50, category: 'Десерты', emoji: '🍩' },
-    { id: 13, name: 'Круассан', price: 50, category: 'Десерты', emoji: '🥐' },
-    { id: 14, name: 'Шарлотка', price: 70, category: 'Десерты', emoji: '🍰' }
-];
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Кухня - Заказы</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        .header h1 {
+            color: #2d3e50;
+        }
+        .back-btn {
+            background: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .refresh-btn {
+            background: #2d7aff;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .refresh-btn:hover {
+            background: #1a5fd0;
+        }
 
-// ========== ФУНКЦИИ ДЛЯ РАБОТЫ С МЕНЮ ==========
-function getDefaultMenu() {
-    return JSON.parse(JSON.stringify(DEFAULT_MENU));
-}
-
-function loadMenuFromStorage() {
-    const data = localStorage.getItem('cloudData');
-    if (data) {
-        try {
-            const parsed = JSON.parse(data);
-            if (parsed.menu && parsed.menu.length > 0) {
-                return parsed.menu;
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #2d7aff;
+            transition: 0.3s;
+        }
+        .order-card.completed {
+            border-left-color: #2ed573;
+            opacity: 0.8;
+        }
+        .order-card .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+            background: transparent;
+            padding: 0 0 8px 0;
+        }
+        .order-card .table {
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .order-card .time {
+            color: #888;
+            font-size: 14px;
+        }
+        .order-card .items {
+            margin: 10px 0;
+        }
+        .order-card .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 14px;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .order-card .item:hover {
+            background: #f0f2f5;
+        }
+        .order-card .item.done {
+            background: #e8f5e9;
+            text-decoration: line-through;
+            color: #888;
+        }
+        .order-card .item .item-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .order-card .item .check-btn {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+        .order-card .item .check-btn:hover {
+            border-color: #2d7aff;
+            transform: scale(1.1);
+        }
+        .order-card .item .check-btn.done {
+            background: #2ed573;
+            border-color: #2ed573;
+            color: white;
+        }
+        .order-card .item .qty {
+            background: #e8e8e8;
+            padding: 0 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .order-card .total {
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 2px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        .order-card .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status.open {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge {
+            background: #ff6b35;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        .empty {
+            text-align: center;
+            color: #888;
+            padding: 50px;
+            font-size: 18px;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff6b35;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4);
+            z-index: 999;
+            animation: slideIn 0.5s ease;
+            display: none;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
             }
-        } catch (e) {}
-    }
-    // Если нет — сохраняем дефолтное
-    const defaultMenu = getDefaultMenu();
-    const fullData = {
-        venueName: 'Кафе Уют',
-        menu: defaultMenu,
-        users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
-        tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
-        stats: { totalOrders: 0, totalRevenue: 0 }
-    };
-    localStorage.setItem('cloudData', JSON.stringify(fullData));
-    return defaultMenu;
-}
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .auto-refresh {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .order-count {
+            background: #ff6b35;
+            color: white;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2d3e50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 9999;
+            animation: slideIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>🍳 Кухня — Активные заказы</h1>
+                <div class="auto-refresh">Автообновление каждые 5 секунд</div>
+            </div>
+            <div class="status-bar">
+                <span class="order-count" id="orderCount">0</span>
+                <button class="refresh-btn" id="refreshBtn">🔄 Обновить</button>
+                <a href="index.html" class="back-btn">← На главную</a>
+            </div>
+        </div>
 
-function saveMenuToStorage(menu) {
-    const data = localStorage.getItem('cloudData');
-    if (data) {
-        try {
-            const parsed = JSON.parse(data);
-            parsed.menu = menu;
-            localStorage.setItem('cloudData', JSON.stringify(parsed));
-            return true;
-        } catch (e) {}
-    }
-    return false;
-}
+        <div class="orders-grid" id="ordersGrid"></div>
+    </div>
 
-console.log('📦 menu.js загружен!');
-console.log('🍽️ Блюд в меню:', DEFAULT_MENU.length);
+    <div class="notification" id="notification">🆕 Новый заказ!</div>
+
+    <script src="menu.js"></script>
+    <script>
+        // ============================================================
+        // ВСЯ ЛОГИКА ВНУТРИ
+        // ============================================================
+
+        // ========== ДАННЫЕ ==========
+        function getDefaultData() {
+            return {
+                venueName: 'Кафе Уют',
+                menu: getDefaultMenu(),
+                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
+                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 },
+                '3': { orders: [], total: 0 } },
+                stats: { totalOrders: 0, totalRevenue: 0 }
+            };
+        }
+
+        function loadData() {
+            const cached = localStorage.getItem('cloudData');
+            if (cached) {
+                try { return JSON.parse(cached); } catch (e) {}
+            }
+            const defaultData = getDefaultData();
+            localStorage.setItem('cloudData', JSON.stringify(defaultData));
+            return defaultData;
+        }
+
+        function saveData(data) {
+            localStorage.setItem('cloudData', JSON.stringify(data));
+        }
+
+        function getCurrentUser() {
+            const data = localStorage.getItem('currentUser');
+            return data ? JSON.parse(data) : null;
+        }
+
+        // ========== ПРОВЕРКА ==========
+        const user = getCurrentUser();
+        if (!user || (user.role !== 'sadmin' && user.role !== 'Повар')) {
+            alert('Доступ запрещен. Только для поваров и sadmin');
+            window.location.href = 'index.html';
+        }
+
+        // ========== СОСТОЯНИЕ ==========
+        let previousOrderIds = new Set();
+
+        // ========== ТОСТ ==========
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => { t.remove(); }, 3000);
+        }
+
+        // ========== ОТМЕТИТЬ БЛЮДО КАК ГОТОВОЕ ==========
+        function toggleItemDone(tableNum, orderTimestamp, itemIndex) {
+            const data = loadData();
+            const table = data.tables[tableNum];
+            if (!table) return;
+
+            const order = table.orders.find(o => o.timestamp === orderTimestamp);
+            if (!order) return;
+
+            // Переключаем статус
+            if (!order.items[itemIndex].done) {
+                order.items[itemIndex].done = true;
+                showToast('✅ Блюдо готово!');
+            } else {
+                order.items[itemIndex].done = false;
+                showToast('↩️ Отмечено как неготовое');
+            }
+
+            // Проверяем все ли блюда готовы
+            const allDone = order.items.every(item => item.done === true);
+            if (allDone && order.status !== 'closed') {
+                order.status = 'completed';
+                showToast('🎉 Все блюда готовы!');
+            } else {
+                order.status = 'open';
+            }
+
+            saveData(data);
+            renderOrders();
+        }
+
+        // ========== РЕНДЕР ==========
+        function renderOrders() {
+            const data = loadData();
+            const grid = document.getElementById('ordersGrid');
+            const tables = data.tables || {};
+
+            let allOrders = [];
+            for (let tableNum = 1; tableNum <= 3; tableNum++) {
+                const table = tables[tableNum];
+                if (table && table.orders) {
+                    const visibleOrders = table.orders.filter(o => o.status !== 'closed');
+                    visibleOrders.forEach(order => {
+                        const orderId = `${tableNum}_${order.timestamp}`;
+                        allOrders.push({
+                            id: orderId,
+                            table: tableNum,
+                            ...order,
+                            items: order.items || []
+                        });
+                    });
+                }
+            }
+
+            allOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            const currentIds = new Set(allOrders.map(o => o.id));
+            const newOrders = [...currentIds].filter(id => !previousOrderIds.has(id));
+            if (newOrders.length > 0) {
+                showNotification(`🆕 ${newOrders.length} новый(ых) заказ(а)!`);
+            }
+            previousOrderIds = currentIds;
+
+            document.getElementById('orderCount').textContent = allOrders.length;
+
+            if (allOrders.length === 0) {
+                grid.innerHTML =
+                    `<div class="empty" style="grid-column:1/-1;">🎉 Все заказы выполнены!<br><span style="font-size:14px;color:#aaa;">Новых заказов нет</span></div>`;
+                return;
+            }
+
+            grid.innerHTML = allOrders.map(order => {
+                const isCompleted = order.status === 'completed';
+                const allItemsDone = order.items.every(item => item.done === true);
+
+                return `
+                    <div class="order-card ${isCompleted ? 'completed' : ''}">
+                        <div class="header">
+                            <span class="table">🪑 Стол ${order.table}</span>
+                            <span class="time">${new Date(order.timestamp).toLocaleTimeString('ru-RU')}</span>
+                        </div>
+                        <div style="margin-bottom:8px;">
+                            <span class="status ${isCompleted ? 'completed' : 'open'}">
+                                ${isCompleted ? '✅ Все готово!' : '🟡 В работе'}
+                            </span>
+                            <span class="badge">${order.items.length} позиций</span>
+                            ${allItemsDone && !isCompleted ? '<span style="color:#2ed573;font-size:12px;font-weight:600;margin-left:8px;">⚡ Всё готово!</span>' : ''}
+                        </div>
+                        <div class="items">
+                            ${order.items.map((item, idx) => `
+                                <div class="item ${item.done ? 'done' : ''}" onclick="toggleItemDone(${order.table}, '${order.timestamp}', ${idx})">
+                                    <div class="item-name">
+                                        <button class="check-btn ${item.done ? 'done' : ''}">
+                                            ${item.done ? '✓' : ''}
+                                        </button>
+                                        <span>${item.emoji || '🍽️'} ${item.name}</span>
+                                    </div>
+                                    <span class="qty">×${item.quantity}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="total">
+                            <span>Итого:</span>
+                            <span>${order.total} ₽</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ========== УВЕДОМЛЕНИЯ ==========
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // ========== ОБНОВЛЕНИЕ ==========
+        function refresh() {
+            renderOrders();
+        }
+
+        // ========== ЗАПУСК ==========
+        document.getElementById('refreshBtn').addEventListener('click', refresh);
+        setInterval(refresh, 5000);
+        refresh();
+
+        window.toggleItemDone = toggleItemDone;
+
+        console.log('✅ Кухня с галочками загружена! Меню из menu.js');
+    </script>
+</body>
+</html>
