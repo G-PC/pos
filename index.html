@@ -190,7 +190,6 @@
 
     <div class="container" id="app">
 
-        <!-- ВХОД -->
         <div class="login-box" id="loginBox">
             <h2>🔐 Вход в систему</h2>
             <input type="text" id="loginInput" placeholder="Логин" value="sadmin" />
@@ -199,7 +198,6 @@
             <div class="login-error" id="loginError">Неверный логин или пароль</div>
         </div>
 
-        <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
         <div id="mainApp" class="hidden">
             <div class="user-info">
                 <div>
@@ -227,7 +225,6 @@
         // ВСЯ ЛОГИКА ВНУТРИ
         // ============================================================
 
-        // ========== ДАННЫЕ ==========
         function getDefaultData() {
             return {
                 venueName: 'Кафе Уют',
@@ -276,7 +273,6 @@
             return data.venueName || 'Кафе Уют';
         }
 
-        // ========== РЕНДЕР СТОЛОВ ==========
         function renderTables() {
             const data = loadData();
             const tables = data.tables || {};
@@ -284,7 +280,7 @@
 
             grid.innerHTML = '';
             const tableKeys = Object.keys(tables).sort((a, b) => parseInt(a) - parseInt(b));
-            
+
             for (const key of tableKeys) {
                 const i = parseInt(key);
                 const table = tables[key] || { orders: [], total: 0 };
@@ -317,7 +313,6 @@
             document.getElementById('venueTitle').textContent = '🍽️ ' + getVenueName();
         }
 
-        // ========== ПОКАЗАТЬ ИНТЕРФЕЙС ==========
         function showApp() {
             const user = getCurrentUser();
             if (!user) {
@@ -329,39 +324,30 @@
             document.getElementById('loginBox').style.display = 'none';
             document.getElementById('mainApp').classList.remove('hidden');
 
-            // Отображаем имя и роль
             document.getElementById('userNameDisplay').textContent = user.name || user.login;
             const roleDisplay = user.role === 'sadmin' ? 'Владелец' : user.role;
             document.getElementById('userRoleDisplay').textContent = roleDisplay;
 
             const links = document.getElementById('adminLinks');
-            
-            // sadmin (Владелец) — видит всё
+
             if (user.role === 'sadmin') {
                 links.style.display = 'grid';
                 links.querySelectorAll('a').forEach(a => a.style.display = 'block');
-            } 
-            // Повар+Официант — видит и столы, и кухню
-            else if (user.role === 'Повар+Официант') {
+            } else if (user.role === 'Повар+Официант') {
                 links.style.display = 'grid';
                 links.querySelector('a[href="admin.html"]').style.display = 'none';
                 links.querySelector('a[href="kitchen.html"]').style.display = 'block';
-            }
-            // Повар — видит только кухню
-            else if (user.role === 'Повар') {
+            } else if (user.role === 'Повар') {
                 links.style.display = 'grid';
                 links.querySelector('a[href="admin.html"]').style.display = 'none';
                 links.querySelector('a[href="kitchen.html"]').style.display = 'block';
-            }
-            // Официант — видит только столы (ссылки скрыты)
-            else {
+            } else {
                 links.style.display = 'none';
             }
 
             renderTables();
         }
 
-        // ========== ВХОД ==========
         document.getElementById('loginBtn').addEventListener('click', () => {
             const login = document.getElementById('loginInput').value.trim();
             const password = document.getElementById('passwordInput').value.trim();
@@ -377,18 +363,15 @@
             }
         });
 
-        // ========== ВЫХОД ==========
         document.getElementById('logoutBtn').addEventListener('click', () => {
             clearCurrentUser();
             showApp();
         });
 
-        // ========== ВВОД ПО ENTER ==========
         document.getElementById('passwordInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') document.getElementById('loginBtn').click();
         });
 
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
         showApp();
 
         window.addEventListener('storage', (e) => {
