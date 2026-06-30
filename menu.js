@@ -55,7 +55,7 @@ function loadMenuFromStorage() {
     const fullData = {
         venueName: 'Кафе Уют',
         menu: defaultMenu,
-        users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
+        users: getDefaultUsers(),
         tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
         stats: { totalOrders: 0, totalRevenue: 0 }
     };
@@ -76,28 +76,13 @@ function saveMenuToStorage(menu) {
     return false;
 }
 
-// ========== ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ==========
-function forceUpdateMenu() {
-    const defaultMenu = getDefaultMenu();
-    const data = localStorage.getItem('cloudData');
-    if (data) {
-        try {
-            const parsed = JSON.parse(data);
-            parsed.menu = defaultMenu;
-            if (parsed.users && parsed.users.sadmin) {
-                parsed.users.sadmin.name = 'Владелец';
-            }
-            localStorage.setItem('cloudData', JSON.stringify(parsed));
-            console.log('✅ Меню принудительно обновлено! Блюд:', defaultMenu.length);
-            return true;
-        } catch (e) {}
-    }
-    return false;
+function getMenu() {
+    return loadMenuFromStorage();
 }
 
-forceUpdateMenu();
+function saveMenu(menu) {
+    return saveMenuToStorage(menu);
+}
 
 console.log('📦 menu.js загружен!');
 console.log('🍽️ Блюд в меню:', DEFAULT_MENU.length);
-console.log('📋 Первое блюдо:', DEFAULT_MENU[0].name);
-console.log('📋 Последнее блюдо:', DEFAULT_MENU[DEFAULT_MENU.length - 1].name);
