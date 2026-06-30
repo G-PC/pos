@@ -323,8 +323,11 @@
             document.getElementById('loginBox').style.display = 'none';
             document.getElementById('mainApp').classList.remove('hidden');
 
-            document.getElementById('userNameDisplay').textContent = user.name || user.login;
+            // ОТОБРАЖЕНИЕ ИМЕНИ И РОЛИ
+            const displayName = user.name || user.login;
             const roleDisplay = user.role === 'sadmin' ? 'Владелец' : user.role;
+            
+            document.getElementById('userNameDisplay').textContent = displayName;
             document.getElementById('userRoleDisplay').textContent = roleDisplay;
 
             const links = document.getElementById('adminLinks');
