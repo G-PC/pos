@@ -412,37 +412,56 @@
 
     <script src="menu.js"></script>
     <script>
-        // ========== ЗАГРУЗКА ДАННЫХ ==========
+        // ============================================================
+        // ВСЯ ЛОГИКА ВНУТРИ
+        // ============================================================
+
+        // ========== ЕДИНАЯ ЗАГРУЗКА ДАННЫХ ==========
         function loadData() {
             const cached = localStorage.getItem('cloudData');
             if (cached) {
-                try { return JSON.parse(cached); } catch (e) {}
+                try {
+                    const parsed = JSON.parse(cached);
+                    if (parsed.menu && parsed.menu.length > 0) {
+                        return parsed;
+                    }
+                } catch (e) { console.warn('Ошибка парсинга'); }
             }
-            // Используем меню из menu.js
-            const defaultMenu = getDefaultMenu();
+            const defaultMenu = typeof getDefaultMenu === 'function' ? getDefaultMenu() : DEFAULT_MENU;
             const defaultData = {
                 venueName: 'Кафе Уют',
                 menu: defaultMenu,
-                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
-                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 },
-                '3': { orders: [], total: 0 } },
+                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
+                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
                 stats: { totalOrders: 0, totalRevenue: 0 }
             };
             localStorage.setItem('cloudData', JSON.stringify(defaultData));
             return defaultData;
         }
 
-        function saveData(data) { localStorage.setItem('cloudData', JSON.stringify(data)); }
+        function saveData(data) {
+            localStorage.setItem('cloudData', JSON.stringify(data));
+        }
 
         function getCurrentUser() {
             const data = localStorage.getItem('currentUser');
             return data ? JSON.parse(data) : null;
         }
 
+        // ========== ТОСТ ==========
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => { t.remove(); }, 3000);
+        }
+
         // ========== ПРОВЕРКА ==========
         const user = getCurrentUser();
-        if (!user || (user.role !== 'sadmin' && user.role !== 'Официант')) {
-            alert('Нет прав');
+        // Разрешаем: Владелец (sadmin), Официант, Повар+Официант
+        if (!user || (user.role !== 'sadmin' && user.role !== 'Официант' && user.role !== 'Повар+Официант')) {
+            alert('У вас нет прав для работы с заказами');
             window.location.href = 'index.html';
         }
 
@@ -465,19 +484,20 @@
         const tableTitle = $('tableTitle');
         const tableStatus = $('tableStatus');
 
-        // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
+        // ========== ЗАГРУЗКА МЕНЮ ==========
         function loadMenu() {
             const data = loadData();
             menu = data.menu || [];
-            // Если меню пустое — берём из menu.js
             if (menu.length === 0) {
-                menu = getDefaultMenu();
+                const defaultMenu = typeof getDefaultMenu === 'function' ? getDefaultMenu() : DEFAULT_MENU;
+                menu = defaultMenu;
                 data.menu = menu;
                 saveData(data);
             }
             return menu;
         }
 
+        // ========== РЕНДЕР КАТЕГОРИЙ ==========
         function renderCategories() {
             const data = loadData();
             menu = data.menu || [];
@@ -492,6 +512,7 @@
             });
         }
 
+        // ========== РЕНДЕР БЛЮД ==========
         function renderItems() {
             const data = loadData();
             menu = data.menu || [];
@@ -608,14 +629,6 @@
             renderCategories();
             renderItems();
             showToast('✅ Меню обновлено');
-        }
-
-        function showToast(msg) {
-            const t = document.createElement('div');
-            t.className = 'toast';
-            t.textContent = msg;
-            document.body.appendChild(t);
-            setTimeout(() => { t.remove(); }, 3000);
         }
 
         function showReceipt(order) {
