@@ -270,7 +270,7 @@
             return {
                 venueName: 'Кафе Уют',
                 menu: getDefaultMenu(),
-                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
+                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
                 tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 },
                 '3': { orders: [], total: 0 } },
                 stats: { totalOrders: 0, totalRevenue: 0 }
@@ -296,10 +296,11 @@
             return data ? JSON.parse(data) : null;
         }
 
-        // ========== ПРОВЕРКА ==========
+        // ========== ПРОВЕРКА ПРАВ ==========
         const user = getCurrentUser();
-        if (!user || (user.role !== 'sadmin' && user.role !== 'Повар')) {
-            alert('Доступ запрещен. Только для поваров и sadmin');
+        // Разрешаем: sadmin, Повар, Повар+Официант
+        if (!user || (user.role !== 'sadmin' && user.role !== 'Повар' && user.role !== 'Повар+Официант')) {
+            alert('Доступ запрещен. Только для поваров, Повар+Официант и Владельца');
             window.location.href = 'index.html';
         }
 
