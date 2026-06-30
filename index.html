@@ -35,6 +35,10 @@
             margin-bottom: 15px;
             color: #2d3e50;
         }
+        .login-box form {
+            display: flex;
+            flex-direction: column;
+        }
         .login-box input {
             width: 100%;
             padding: 12px;
@@ -71,7 +75,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            margin: 10px 0;
+            margin: 8px 0 12px 0;
             font-size: 14px;
             color: #555;
         }
@@ -213,9 +217,23 @@
 
         <div class="login-box" id="loginBox">
             <h2>🔐 Вход в систему</h2>
-            <form id="loginForm" autocomplete="on">
-                <input type="text" id="loginInput" name="username" placeholder="Логин" autocomplete="username" />
-                <input type="password" id="passwordInput" name="password" placeholder="Пароль" autocomplete="current-password" />
+            <form id="loginForm" action="#" method="POST" autocomplete="on">
+                <input 
+                    type="text" 
+                    id="loginInput" 
+                    name="login" 
+                    placeholder="Логин" 
+                    autocomplete="username" 
+                    required
+                />
+                <input 
+                    type="password" 
+                    id="passwordInput" 
+                    name="password" 
+                    placeholder="Пароль" 
+                    autocomplete="current-password" 
+                    required
+                />
                 <div class="login-remember">
                     <input type="checkbox" id="rememberMe" checked />
                     <label for="rememberMe">Запомнить меня</label>
@@ -292,7 +310,6 @@
 
         function clearCurrentUser() {
             localStorage.removeItem('currentUser');
-            // Сохраняем логин, но не удаляем
         }
 
         function getVenueName() {
@@ -300,9 +317,12 @@
             return data.venueName || 'Кафе Уют';
         }
 
-        // ========== СОХРАНЕНИЕ ЛОГИНА ==========
         function saveLogin(login) {
-            localStorage.setItem('savedLogin', login);
+            if (login) {
+                localStorage.setItem('savedLogin', login);
+            } else {
+                localStorage.removeItem('savedLogin');
+            }
         }
 
         function getSavedLogin() {
@@ -355,8 +375,7 @@
             if (!user) {
                 document.getElementById('loginBox').style.display = 'block';
                 document.getElementById('mainApp').classList.add('hidden');
-                
-                // Восстанавливаем сохранённый логин
+
                 const savedLogin = getSavedLogin();
                 if (savedLogin) {
                     document.getElementById('loginInput').value = savedLogin;
@@ -370,7 +389,7 @@
 
             const displayName = user.name || user.login;
             const roleDisplay = user.role === 'sadmin' ? 'Владелец' : user.role;
-            
+
             document.getElementById('userNameDisplay').textContent = displayName;
             document.getElementById('userRoleDisplay').textContent = roleDisplay;
 
@@ -379,11 +398,7 @@
             if (user.role === 'sadmin') {
                 links.style.display = 'grid';
                 links.querySelectorAll('a').forEach(a => a.style.display = 'block');
-            } else if (user.role === 'Повар+Официант') {
-                links.style.display = 'grid';
-                links.querySelector('a[href="admin.html"]').style.display = 'none';
-                links.querySelector('a[href="kitchen.html"]').style.display = 'block';
-            } else if (user.role === 'Повар') {
+            } else if (user.role === 'Повар+Официант' || user.role === 'Повар') {
                 links.style.display = 'grid';
                 links.querySelector('a[href="admin.html"]').style.display = 'none';
                 links.querySelector('a[href="kitchen.html"]').style.display = 'block';
@@ -395,25 +410,25 @@
         }
 
         // ========== ОБРАБОТЧИК ВХОДА ==========
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const login = document.getElementById('loginInput').value.trim();
             const password = document.getElementById('passwordInput').value.trim();
             const rememberMe = document.getElementById('rememberMe').checked;
-            
+
             const data = loadData();
             const users = data.users || {};
 
             if (users[login] && users[login].password === password) {
                 setCurrentUser({ login, ...users[login] });
-                
+
                 if (rememberMe) {
                     saveLogin(login);
                 } else {
                     localStorage.removeItem('savedLogin');
                 }
-                
+
                 document.getElementById('loginError').style.display = 'none';
                 showApp();
             } else {
@@ -422,22 +437,23 @@
         });
 
         // ========== ВЫХОД ==========
-        document.getElementById('logoutBtn').addEventListener('click', () => {
+        document.getElementById('logoutBtn').addEventListener('click', function() {
             clearCurrentUser();
-            // НЕ очищаем поля, чтобы браузер запомнил пароль
+            // НЕ ОЧИЩАЕМ ПОЛЯ — браузер запоминает пароль
             showApp();
         });
 
         // ========== ЗАПУСК ==========
         showApp();
 
-        window.addEventListener('storage', (e) => {
+        window.addEventListener('storage', function(e) {
             if (e.key === 'cloudData' || e.key === 'currentUser') {
                 showApp();
             }
         });
 
         console.log('✅ POS система загружена!');
+        console.log('👤 Для сохранения пароля нажмите "Сохранить" в браузере');
     </script>
 
 </body>
