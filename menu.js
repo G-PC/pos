@@ -19,16 +19,16 @@ const DEFAULT_MENU = [
     { id: 17, name: 'Плов', price: 275, category: 'Гарниры', emoji: '🍚' },
     { id: 18, name: 'Морс', price: 70, category: 'Напитки', emoji: '🍹' },
     { id: 19, name: 'Лимонад', price: 70, category: 'Напитки', emoji: '🥤' },
-    { id: 20, name: 'Картофель фри', price: 120, category: 'Гарниры', emoji: '🍟' },
-    { id: 21, name: 'Картофель по-деревенски', price: 130, category: 'Гарниры', emoji: '🥔' },
+    { id: 20, name: 'Картофель фри', price: 90, category: 'Гарниры', emoji: '🍟' },
+    { id: 21, name: 'Картофель по-деревенски', price: 100, category: 'Гарниры', emoji: '🥔' },
     { id: 22, name: 'Грибной суп', price: 220, category: 'Супы', emoji: '🍄' },
     { id: 23, name: 'Картофельное пюре', price: 100, category: 'Гарниры', emoji: '🥔' },
-    { id: 24, name: 'Суп-пюре', price: 200, category: 'Супы', emoji: '🍲' },
-    { id: 25, name: 'Бургер', price: 250, category: 'Мясные изделия', emoji: '🍔' },
-    { id: 26, name: 'Нагетсы', price: 180, category: 'Мясные изделия', emoji: '🍗' },
-    { id: 27, name: 'Сырные нагетсы', price: 200, category: 'Мясные изделия', emoji: '🧀' },
-    { id: 28, name: 'Хлеб', price: 30, category: 'Выпечка', emoji: '🍞' },
-    { id: 29, name: 'Лепешка', price: 40, category: 'Выпечка', emoji: '🥙' }
+    { id: 24, name: 'Суп-пюре', price: 220, category: 'Супы', emoji: '🍲' },
+    { id: 25, name: 'Бургер', price: 90, category: 'Мясные изделия', emoji: '🍔' },
+    { id: 26, name: 'Нагетсы', price: 90, category: 'Мясные изделия', emoji: '🍗' },
+    { id: 27, name: 'Сырные нагетсы', price: 100, category: 'Мясные изделия', emoji: '🧀' },
+    { id: 28, name: 'Хлеб', price: 35, category: 'Выпечка', emoji: '🍞' },
+    { id: 29, name: 'Лепешка', price: 50, category: 'Выпечка', emoji: '🥙' }
 ];
 
 // ========== ФУНКЦИИ ДЛЯ РАБОТЫ С МЕНЮ ==========
