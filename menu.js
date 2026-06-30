@@ -26,7 +26,9 @@ const DEFAULT_MENU = [
     { id: 24, name: 'Суп-пюре', price: 200, category: 'Супы', emoji: '🍲' },
     { id: 25, name: 'Бургер', price: 250, category: 'Мясные изделия', emoji: '🍔' },
     { id: 26, name: 'Нагетсы', price: 180, category: 'Мясные изделия', emoji: '🍗' },
-    { id: 27, name: 'Сырные нагетсы', price: 200, category: 'Мясные изделия', emoji: '🧀' }
+    { id: 27, name: 'Сырные нагетсы', price: 200, category: 'Мясные изделия', emoji: '🧀' },
+    { id: 28, name: 'Хлеб', price: 30, category: 'Выпечка', emoji: '🍞' },
+    { id: 29, name: 'Лепешка', price: 40, category: 'Выпечка', emoji: '🥙' }
 ];
 
 // ========== ФУНКЦИИ ДЛЯ РАБОТЫ С МЕНЮ ==========
