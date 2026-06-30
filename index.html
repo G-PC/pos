@@ -220,6 +220,7 @@
     </div>
 
     <script src="menu.js"></script>
+    <script src="users.js"></script>
     <script>
         // ============================================================
         // ВСЯ ЛОГИКА ВНУТРИ
@@ -229,9 +230,7 @@
             return {
                 venueName: 'Кафе Уют',
                 menu: getDefaultMenu(),
-                users: {
-                    'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' }
-                },
+                users: getDefaultUsers(),
                 tables: {
                     '1': { orders: [], total: 0 },
                     '2': { orders: [], total: 0 },
@@ -380,7 +379,7 @@
             }
         });
 
-        console.log('✅ POS система загружена! Меню из menu.js');
+        console.log('✅ POS система загружена!');
     </script>
 
 </body>
