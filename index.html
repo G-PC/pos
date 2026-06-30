@@ -43,6 +43,10 @@
             font-size: 16px;
             margin-bottom: 12px;
         }
+        .login-box input:focus {
+            outline: none;
+            border-color: #2d7aff;
+        }
         .login-box button {
             width: 100%;
             padding: 12px;
@@ -62,6 +66,23 @@
             margin-top: 8px;
             display: none;
             text-align: center;
+        }
+        .login-remember {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #555;
+        }
+        .login-remember input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            cursor: pointer;
+        }
+        .login-remember label {
+            cursor: pointer;
         }
 
         .user-info {
@@ -192,10 +213,16 @@
 
         <div class="login-box" id="loginBox">
             <h2>🔐 Вход в систему</h2>
-            <input type="text" id="loginInput" placeholder="Логин" value="sadmin" />
-            <input type="password" id="passwordInput" placeholder="Пароль" value="123" />
-            <button id="loginBtn">Войти</button>
-            <div class="login-error" id="loginError">Неверный логин или пароль</div>
+            <form id="loginForm" autocomplete="on">
+                <input type="text" id="loginInput" placeholder="Логин" autocomplete="username" />
+                <input type="password" id="passwordInput" placeholder="Пароль" autocomplete="current-password" />
+                <div class="login-remember">
+                    <input type="checkbox" id="rememberMe" checked />
+                    <label for="rememberMe">Запомнить меня</label>
+                </div>
+                <button type="submit" id="loginBtn">Войти</button>
+                <div class="login-error" id="loginError">Неверный логин или пароль</div>
+            </form>
         </div>
 
         <div id="mainApp" class="hidden">
@@ -265,6 +292,8 @@
 
         function clearCurrentUser() {
             localStorage.removeItem('currentUser');
+            // Очищаем сохранённый логин
+            localStorage.removeItem('savedLogin');
         }
 
         function getVenueName() {
@@ -272,6 +301,16 @@
             return data.venueName || 'Кафе Уют';
         }
 
+        // ========== СОХРАНЕНИЕ ЛОГИНА ==========
+        function saveLogin(login) {
+            localStorage.setItem('savedLogin', login);
+        }
+
+        function getSavedLogin() {
+            return localStorage.getItem('savedLogin') || '';
+        }
+
+        // ========== РЕНДЕР СТОЛОВ ==========
         function renderTables() {
             const data = loadData();
             const tables = data.tables || {};
@@ -317,13 +356,19 @@
             if (!user) {
                 document.getElementById('loginBox').style.display = 'block';
                 document.getElementById('mainApp').classList.add('hidden');
+                // Восстанавливаем сохранённый логин
+                const savedLogin = getSavedLogin();
+                if (savedLogin) {
+                    document.getElementById('loginInput').value = savedLogin;
+                    document.getElementById('passwordInput').value = '';
+                    document.getElementById('passwordInput').focus();
+                }
                 return;
             }
 
             document.getElementById('loginBox').style.display = 'none';
             document.getElementById('mainApp').classList.remove('hidden');
 
-            // ОТОБРАЖЕНИЕ ИМЕНИ И РОЛИ
             const displayName = user.name || user.login;
             const roleDisplay = user.role === 'sadmin' ? 'Владелец' : user.role;
             
@@ -350,14 +395,26 @@
             renderTables();
         }
 
-        document.getElementById('loginBtn').addEventListener('click', () => {
+        // ========== ОБРАБОТЧИК ВХОДА ==========
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
             const login = document.getElementById('loginInput').value.trim();
             const password = document.getElementById('passwordInput').value.trim();
+            const rememberMe = document.getElementById('rememberMe').checked;
+            
             const data = loadData();
             const users = data.users || {};
 
             if (users[login] && users[login].password === password) {
                 setCurrentUser({ login, ...users[login] });
+                
+                if (rememberMe) {
+                    saveLogin(login);
+                } else {
+                    localStorage.removeItem('savedLogin');
+                }
+                
                 document.getElementById('loginError').style.display = 'none';
                 showApp();
             } else {
@@ -365,15 +422,18 @@
             }
         });
 
+        // ========== ВЫХОД ==========
         document.getElementById('logoutBtn').addEventListener('click', () => {
             clearCurrentUser();
+            // Очищаем поля
+            document.getElementById('loginInput').value = '';
+            document.getElementById('passwordInput').value = '';
             showApp();
         });
 
-        document.getElementById('passwordInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') document.getElementById('loginBtn').click();
-        });
+        // ========== ВВОД ПО ENTER (уже обрабатывается формой) ==========
 
+        // ========== ЗАПУСК ==========
         showApp();
 
         window.addEventListener('storage', (e) => {
