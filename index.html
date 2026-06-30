@@ -181,63 +181,8 @@
             color: white;
         }
 
-        .stats-mini {
-            background: white;
-            border-radius: 12px;
-            padding: 15px 20px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-        .stats-mini div {
-            text-align: center;
-        }
-        .stats-mini .label {
-            font-size: 13px;
-            color: #7f8c8d;
-        }
-        .stats-mini .value {
-            font-size: 20px;
-            font-weight: 700;
-            color: #2d3e50;
-        }
-
         .hidden {
             display: none !important;
-        }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #2d3e50;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            z-index: 9999;
-            animation: slideIn 0.5s ease;
-        }
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
         }
     </style>
 </head>
@@ -267,50 +212,26 @@
             <h1 id="venueTitle">🍽️ Кафе Уют</h1>
             <p class="subtitle" id="venueSubtitle">Выберите стол для работы</p>
 
-            <div class="stats-mini" id="statsMini">
-                <div>
-                    <div class="label">Всего заказов</div>
-                    <div class="value" id="totalOrders">0</div>
-                </div>
-                <div>
-                    <div class="label">Выручка</div>
-                    <div class="value" id="totalRevenue">0 ₽</div>
-                </div>
-                <div>
-                    <div class="label">Активных столов</div>
-                    <div class="value" id="activeTables">0</div>
-                </div>
-            </div>
-
             <div class="tables-grid" id="tablesGrid"></div>
 
             <div class="admin-links" id="adminLinks">
-                <a href="admin.html">⚙️ Управление меню</a>
-                <a href="users.html">👥 Управление пользователями</a>
+                <a href="admin.html">⚙️ Управление</a>
                 <a href="kitchen.html" class="kitchen">🍳 Кухня (заказы)</a>
             </div>
         </div>
     </div>
 
+    <script src="menu.js"></script>
     <script>
         // ============================================================
-        // ВСЯ ЛОГИКА ВНУТРИ — НИКАКИХ ВНЕШНИХ JS ФАЙЛОВ!
+        // ВСЯ ЛОГИКА ВНУТРИ
         // ============================================================
 
         // ========== ДАННЫЕ ==========
         function getDefaultData() {
             return {
                 venueName: 'Кафе Уют',
-                menu: [
-                    { id: 1, name: 'Цезарь', price: 350, category: 'Салаты', emoji: '🥗' },
-                    { id: 2, name: 'Греческий', price: 280, category: 'Салаты', emoji: '🥗' },
-                    { id: 3, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
-                    { id: 4, name: 'Стейк', price: 550, category: 'Горячее', emoji: '🥩' },
-                    { id: 5, name: 'Паста', price: 390, category: 'Горячее', emoji: '🍝' },
-                    { id: 6, name: 'Чай', price: 120, category: 'Напитки', emoji: '🍵' },
-                    { id: 7, name: 'Кофе', price: 150, category: 'Напитки', emoji: '☕' },
-                    { id: 8, name: 'Тирамису', price: 300, category: 'Десерты', emoji: '🍰' },
-                ],
+                menu: getDefaultMenu(),
                 users: {
                     'sadmin': { password: '123', role: 'sadmin', name: 'Главный администратор' }
                 },
@@ -355,22 +276,6 @@
             return data.venueName || 'Кафе Уют';
         }
 
-        // ========== ТОСТ ==========
-        function showToast(message) {
-            const existing = document.querySelector('.toast');
-            if (existing) existing.remove();
-
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.animation = 'slideOut 0.5s ease';
-                setTimeout(() => toast.remove(), 500);
-            }, 3000);
-        }
-
         // ========== РЕНДЕР СТОЛОВ ==========
         function renderTables() {
             const data = loadData();
@@ -378,8 +283,11 @@
             const grid = document.getElementById('tablesGrid');
 
             grid.innerHTML = '';
-            for (let i = 1; i <= 3; i++) {
-                const table = tables[i] || { orders: [], total: 0 };
+            const tableKeys = Object.keys(tables).sort((a, b) => parseInt(a) - parseInt(b));
+            
+            for (const key of tableKeys) {
+                const i = parseInt(key);
+                const table = tables[key] || { orders: [], total: 0 };
                 const openOrders = table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
                 const orderCount = openOrders.length;
                 const isOccupied = orderCount > 0;
@@ -406,19 +314,6 @@
                 grid.appendChild(card);
             }
 
-            const stats = data.stats || { totalOrders: 0, totalRevenue: 0 };
-            document.getElementById('totalOrders').textContent = stats.totalOrders || 0;
-            document.getElementById('totalRevenue').textContent = (stats.totalRevenue || 0) + ' ₽';
-
-            let active = 0;
-            for (let i = 1; i <= 3; i++) {
-                if (tables[i] && tables[i].orders) {
-                    const openOrders = tables[i].orders.filter(o => o.status !== 'closed');
-                    if (openOrders.length > 0) active++;
-                }
-            }
-            document.getElementById('activeTables').textContent = active;
-
             document.getElementById('venueTitle').textContent = '🍽️ ' + getVenueName();
         }
 
@@ -444,7 +339,6 @@
             } else if (user.role === 'Повар') {
                 links.style.display = 'grid';
                 links.querySelector('a[href="admin.html"]').style.display = 'none';
-                links.querySelector('a[href="users.html"]').style.display = 'none';
                 links.querySelector('a[href="kitchen.html"]').style.display = 'block';
             } else {
                 links.style.display = 'none';
@@ -483,14 +377,13 @@
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         showApp();
 
-        // Обновление при изменении данных в других вкладках
         window.addEventListener('storage', (e) => {
             if (e.key === 'cloudData' || e.key === 'currentUser') {
                 showApp();
             }
         });
 
-        console.log('✅ POS система загружена! (БЕЗ ВНЕШНИХ JS)');
+        console.log('✅ POS система загружена! Меню из menu.js');
     </script>
 
 </body>
