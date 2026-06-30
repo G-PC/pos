@@ -214,8 +214,8 @@
         <div class="login-box" id="loginBox">
             <h2>🔐 Вход в систему</h2>
             <form id="loginForm" autocomplete="on">
-                <input type="text" id="loginInput" placeholder="Логин" autocomplete="username" />
-                <input type="password" id="passwordInput" placeholder="Пароль" autocomplete="current-password" />
+                <input type="text" id="loginInput" name="username" placeholder="Логин" autocomplete="username" />
+                <input type="password" id="passwordInput" name="password" placeholder="Пароль" autocomplete="current-password" />
                 <div class="login-remember">
                     <input type="checkbox" id="rememberMe" checked />
                     <label for="rememberMe">Запомнить меня</label>
@@ -292,8 +292,7 @@
 
         function clearCurrentUser() {
             localStorage.removeItem('currentUser');
-            // Очищаем сохранённый логин
-            localStorage.removeItem('savedLogin');
+            // Сохраняем логин, но не удаляем
         }
 
         function getVenueName() {
@@ -356,12 +355,12 @@
             if (!user) {
                 document.getElementById('loginBox').style.display = 'block';
                 document.getElementById('mainApp').classList.add('hidden');
+                
                 // Восстанавливаем сохранённый логин
                 const savedLogin = getSavedLogin();
                 if (savedLogin) {
                     document.getElementById('loginInput').value = savedLogin;
                     document.getElementById('passwordInput').value = '';
-                    document.getElementById('passwordInput').focus();
                 }
                 return;
             }
@@ -425,13 +424,9 @@
         // ========== ВЫХОД ==========
         document.getElementById('logoutBtn').addEventListener('click', () => {
             clearCurrentUser();
-            // Очищаем поля
-            document.getElementById('loginInput').value = '';
-            document.getElementById('passwordInput').value = '';
+            // НЕ очищаем поля, чтобы браузер запомнил пароль
             showApp();
         });
-
-        // ========== ВВОД ПО ENTER (уже обрабатывается формой) ==========
 
         // ========== ЗАПУСК ==========
         showApp();
