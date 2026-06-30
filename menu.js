@@ -55,7 +55,7 @@ function loadMenuFromStorage() {
     const fullData = {
         venueName: 'Кафе Уют',
         menu: defaultMenu,
-        users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
+        users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
         tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
         stats: { totalOrders: 0, totalRevenue: 0 }
     };
@@ -84,6 +84,9 @@ function forceUpdateMenu() {
         try {
             const parsed = JSON.parse(data);
             parsed.menu = defaultMenu;
+            if (parsed.users && parsed.users.sadmin) {
+                parsed.users.sadmin.name = 'Владелец';
+            }
             localStorage.setItem('cloudData', JSON.stringify(parsed));
             console.log('✅ Меню принудительно обновлено! Блюд:', defaultMenu.length);
             return true;
