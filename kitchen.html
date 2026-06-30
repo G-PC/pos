@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>POS - Стол</title>
+    <title>Кухня - Заказы</title>
     <style>
         * {
             margin: 0;
@@ -13,21 +13,28 @@
         }
         body {
             background: #f0f2f5;
-            padding: 15px;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
             gap: 10px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
         }
         .header h1 {
-            font-size: 24px;
             color: #2d3e50;
         }
-        .header .back-btn {
+        .back-btn {
             background: #7f8c8d;
             color: white;
             border: none;
@@ -35,9 +42,11 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
         }
-        .header .close-btn {
-            background: #ff4757;
+        .refresh-btn {
+            background: #2d7aff;
             color: white;
             border: none;
             padding: 8px 20px;
@@ -45,288 +54,178 @@
             cursor: pointer;
             font-weight: 600;
         }
-        .container {
-            display: flex;
-            gap: 15px;
-            height: calc(100vh - 100px);
+        .refresh-btn:hover {
+            background: #1a5fd0;
         }
-        .menu-panel {
-            flex: 2;
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .menu-header {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        .menu-header .search-bar {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        .menu-header .refresh-btn {
-            padding: 10px 15px;
-            background: #2d7aff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        .categories {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 12px;
-        }
-        .cat-btn {
-            padding: 6px 16px;
-            border: none;
-            background: #e8e8e8;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .cat-btn.active {
-            background: #2d7aff;
-            color: white;
-        }
-        .items-grid {
+        .orders-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
-            overflow-y: auto;
-            flex: 1;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
         }
-        .item-card {
-            background: #f8f9fc;
-            border-radius: 10px;
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-        .item-card:hover {
-            border-color: #2d7aff;
-        }
-        .item-card .emoji {
-            font-size: 28px;
-            display: block;
-        }
-        .item-card .name {
-            font-size: 13px;
-            font-weight: 500;
-        }
-        .item-card .price {
-            color: #2d7aff;
-            font-weight: 700;
-        }
-        .order-panel {
-            flex: 1.2;
+        .order-card {
             background: white;
             border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            min-width: 280px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #2d7aff;
+            transition: 0.3s;
         }
-        .order-header {
+        .order-card.completed {
+            border-left-color: #2ed573;
+            opacity: 0.8;
+        }
+        .order-card .header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+            background: transparent;
+            padding: 0 0 8px 0;
         }
-        .order-header h2 {
+        .order-card .table {
+            font-weight: 700;
             font-size: 18px;
         }
-        .clear-btn {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 4px 12px;
+        .order-card .time {
+            color: #888;
+            font-size: 14px;
+        }
+        .order-card .items {
+            margin: 10px 0;
+        }
+        .order-card .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
             border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .order-list {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            border-top: 2px solid #eee;
-            padding-top: 10px;
-        }
-        .order-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px 0;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid #f5f5f5;
             font-size: 14px;
+            transition: 0.3s;
+            cursor: pointer;
         }
-        .order-item .info {
+        .order-card .item:hover {
+            background: #f0f2f5;
+        }
+        .order-card .item.done {
+            background: #e8f5e9;
+            text-decoration: line-through;
+            color: #888;
+        }
+        .order-card .item .item-name {
             display: flex;
             align-items: center;
             gap: 8px;
-            flex: 1;
         }
-        .order-item .qty-control {
+        .order-card .item .check-btn {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            transition: 0.3s;
+            flex-shrink: 0;
         }
-        .qty-control button {
-            width: 22px;
-            height: 22px;
-            border: none;
-            background: #e0e0e0;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 700;
+        .order-card .item .check-btn:hover {
+            border-color: #2d7aff;
+            transform: scale(1.1);
         }
-        .qty-control span {
-            min-width: 18px;
-            text-align: center;
+        .order-card .item .check-btn.done {
+            background: #2ed573;
+            border-color: #2ed573;
+            color: white;
+        }
+        .order-card .item .qty {
+            background: #e8e8e8;
+            padding: 0 8px;
+            border-radius: 10px;
+            font-size: 12px;
             font-weight: 600;
         }
-        .item-total {
+        .order-card .total {
             font-weight: 700;
-            min-width: 45px;
-            text-align: right;
-        }
-        .remove-item {
-            background: none;
-            border: none;
-            color: #ff4757;
-            cursor: pointer;
             font-size: 16px;
-        }
-        .order-summary {
-            background: #f8f9fc;
-            padding: 10px;
-            border-radius: 8px;
-        }
-        .summary-row {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 2px solid #eee;
             display: flex;
             justify-content: space-between;
-            padding: 3px 0;
-            font-size: 14px;
         }
-        .summary-row.total {
-            font-size: 20px;
-            font-weight: 800;
-            color: #2d7aff;
-            border-top: 2px solid #ddd;
-            padding-top: 6px;
+        .order-card .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
         }
-        .payment-area {
+        .status.open {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge {
+            background: #ff6b35;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        .empty {
+            text-align: center;
+            color: #888;
+            padding: 50px;
+            font-size: 18px;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff6b35;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4);
+            z-index: 999;
+            animation: slideIn 0.5s ease;
+            display: none;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .auto-refresh {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        .status-bar {
             display: flex;
-            gap: 8px;
-            margin-top: 10px;
+            align-items: center;
+            gap: 15px;
             flex-wrap: wrap;
         }
-        .payment-area input {
-            flex: 1;
-            padding: 8px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 15px;
-            min-width: 80px;
-        }
-        .pay-btn {
-            background: #2ed573;
+        .order-count {
+            background: #ff6b35;
             color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            flex: 1;
-        }
-        .change-display {
-            font-size: 16px;
-            font-weight: 700;
-            color: #2d7aff;
-            margin-top: 4px;
-            text-align: center;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-        }
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            max-width: 450px;
-            width: 90%;
-        }
-        .modal-close {
-            float: right;
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .receipt {
-            font-family: 'Courier New', monospace;
-        }
-        .receipt .header {
-            text-align: center;
-            font-size: 18px;
-            font-weight: 700;
-            padding-bottom: 10px;
-            border-bottom: 2px dashed #333;
-            margin-bottom: 10px;
-        }
-        .receipt .row {
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
+            padding: 2px 12px;
+            border-radius: 20px;
             font-size: 14px;
-        }
-        .receipt .row.total {
-            font-weight: 700;
-            font-size: 16px;
-            border-top: 2px solid #333;
-            padding-top: 8px;
-        }
-        .receipt .footer {
-            text-align: center;
-            margin-top: 12px;
-            padding-top: 10px;
-            border-top: 2px dashed #333;
-            font-size: 12px;
-            color: #666;
-        }
-        .print-btn {
-            background: #2d7aff;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
-            cursor: pointer;
             font-weight: 600;
-            margin-top: 10px;
-            width: 100%;
         }
         .toast {
             position: fixed;
@@ -339,76 +238,26 @@
             z-index: 9999;
             animation: slideIn 0.5s ease;
         }
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        @media (max-width: 850px) {
-            .container {
-                flex-direction: column;
-                height: auto;
-            }
-            .order-panel {
-                min-width: auto;
-            }
-        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div>
-            <h1 id="tableTitle">Стол 1</h1>
-            <span id="tableStatus" style="font-size:14px;color:#7f8c8d;"></span>
-        </div>
-        <div style="display:flex;gap:8px;">
-            <button class="back-btn" onclick="window.location.href='index.html'">← Назад</button>
-            <button class="close-btn" id="closeTableBtn">Закрыть</button>
-        </div>
-    </div>
-
     <div class="container">
-        <div class="menu-panel">
-            <div class="menu-header">
-                <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Поиск..." />
-                <button class="refresh-btn" id="refreshMenuBtn">🔄</button>
+        <div class="header">
+            <div>
+                <h1>🍳 Кухня — Активные заказы</h1>
+                <div class="auto-refresh">Автообновление каждые 5 секунд</div>
             </div>
-            <div class="categories" id="categoriesContainer"></div>
-            <div class="items-grid" id="itemsGrid"></div>
+            <div class="status-bar">
+                <span class="order-count" id="orderCount">0</span>
+                <button class="refresh-btn" id="refreshBtn">🔄 Обновить</button>
+                <a href="index.html" class="back-btn">← На главную</a>
+            </div>
         </div>
 
-        <div class="order-panel">
-            <div class="order-header">
-                <h2>🧾 Заказ</h2>
-                <button class="clear-btn" id="clearOrderBtn">Очистить</button>
-            </div>
-            <div class="order-list" id="orderList"></div>
-            <div class="order-summary">
-                <div class="summary-row"><span>Позиций:</span><span id="totalItems">0</span></div>
-                <div class="summary-row"><span>Сумма:</span><span id="totalSum">0 ₽</span></div>
-                <div class="summary-row total"><span>Итого:</span><span id="grandTotal">0 ₽</span></div>
-            </div>
-            <div class="payment-area">
-                <input type="number" id="cashInput" placeholder="Внесено ₽" min="0" />
-                <button class="pay-btn" id="payBtn">💳 Оплатить</button>
-            </div>
-            <div class="change-display" id="changeDisplay">Сдача: 0 ₽</div>
-        </div>
+        <div class="orders-grid" id="ordersGrid"></div>
     </div>
 
-    <!-- Модалка чека -->
-    <div class="modal" id="receiptModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeReceiptBtn">✕</button>
-            <div class="receipt" id="receiptContent"></div>
-            <button class="print-btn" id="printReceiptBtn">🖨️ Печать</button>
-        </div>
-    </div>
+    <div class="notification" id="notification">🆕 Новый заказ!</div>
 
     <script src="menu.js"></script>
     <script>
@@ -416,25 +265,24 @@
         // ВСЯ ЛОГИКА ВНУТРИ
         // ============================================================
 
-        // ========== ЕДИНАЯ ЗАГРУЗКА ДАННЫХ ==========
+        // ========== ДАННЫЕ ==========
+        function getDefaultData() {
+            return {
+                venueName: 'Кафе Уют',
+                menu: getDefaultMenu(),
+                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
+                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 },
+                '3': { orders: [], total: 0 } },
+                stats: { totalOrders: 0, totalRevenue: 0 }
+            };
+        }
+
         function loadData() {
             const cached = localStorage.getItem('cloudData');
             if (cached) {
-                try {
-                    const parsed = JSON.parse(cached);
-                    if (parsed.menu && parsed.menu.length > 0) {
-                        return parsed;
-                    }
-                } catch (e) { console.warn('Ошибка парсинга'); }
+                try { return JSON.parse(cached); } catch (e) {}
             }
-            const defaultMenu = typeof getDefaultMenu === 'function' ? getDefaultMenu() : DEFAULT_MENU;
-            const defaultData = {
-                venueName: 'Кафе Уют',
-                menu: defaultMenu,
-                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
-                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
-                stats: { totalOrders: 0, totalRevenue: 0 }
-            };
+            const defaultData = getDefaultData();
             localStorage.setItem('cloudData', JSON.stringify(defaultData));
             return defaultData;
         }
@@ -448,6 +296,16 @@
             return data ? JSON.parse(data) : null;
         }
 
+        // ========== ПРОВЕРКА ==========
+        const user = getCurrentUser();
+        if (!user || (user.role !== 'sadmin' && user.role !== 'Повар')) {
+            alert('Доступ запрещен. Только для поваров и sadmin');
+            window.location.href = 'index.html';
+        }
+
+        // ========== СОСТОЯНИЕ ==========
+        let previousOrderIds = new Set();
+
         // ========== ТОСТ ==========
         function showToast(msg) {
             const t = document.createElement('div');
@@ -457,283 +315,138 @@
             setTimeout(() => { t.remove(); }, 3000);
         }
 
-        // ========== ПРОВЕРКА ==========
-        const user = getCurrentUser();
-        if (!user || (user.role !== 'sadmin' && user.role !== 'Официант')) {
-            alert('Нет прав');
-            window.location.href = 'index.html';
-        }
-
-        const tableNumber = parseInt(new URLSearchParams(window.location.search).get('table')) || 1;
-        let cart = [];
-        let currentCategory = 'Все';
-        let menu = [];
-
-        // ========== DOM ==========
-        const $ = id => document.getElementById(id);
-        const itemsGrid = $('itemsGrid');
-        const categoriesContainer = $('categoriesContainer');
-        const orderList = $('orderList');
-        const totalItems = $('totalItems');
-        const totalSum = $('totalSum');
-        const grandTotal = $('grandTotal');
-        const cashInput = $('cashInput');
-        const changeDisplay = $('changeDisplay');
-        const searchInput = $('searchInput');
-        const tableTitle = $('tableTitle');
-        const tableStatus = $('tableStatus');
-
-        // ========== ЗАГРУЗКА МЕНЮ ==========
-        function loadMenu() {
+        // ========== ОТМЕТИТЬ БЛЮДО ==========
+        function toggleItemDone(tableNum, orderTimestamp, itemIndex) {
             const data = loadData();
-            menu = data.menu || [];
-            if (menu.length === 0) {
-                const defaultMenu = typeof getDefaultMenu === 'function' ? getDefaultMenu() : DEFAULT_MENU;
-                menu = defaultMenu;
-                data.menu = menu;
-                saveData(data);
-            }
-            return menu;
-        }
+            const table = data.tables[tableNum];
+            if (!table) return;
 
-        // ========== РЕНДЕР КАТЕГОРИЙ ==========
-        function renderCategories() {
-            const data = loadData();
-            menu = data.menu || [];
-            const cats = ['Все', ...new Set(menu.map(i => i.category || 'Без'))];
-            categoriesContainer.innerHTML = cats.map(c =>
-                `<button class="cat-btn ${c === currentCategory ? 'active' : ''}" data-cat="${c}">${c}</button>`
-            ).join('');
-            document.querySelectorAll('.cat-btn').forEach(b => {
-                b.onclick = () => { currentCategory = b.dataset.cat;
-                    renderCategories();
-                    renderItems(); };
-            });
-        }
+            const order = table.orders.find(o => o.timestamp === orderTimestamp);
+            if (!order) return;
 
-        // ========== РЕНДЕР БЛЮД ==========
-        function renderItems() {
-            const data = loadData();
-            menu = data.menu || [];
-            const q = searchInput.value.toLowerCase().trim();
-            const filtered = menu.filter(i => {
-                const matchCat = currentCategory === 'Все' || i.category === currentCategory;
-                const matchName = i.name.toLowerCase().includes(q);
-                return matchCat && matchName;
-            });
-            itemsGrid.innerHTML = filtered.map(i =>
-                `<div class="item-card" data-id="${i.id}">
-                    <span class="emoji">${i.emoji || '🍽️'}</span>
-                    <div class="name">${i.name}</div>
-                    <div class="price">${i.price} ₽</div>
-                </div>`
-            ).join('');
-            document.querySelectorAll('.item-card').forEach(el => {
-                el.onclick = () => addToCart(parseInt(el.dataset.id));
-            });
-        }
-
-        function addToCart(id) {
-            const item = menu.find(i => i.id === id);
-            if (!item) return;
-            const existing = cart.find(i => i.id === id);
-            if (existing) existing.quantity += 1;
-            else cart.push({ ...item, quantity: 1 });
-            renderCart();
-            saveOrder();
-        }
-
-        function renderCart() {
-            if (cart.length === 0) {
-                orderList.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Корзина пуста</p>';
+            if (!order.items[itemIndex].done) {
+                order.items[itemIndex].done = true;
+                showToast('✅ Блюдо готово!');
             } else {
-                orderList.innerHTML = cart.map((item, idx) =>
-                    `<div class="order-item">
-                        <div class="info"><span>${item.emoji || '🍽️'} ${item.name}</span></div>
-                        <div class="qty-control">
-                            <button data-idx="${idx}" data-act="dec">−</button>
-                            <span>${item.quantity}</span>
-                            <button data-idx="${idx}" data-act="inc">+</button>
-                        </div>
-                        <div class="item-total">${item.price * item.quantity} ₽</div>
-                        <button class="remove-item" data-idx="${idx}">✕</button>
-                    </div>`
-                ).join('');
-                document.querySelectorAll('.qty-control button').forEach(b => {
-                    b.onclick = () => {
-                        const idx = parseInt(b.dataset.idx);
-                        if (b.dataset.act === 'inc') cart[idx].quantity += 1;
-                        else { cart[idx].quantity -= 1; if (cart[idx].quantity <= 0) cart.splice(idx, 1); }
-                        renderCart();
-                        saveOrder();
-                    };
-                });
-                document.querySelectorAll('.remove-item').forEach(b => {
-                    b.onclick = () => { cart.splice(parseInt(b.dataset.idx), 1);
-                        renderCart();
-                        saveOrder(); };
-                });
+                order.items[itemIndex].done = false;
+                showToast('↩️ Отмечено как неготовое');
             }
-            updateSummary();
+
+            const allDone = order.items.every(item => item.done === true);
+            if (allDone && order.status !== 'closed') {
+                order.status = 'completed';
+                showToast('🎉 Все блюда готовы!');
+            } else {
+                order.status = 'open';
+            }
+
+            saveData(data);
+            renderOrders();
         }
 
-        function updateSummary() {
-            const count = cart.reduce((a, i) => a + i.quantity, 0);
-            const sum = cart.reduce((a, i) => a + i.price * i.quantity, 0);
-            totalItems.textContent = count;
-            totalSum.textContent = sum + ' ₽';
-            grandTotal.textContent = sum + ' ₽';
-        }
-
-        function saveOrder() {
+        // ========== РЕНДЕР ==========
+        function renderOrders() {
             const data = loadData();
-            if (!data.tables) data.tables = {};
-            if (!data.tables[tableNumber]) data.tables[tableNumber] = { orders: [], total: 0 };
-            const table = data.tables[tableNumber];
+            const grid = document.getElementById('ordersGrid');
+            const tables = data.tables || {};
 
-            if (cart.length === 0) {
-                table.orders = table.orders.filter(o => o.status === 'closed');
-                saveData(data);
+            let allOrders = [];
+            for (let tableNum = 1; tableNum <= 3; tableNum++) {
+                const table = tables[tableNum];
+                if (table && table.orders) {
+                    const visibleOrders = table.orders.filter(o => o.status !== 'closed');
+                    visibleOrders.forEach(order => {
+                        const orderId = `${tableNum}_${order.timestamp}`;
+                        allOrders.push({
+                            id: orderId,
+                            table: tableNum,
+                            ...order,
+                            items: order.items || []
+                        });
+                    });
+                }
+            }
+
+            allOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            const currentIds = new Set(allOrders.map(o => o.id));
+            const newOrders = [...currentIds].filter(id => !previousOrderIds.has(id));
+            if (newOrders.length > 0) {
+                showNotification(`🆕 ${newOrders.length} новый(ых) заказ(а)!`);
+            }
+            previousOrderIds = currentIds;
+
+            document.getElementById('orderCount').textContent = allOrders.length;
+
+            if (allOrders.length === 0) {
+                grid.innerHTML =
+                    `<div class="empty" style="grid-column:1/-1;">🎉 Все заказы выполнены!<br><span style="font-size:14px;color:#aaa;">Новых заказов нет</span></div>`;
                 return;
             }
 
-            let openOrder = table.orders.find(o => o.status !== 'closed');
-            if (openOrder) {
-                openOrder.items = cart.map(i => ({ ...i }));
-                openOrder.total = cart.reduce((a, i) => a + i.price * i.quantity, 0);
-            } else {
-                table.orders.push({
-                    items: cart.map(i => ({ ...i })),
-                    total: cart.reduce((a, i) => a + i.price * i.quantity, 0),
-                    status: 'open',
-                    timestamp: new Date().toISOString()
-                });
-            }
-            table.total = table.orders.filter(o => o.status !== 'closed').reduce((a, o) => a + o.total, 0);
-            saveData(data);
-            updateStatus();
+            grid.innerHTML = allOrders.map(order => {
+                const isCompleted = order.status === 'completed';
+                const allItemsDone = order.items.every(item => item.done === true);
+
+                return `
+                    <div class="order-card ${isCompleted ? 'completed' : ''}">
+                        <div class="header">
+                            <span class="table">🪑 Стол ${order.table}</span>
+                            <span class="time">${new Date(order.timestamp).toLocaleTimeString('ru-RU')}</span>
+                        </div>
+                        <div style="margin-bottom:8px;">
+                            <span class="status ${isCompleted ? 'completed' : 'open'}">
+                                ${isCompleted ? '✅ Все готово!' : '🟡 В работе'}
+                            </span>
+                            <span class="badge">${order.items.length} позиций</span>
+                            ${allItemsDone && !isCompleted ? '<span style="color:#2ed573;font-size:12px;font-weight:600;margin-left:8px;">⚡ Всё готово!</span>' : ''}
+                        </div>
+                        <div class="items">
+                            ${order.items.map((item, idx) => `
+                                <div class="item ${item.done ? 'done' : ''}" onclick="toggleItemDone(${order.table}, '${order.timestamp}', ${idx})">
+                                    <div class="item-name">
+                                        <button class="check-btn ${item.done ? 'done' : ''}">
+                                            ${item.done ? '✓' : ''}
+                                        </button>
+                                        <span>${item.emoji || '🍽️'} ${item.name}</span>
+                                    </div>
+                                    <span class="qty">×${item.quantity}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="total">
+                            <span>Итого:</span>
+                            <span>${order.total} ₽</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        function updateStatus() {
-            const data = loadData();
-            const table = data.tables ? data.tables[tableNumber] : null;
-            const open = table && table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
-            tableStatus.textContent = open.length > 0 ? `🟢 Активен (${open.length} зак.)` : '⚪ Свободен';
-            tableStatus.style.color = open.length > 0 ? '#2e7d32' : '#7f8c8d';
-            tableTitle.textContent = `Стол ${tableNumber}`;
+        // ========== УВЕДОМЛЕНИЯ ==========
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
         }
 
-        function refreshMenu() {
-            loadData();
-            renderCategories();
-            renderItems();
-            showToast('✅ Меню обновлено');
+        // ========== ОБНОВЛЕНИЕ ==========
+        function refresh() {
+            renderOrders();
         }
-
-        function showReceipt(order) {
-            const data = loadData();
-            const venue = data.venueName || 'Кафе Уют';
-            let html =
-                `<div class="header">${venue}</div><div style="text-align:center;font-size:12px;color:#666;">Стол ${tableNumber} | ${new Date().toLocaleString('ru-RU')}</div><div style="border-bottom:1px dashed #999;margin:8px 0;"></div>`;
-            order.items.forEach(i => {
-                html +=
-                    `<div class="row"><span>${i.emoji || '🍽️'} ${i.name} × ${i.quantity}</span><span>${i.price * i.quantity} ₽</span></div>`;
-            });
-            html +=
-                `<div style="border-bottom:1px dashed #999;margin:8px 0;"></div><div class="row total"><span>ИТОГО</span><span>${order.total} ₽</span></div>
-                <div class="row"><span>Внесено</span><span>${order.paidAmount || order.total} ₽</span></div>
-                <div class="row"><span>Сдача</span><span>${order.change || 0} ₽</span></div>
-                <div class="footer">Спасибо!<br>${order.operator || ''}</div>`;
-            document.getElementById('receiptContent').innerHTML = html;
-            document.getElementById('receiptModal').style.display = 'flex';
-        }
-
-        // ========== СОБЫТИЯ ==========
-        $('payBtn').onclick = () => {
-            if (cart.length === 0) { alert('Корзина пуста!'); return; }
-            const total = cart.reduce((a, i) => a + i.price * i.quantity, 0);
-            const cash = parseFloat(cashInput.value);
-            if (isNaN(cash) || cash < total) { alert(`Сумма: ${total} ₽`); return; }
-            const change = cash - total;
-            changeDisplay.textContent = `Сдача: ${change.toFixed(2)} ₽`;
-
-            const data = loadData();
-            data.stats.totalOrders = (data.stats.totalOrders || 0) + 1;
-            data.stats.totalRevenue = (data.stats.totalRevenue || 0) + total;
-            const table = data.tables[tableNumber];
-            let closed = null;
-            for (let i = table.orders.length - 1; i >= 0; i--) {
-                if (table.orders[i].status !== 'closed') {
-                    table.orders[i].status = 'closed';
-                    table.orders[i].paidAmount = cash;
-                    table.orders[i].change = change;
-                    table.orders[i].operator = user ? user.name || user.login : '';
-                    closed = table.orders[i];
-                    break;
-                }
-            }
-            table.total = table.orders.filter(o => o.status !== 'closed').reduce((a, o) => a + o.total, 0);
-            saveData(data);
-            if (closed) showReceipt(closed);
-            cart = [];
-            renderCart();
-            cashInput.value = '';
-            updateStatus();
-            setTimeout(() => { changeDisplay.textContent = 'Сдача: 0 ₽'; }, 5000);
-        };
-
-        $('closeReceiptBtn').onclick = () => document.getElementById('receiptModal').style.display = 'none';
-        document.getElementById('receiptModal').onclick = (e) => { if (e.target === e.currentTarget) document.getElementById(
-                'receiptModal').style.display = 'none'; };
-
-        $('printReceiptBtn').onclick = () => {
-            const w = window.open('', '_blank', 'width=400,height=600');
-            w.document.write(
-                `<html><head><title>Чек</title><style>body{font-family:'Courier New',monospace;padding:20px;}.receipt{max-width:350px;margin:0 auto;}</style></head><body><div class="receipt">${document.getElementById('receiptContent').innerHTML}</div><script>window.onload=function(){window.print();setTimeout(window.close,1000);}<\/script></body></html>`
-                );
-            w.document.close();
-        };
-
-        $('closeTableBtn').onclick = () => {
-            if (cart.length > 0 && !confirm('Закрыть стол без оплаты?')) return;
-            const data = loadData();
-            data.tables[tableNumber] = { orders: [], total: 0 };
-            saveData(data);
-            cart = [];
-            renderCart();
-            updateStatus();
-            alert('Стол закрыт');
-            window.location.href = 'index.html';
-        };
-
-        $('clearOrderBtn').onclick = () => {
-            if (cart.length === 0) return;
-            if (confirm('Очистить заказ?')) { cart = [];
-                renderCart();
-                saveOrder(); }
-        };
-
-        searchInput.oninput = renderItems;
-        $('refreshMenuBtn').onclick = refreshMenu;
-
-        // ========== АВТООБНОВЛЕНИЕ ==========
-        setInterval(() => { if (cart.length > 0) saveOrder(); }, 5000);
-        setInterval(() => { renderCategories();
-            renderItems(); }, 10000);
 
         // ========== ЗАПУСК ==========
-        loadMenu();
-        renderCategories();
-        renderItems();
-        loadData();
-        const saved = loadData();
-        const table = saved.tables ? saved.tables[tableNumber] : null;
-        const open = table && table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
-        if (open.length > 0) cart = open[open.length - 1].items.map(i => ({ ...i }));
-        renderCart();
-        updateStatus();
+        document.getElementById('refreshBtn').addEventListener('click', refresh);
+        setInterval(refresh, 5000);
+        refresh();
 
-        console.log(`✅ Стол ${tableNumber} готов`);
+        // Делаем функцию глобальной
+        window.toggleItemDone = toggleItemDone;
+
+        console.log('✅ Кухня загружена!');
     </script>
 </body>
 </html>
