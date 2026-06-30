@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Админ-панель</title>
+    <title>Управление</title>
     <style>
         * {
             margin: 0;
@@ -260,12 +260,44 @@
                 flex-direction: column;
             }
         }
+        .table-count-input {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .table-count-input input {
+            width: 80px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+        }
+        .table-count-input button {
+            padding: 10px 25px;
+            background: #2d7aff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .table-count-input button:hover {
+            background: #1a5fd0;
+        }
+        .table-count-input button.danger {
+            background: #ff4757;
+        }
+        .table-count-input button.danger:hover {
+            background: #c0392b;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>⚙️ Админ-панель</h1>
+            <h1>⚙️ Управление</h1>
             <div class="user-info">
                 <span id="adminName">sadmin</span>
                 <span class="role" id="adminRole">sadmin</span>
@@ -276,17 +308,20 @@
         <div class="tabs">
             <button class="tab-btn active" data-tab="dashboard">📊 Статистика</button>
             <button class="tab-btn" data-tab="menu">🍽️ Меню</button>
-            <button class="tab-btn" data-tab="orders">🧾 Заказы</button>
+            <button class="tab-btn" data-tab="users">👥 Пользователи</button>
             <button class="tab-btn" data-tab="tables">🪑 Столы</button>
+            <button class="tab-btn" data-tab="orders">🧾 Заказы</button>
             <button class="tab-btn" data-tab="settings">⚙️ Настройки</button>
         </div>
 
+        <!-- СТАТИСТИКА -->
         <div class="tab-content active" id="tab-dashboard">
             <div class="stats-grid">
                 <div class="stat-card"><div class="label">Всего заказов</div><div class="value" id="statOrders">0</div></div>
                 <div class="stat-card"><div class="label">Выручка</div><div class="value" id="statRevenue">0 ₽</div></div>
                 <div class="stat-card"><div class="label">Активных столов</div><div class="value" id="statActiveTables">0</div></div>
                 <div class="stat-card"><div class="label">Всего блюд</div><div class="value" id="statDishes">0</div></div>
+                <div class="stat-card"><div class="label">Пользователей</div><div class="value" id="statUsers">0</div></div>
             </div>
             <div id="recentOrders">
                 <h3>📋 Последние заказы</h3>
@@ -294,6 +329,7 @@
             </div>
         </div>
 
+        <!-- МЕНЮ -->
         <div class="tab-content" id="tab-menu">
             <h3 style="margin-bottom:15px;">➕ Добавить блюдо</h3>
             <div class="form-grid">
@@ -307,6 +343,40 @@
             <div id="menuList"></div>
         </div>
 
+        <!-- ПОЛЬЗОВАТЕЛИ -->
+        <div class="tab-content" id="tab-users">
+            <h3 style="margin-bottom:15px;">➕ Добавить пользователя</h3>
+            <div class="form-grid">
+                <input type="text" id="addUserLogin" placeholder="Логин" />
+                <input type="password" id="addUserPassword" placeholder="Пароль" />
+                <input type="text" id="addUserName" placeholder="Имя" />
+                <select id="addUserRole">
+                    <option value="Официант">Официант</option>
+                    <option value="Повар">Повар</option>
+                    <option value="sadmin">sadmin</option>
+                </select>
+                <button id="addUserBtn">Добавить</button>
+            </div>
+            <h3 style="margin:20px 0 10px;">📋 Список пользователей</h3>
+            <div id="usersList"></div>
+        </div>
+
+        <!-- СТОЛЫ -->
+        <div class="tab-content" id="tab-tables">
+            <h3 style="margin-bottom:15px;">🪑 Количество столов</h3>
+            <div class="table-count-input">
+                <label>Количество столов:</label>
+                <input type="number" id="tableCountInput" min="1" max="20" value="3" />
+                <button id="updateTablesBtn">Обновить</button>
+                <button id="resetTablesBtn" class="danger">Сбросить все столы</button>
+            </div>
+            <div style="margin-top:20px;">
+                <h4>Статус столов:</h4>
+                <div id="tablesStatusList" style="margin-top:10px;"></div>
+            </div>
+        </div>
+
+        <!-- ЗАКАЗЫ -->
         <div class="tab-content" id="tab-orders">
             <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;">
                 <button id="viewAllOrders" class="tab-btn" style="background:#2d7aff;color:white;padding:8px 20px;">Все</button>
@@ -316,18 +386,7 @@
             <div id="ordersList"></div>
         </div>
 
-        <div class="tab-content" id="tab-tables">
-            <div class="stats-grid" style="margin-bottom:20px;">
-                <div class="stat-card"><div class="label">Стол 1</div><div class="value" id="table1Status">Свободен</div></div>
-                <div class="stat-card"><div class="label">Стол 2</div><div class="value" id="table2Status">Свободен</div></div>
-                <div class="stat-card"><div class="label">Стол 3</div><div class="value" id="table3Status">Свободен</div></div>
-            </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
-                <button class="tab-btn" style="background:#ff4757;color:white;padding:8px 20px;" id="resetAllTables">🔄 Сбросить все</button>
-            </div>
-            <div id="tablesDetail"></div>
-        </div>
-
+        <!-- НАСТРОЙКИ -->
         <div class="tab-content" id="tab-settings">
             <h3 style="margin-bottom:15px;">🏷️ Настройки заведения</h3>
             <div class="form-grid" style="max-width:500px;">
@@ -356,21 +415,15 @@
         // ВСЯ ЛОГИКА ВНУТРИ
         // ============================================================
 
-        // ========== ЕДИНАЯ ЗАГРУЗКА ДАННЫХ ==========
+        // ========== ДАННЫЕ ==========
         function loadData() {
             const cached = localStorage.getItem('cloudData');
             if (cached) {
-                try {
-                    const parsed = JSON.parse(cached);
-                    if (parsed.menu && parsed.menu.length > 0) {
-                        return parsed;
-                    }
-                } catch (e) { console.warn('Ошибка парсинга'); }
+                try { return JSON.parse(cached); } catch (e) {}
             }
-            const defaultMenu = typeof getDefaultMenu === 'function' ? getDefaultMenu() : DEFAULT_MENU;
             const defaultData = {
                 venueName: 'Кафе Уют',
-                menu: defaultMenu,
+                menu: getDefaultMenu(),
                 users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
                 tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
                 stats: { totalOrders: 0, totalRevenue: 0 }
@@ -436,24 +489,26 @@
             const stats = data.stats || { totalOrders: 0, totalRevenue: 0 };
             const tables = data.tables || {};
             const menu = data.menu || [];
+            const users = data.users || {};
 
             document.getElementById('statOrders').textContent = stats.totalOrders || 0;
             document.getElementById('statRevenue').textContent = (stats.totalRevenue || 0) + ' ₽';
 
             let active = 0;
-            for (let i = 1; i <= 3; i++) {
-                if (tables[i] && tables[i].orders) {
-                    const open = tables[i].orders.filter(o => o.status !== 'closed');
+            for (const key in tables) {
+                if (tables[key] && tables[key].orders) {
+                    const open = tables[key].orders.filter(o => o.status !== 'closed');
                     if (open.length > 0) active++;
                 }
             }
             document.getElementById('statActiveTables').textContent = active;
             document.getElementById('statDishes').textContent = menu.length;
+            document.getElementById('statUsers').textContent = Object.keys(users).length;
 
             let allOrders = [];
-            for (let i = 1; i <= 3; i++) {
-                if (tables[i] && tables[i].orders) {
-                    tables[i].orders.forEach(order => { allOrders.push({ table: i, ...order }); });
+            for (const key in tables) {
+                if (tables[key] && tables[key].orders) {
+                    tables[key].orders.forEach(order => { allOrders.push({ table: key, ...order }); });
                 }
             }
             allOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -579,6 +634,178 @@
             document.getElementById('addEmoji').value = '';
         };
 
+        // ========== ПОЛЬЗОВАТЕЛИ ==========
+        function renderUsers() {
+            const data = loadData();
+            const users = data.users || {};
+            const container = document.getElementById('usersList');
+
+            if (Object.keys(users).length === 0) {
+                container.innerHTML = '<div class="empty">Нет пользователей</div>';
+                return;
+            }
+
+            container.innerHTML = Object.entries(users).map(([login, userData]) =>
+                `<div class="list-item">
+                    <div class="info">
+                        <span class="name">${login}</span>
+                        <span class="detail">${userData.name || ''}</span>
+                        <span class="badge" style="background:${userData.role === 'sadmin' ? '#ff6b35' : userData.role === 'Повар' ? '#2ed573' : '#2d7aff'};color:white;">${userData.role}</span>
+                        ${login === 'sadmin' ? '🔒' : ''}
+                    </div>
+                    <div class="actions">
+                        ${login !== 'sadmin' ? `<button class="edit" data-login="${login}">✏️</button><button class="delete" data-login="${login}">🗑️</button>` : ''}
+                    </div>
+                </div>`
+            ).join('');
+
+            document.querySelectorAll('#tab-users .delete').forEach(btn => {
+                btn.onclick = () => {
+                    const login = btn.dataset.login;
+                    if (confirm(`Удалить пользователя "${login}"?`)) {
+                        const data = loadData();
+                        delete data.users[login];
+                        saveData(data);
+                        renderUsers();
+                        renderDashboard();
+                        showToast('✅ Пользователь удалён');
+                    }
+                };
+            });
+
+            document.querySelectorAll('#tab-users .edit').forEach(btn => {
+                btn.onclick = () => {
+                    const login = btn.dataset.login;
+                    const data = loadData();
+                    const userData = data.users[login];
+                    if (userData) {
+                        openEditModal('Редактировать пользователя',
+                            `<div class="form-grid">
+                                <input type="text" id="editUserName" value="${userData.name || ''}" placeholder="Имя" />
+                                <input type="password" id="editUserPassword" placeholder="Новый пароль (оставьте пустым)" />
+                                <select id="editUserRole">
+                                    <option value="Официант" ${userData.role === 'Официант' ? 'selected' : ''}>Официант</option>
+                                    <option value="Повар" ${userData.role === 'Повар' ? 'selected' : ''}>Повар</option>
+                                    <option value="sadmin" ${userData.role === 'sadmin' ? 'selected' : ''}>sadmin</option>
+                                </select>
+                                <button id="saveEditUser" data-login="${login}">Сохранить</button>
+                            </div>`
+                        );
+                        document.getElementById('saveEditUser').onclick = () => {
+                            const name = document.getElementById('editUserName').value.trim();
+                            const password = document.getElementById('editUserPassword').value.trim();
+                            const role = document.getElementById('editUserRole').value;
+                            const data = loadData();
+                            if (data.users[login]) {
+                                data.users[login].name = name || login;
+                                if (password) data.users[login].password = password;
+                                data.users[login].role = role;
+                                saveData(data);
+                                renderUsers();
+                                renderDashboard();
+                                closeEditModal();
+                                showToast('✅ Пользователь обновлён');
+                            }
+                        };
+                    }
+                };
+            });
+        }
+
+        // ========== ДОБАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯ ==========
+        document.getElementById('addUserBtn').onclick = () => {
+            const login = document.getElementById('addUserLogin').value.trim();
+            const password = document.getElementById('addUserPassword').value.trim();
+            const name = document.getElementById('addUserName').value.trim();
+            const role = document.getElementById('addUserRole').value;
+
+            if (!login || !password) {
+                alert('Заполните логин и пароль!');
+                return;
+            }
+
+            const data = loadData();
+            if (data.users[login]) {
+                alert('Пользователь уже существует!');
+                return;
+            }
+
+            data.users[login] = { password, role, name: name || login };
+            saveData(data);
+            renderUsers();
+            renderDashboard();
+            showToast('✅ Пользователь добавлен');
+
+            document.getElementById('addUserLogin').value = '';
+            document.getElementById('addUserPassword').value = '';
+            document.getElementById('addUserName').value = '';
+        };
+
+        // ========== СТОЛЫ ==========
+        function renderTablesAdmin() {
+            const data = loadData();
+            const tables = data.tables || {};
+            const container = document.getElementById('tablesStatusList');
+
+            let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">';
+            for (const key in tables) {
+                const table = tables[key] || { orders: [], total: 0 };
+                const openOrders = table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
+                const status = openOrders.length > 0 ? '🟢 Занят' : '⚪ Свободен';
+                html += `
+                    <div style="background:#f8f9fc;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-weight:700;">Стол ${key}</div>
+                        <div style="font-size:14px;color:${openOrders.length > 0 ? '#2e7d32' : '#7f8c8d'};">${status}</div>
+                        ${openOrders.length > 0 ? `<div style="font-size:12px;color:#2d7aff;">${openOrders.reduce((sum, o) => sum + o.total, 0)} ₽</div>` : ''}
+                    </div>
+                `;
+            }
+            html += '</div>';
+            container.innerHTML = html;
+            document.getElementById('tableCountInput').value = Object.keys(tables).length;
+        }
+
+        // ========== ОБНОВЛЕНИЕ КОЛИЧЕСТВА СТОЛОВ ==========
+        document.getElementById('updateTablesBtn').onclick = () => {
+            const count = parseInt(document.getElementById('tableCountInput').value);
+            if (isNaN(count) || count < 1 || count > 20) {
+                alert('Введите число от 1 до 20');
+                return;
+            }
+
+            const data = loadData();
+            const currentTables = data.tables || {};
+            const newTables = {};
+
+            for (let i = 1; i <= count; i++) {
+                if (currentTables[i]) {
+                    newTables[i] = currentTables[i];
+                } else {
+                    newTables[i] = { orders: [], total: 0 };
+                }
+            }
+
+            data.tables = newTables;
+            saveData(data);
+            renderTablesAdmin();
+            renderDashboard();
+            showToast(`✅ Количество столов обновлено: ${count}`);
+        };
+
+        // ========== СБРОС ВСЕХ СТОЛОВ ==========
+        document.getElementById('resetTablesBtn').onclick = () => {
+            if (confirm('Сбросить все столы? Все заказы будут удалены!')) {
+                const data = loadData();
+                for (const key in data.tables) {
+                    data.tables[key] = { orders: [], total: 0 };
+                }
+                saveData(data);
+                renderTablesAdmin();
+                renderDashboard();
+                showToast('✅ Все столы сброшены');
+            }
+        };
+
         // ========== ЗАКАЗЫ ==========
         let ordersFilter = 'all';
 
@@ -588,9 +815,9 @@
             const container = document.getElementById('ordersList');
 
             let allOrders = [];
-            for (let i = 1; i <= 3; i++) {
-                if (tables[i] && tables[i].orders) {
-                    tables[i].orders.forEach(order => { allOrders.push({ table: i, ...order }); });
+            for (const key in tables) {
+                if (tables[key] && tables[key].orders) {
+                    tables[key].orders.forEach(order => { allOrders.push({ table: key, ...order }); });
                 }
             }
             allOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -631,60 +858,6 @@
         document.getElementById('viewClosedOrders').onclick = () => { ordersFilter = 'closed';
             renderOrders(); };
 
-        // ========== СТОЛЫ ==========
-        function renderTablesAdmin() {
-            const data = loadData();
-            const tables = data.tables || {};
-
-            for (let i = 1; i <= 3; i++) {
-                const table = tables[i] || { orders: [], total: 0 };
-                const openOrders = table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
-                const status = openOrders.length > 0 ? `🟢 Занят (${openOrders.length} зак.)` : '⚪ Свободен';
-                document.getElementById(`table${i}Status`).textContent = status;
-                document.getElementById(`table${i}Status`).style.color = openOrders.length > 0 ? '#2e7d32' : '#7f8c8d';
-            }
-
-            const container = document.getElementById('tablesDetail');
-            let html = '';
-            for (let i = 1; i <= 3; i++) {
-                const table = tables[i] || { orders: [], total: 0 };
-                const openOrders = table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
-                html += `
-                    <div style="border:2px solid #eee;border-radius:12px;padding:15px;margin-bottom:15px;">
-                        <h4>🪑 Стол ${i}</h4>
-                        <div>Активных заказов: ${openOrders.length}</div>
-                        <div style="font-weight:700;color:#2d7aff;">Сумма: ${openOrders.reduce((sum, o) => sum + o.total, 0)} ₽</div>
-                        <button class="tab-btn" style="background:#ff4757;color:white;padding:4px 12px;font-size:12px;margin-top:8px;" onclick="clearTable(${i})">Очистить</button>
-                    </div>
-                `;
-            }
-            container.innerHTML = html;
-        }
-
-        window.clearTable = function(tableNum) {
-            if (confirm(`Очистить стол ${tableNum}?`)) {
-                const data = loadData();
-                data.tables[tableNum] = { orders: [], total: 0 };
-                saveData(data);
-                renderTablesAdmin();
-                renderDashboard();
-                renderOrders();
-                showToast('✅ Стол очищен');
-            }
-        };
-
-        document.getElementById('resetAllTables').onclick = () => {
-            if (confirm('Сбросить все столы?')) {
-                const data = loadData();
-                for (let i = 1; i <= 3; i++) { data.tables[i] = { orders: [], total: 0 }; }
-                saveData(data);
-                renderTablesAdmin();
-                renderDashboard();
-                renderOrders();
-                showToast('✅ Все столы сброшены');
-            }
-        };
-
         // ========== НАСТРОЙКИ ==========
         document.getElementById('settingsVenueName').value = loadData().venueName || 'Кафе Уют';
         document.getElementById('saveSettingsBtn').onclick = () => {
@@ -698,7 +871,9 @@
         document.getElementById('clearAllData').onclick = () => {
             if (confirm('Очистить все данные? Заказы и статистика будут удалены! Меню сохранится.')) {
                 const data = loadData();
-                for (let i = 1; i <= 3; i++) { data.tables[i] = { orders: [], total: 0 }; }
+                for (const key in data.tables) {
+                    data.tables[key] = { orders: [], total: 0 };
+                }
                 data.stats = { totalOrders: 0, totalRevenue: 0 };
                 saveData(data);
                 renderDashboard();
@@ -712,12 +887,13 @@
         function init() {
             renderDashboard();
             renderMenu();
-            renderOrders();
+            renderUsers();
             renderTablesAdmin();
+            renderOrders();
         }
         init();
 
-        console.log('✅ Админ-панель загружена!');
+        console.log('✅ Управление загружено! Меню из menu.js');
     </script>
 </body>
 </html>
