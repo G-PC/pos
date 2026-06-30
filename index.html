@@ -233,7 +233,7 @@
                 venueName: 'Кафе Уют',
                 menu: getDefaultMenu(),
                 users: {
-                    'sadmin': { password: '123', role: 'sadmin', name: 'Главный администратор' }
+                    'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' }
                 },
                 tables: {
                     '1': { orders: [], total: 0 },
@@ -305,7 +305,7 @@
                 `;
                 card.addEventListener('click', () => {
                     const user = getCurrentUser();
-                    if (user && (user.role === 'sadmin' || user.role === 'Официант')) {
+                    if (user && (user.role === 'sadmin' || user.role === 'Официант' || user.role === 'Повар+Официант')) {
                         window.location.href = `table.html?table=${i}`;
                     } else {
                         alert('У вас нет прав для работы с заказами');
@@ -329,18 +329,32 @@
             document.getElementById('loginBox').style.display = 'none';
             document.getElementById('mainApp').classList.remove('hidden');
 
+            // Отображаем имя и роль
             document.getElementById('userNameDisplay').textContent = user.name || user.login;
-            document.getElementById('userRoleDisplay').textContent = user.role;
+            const roleDisplay = user.role === 'sadmin' ? 'Владелец' : user.role;
+            document.getElementById('userRoleDisplay').textContent = roleDisplay;
 
             const links = document.getElementById('adminLinks');
+            
+            // sadmin (Владелец) — видит всё
             if (user.role === 'sadmin') {
                 links.style.display = 'grid';
                 links.querySelectorAll('a').forEach(a => a.style.display = 'block');
-            } else if (user.role === 'Повар') {
+            } 
+            // Повар+Официант — видит и столы, и кухню
+            else if (user.role === 'Повар+Официант') {
                 links.style.display = 'grid';
                 links.querySelector('a[href="admin.html"]').style.display = 'none';
                 links.querySelector('a[href="kitchen.html"]').style.display = 'block';
-            } else {
+            }
+            // Повар — видит только кухню
+            else if (user.role === 'Повар') {
+                links.style.display = 'grid';
+                links.querySelector('a[href="admin.html"]').style.display = 'none';
+                links.querySelector('a[href="kitchen.html"]').style.display = 'block';
+            }
+            // Официант — видит только столы (ссылки скрыты)
+            else {
                 links.style.display = 'none';
             }
 
