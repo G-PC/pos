@@ -309,8 +309,6 @@
             <button class="tab-btn active" data-tab="dashboard">📊 Статистика</button>
             <button class="tab-btn" data-tab="menu">🍽️ Меню</button>
             <button class="tab-btn" data-tab="users">👥 Пользователи</button>
-            <button class="tab-btn" data-tab="tables">🪑 Столы</button>
-            <button class="tab-btn" data-tab="orders">🧾 Заказы</button>
             <button class="tab-btn" data-tab="settings">⚙️ Настройки</button>
         </div>
 
@@ -353,7 +351,8 @@
                 <select id="addUserRole">
                     <option value="Официант">Официант</option>
                     <option value="Повар">Повар</option>
-                    <option value="sadmin">sadmin</option>
+                    <option value="Повар+Официант">Повар+Официант</option>
+                    <option value="sadmin">Владелец</option>
                 </select>
                 <button id="addUserBtn">Добавить</button>
             </div>
@@ -361,39 +360,25 @@
             <div id="usersList"></div>
         </div>
 
-        <!-- СТОЛЫ -->
-        <div class="tab-content" id="tab-tables">
-            <h3 style="margin-bottom:15px;">🪑 Количество столов</h3>
-            <div class="table-count-input">
-                <label>Количество столов:</label>
-                <input type="number" id="tableCountInput" min="1" max="20" value="3" />
-                <button id="updateTablesBtn">Обновить</button>
-                <button id="resetTablesBtn" class="danger">Сбросить все столы</button>
-            </div>
-            <div style="margin-top:20px;">
-                <h4>Статус столов:</h4>
-                <div id="tablesStatusList" style="margin-top:10px;"></div>
-            </div>
-        </div>
-
-        <!-- ЗАКАЗЫ -->
-        <div class="tab-content" id="tab-orders">
-            <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;">
-                <button id="viewAllOrders" class="tab-btn" style="background:#2d7aff;color:white;padding:8px 20px;">Все</button>
-                <button id="viewActiveOrders" class="tab-btn" style="background:#ffc107;padding:8px 20px;">Активные</button>
-                <button id="viewClosedOrders" class="tab-btn" style="background:#2ed573;padding:8px 20px;">Закрытые</button>
-            </div>
-            <div id="ordersList"></div>
-        </div>
-
-        <!-- НАСТРОЙКИ -->
+        <!-- НАСТРОЙКИ (сюда перенесены Столы) -->
         <div class="tab-content" id="tab-settings">
             <h3 style="margin-bottom:15px;">🏷️ Настройки заведения</h3>
             <div class="form-grid" style="max-width:500px;">
                 <input type="text" id="settingsVenueName" placeholder="Название заведения" />
                 <button id="saveSettingsBtn">Сохранить</button>
             </div>
-            <div style="margin-top:20px;border-top:2px solid #eee;padding-top:20px;">
+
+            <div style="margin-top:30px;border-top:2px solid #eee;padding-top:20px;">
+                <h3 style="margin-bottom:15px;">🪑 Количество столов</h3>
+                <div class="table-count-input">
+                    <label>Количество столов:</label>
+                    <input type="number" id="tableCountInput" min="1" max="20" value="3" />
+                    <button id="updateTablesBtn">Обновить</button>
+                    <button id="resetTablesBtn" class="danger">Сбросить все столы</button>
+                </div>
+            </div>
+
+            <div style="margin-top:30px;border-top:2px solid #eee;padding-top:20px;">
                 <h3 style="margin-bottom:10px;">🗑️ Опасные операции</h3>
                 <button id="clearAllData" style="background:#ff4757;color:white;border:none;padding:10px 25px;border-radius:8px;cursor:pointer;font-weight:700;">Очистить все данные</button>
                 <p style="font-size:12px;color:#888;margin-top:8px;">Удаляет заказы и статистику, меню сохраняется</p>
@@ -424,7 +409,7 @@
             const defaultData = {
                 venueName: 'Кафе Уют',
                 menu: getDefaultMenu(),
-                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Главный' } },
+                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
                 tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
                 stats: { totalOrders: 0, totalRevenue: 0 }
             };
@@ -444,12 +429,12 @@
         // ========== ПРОВЕРКА ==========
         const user = getCurrentUser();
         if (!user || user.role !== 'sadmin') {
-            alert('Доступ запрещен. Только для sadmin');
+            alert('Доступ запрещен. Только для Владельца');
             window.location.href = 'index.html';
         }
 
         document.getElementById('adminName').textContent = user.name || user.login;
-        document.getElementById('adminRole').textContent = user.role;
+        document.getElementById('adminRole').textContent = user.role === 'sadmin' ? 'Владелец' : user.role;
 
         // ========== ВКЛАДКИ ==========
         document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
@@ -645,19 +630,25 @@
                 return;
             }
 
-            container.innerHTML = Object.entries(users).map(([login, userData]) =>
-                `<div class="list-item">
-                    <div class="info">
-                        <span class="name">${login}</span>
-                        <span class="detail">${userData.name || ''}</span>
-                        <span class="badge" style="background:${userData.role === 'sadmin' ? '#ff6b35' : userData.role === 'Повар' ? '#2ed573' : '#2d7aff'};color:white;">${userData.role}</span>
-                        ${login === 'sadmin' ? '🔒' : ''}
+            container.innerHTML = Object.entries(users).map(([login, userData]) => {
+                const roleDisplay = userData.role === 'sadmin' ? 'Владелец' : userData.role;
+                const roleColor = userData.role === 'sadmin' ? '#ff6b35' :
+                    userData.role === 'Повар+Официант' ? '#9b59b6' :
+                    userData.role === 'Повар' ? '#2ed573' : '#2d7aff';
+                return `
+                    <div class="list-item">
+                        <div class="info">
+                            <span class="name">${login}</span>
+                            <span class="detail">${userData.name || ''}</span>
+                            <span class="badge" style="background:${roleColor};color:white;">${roleDisplay}</span>
+                            ${login === 'sadmin' ? '🔒' : ''}
+                        </div>
+                        <div class="actions">
+                            ${login !== 'sadmin' ? `<button class="edit" data-login="${login}">✏️</button><button class="delete" data-login="${login}">🗑️</button>` : ''}
+                        </div>
                     </div>
-                    <div class="actions">
-                        ${login !== 'sadmin' ? `<button class="edit" data-login="${login}">✏️</button><button class="delete" data-login="${login}">🗑️</button>` : ''}
-                    </div>
-                </div>`
-            ).join('');
+                `;
+            }).join('');
 
             document.querySelectorAll('#tab-users .delete').forEach(btn => {
                 btn.onclick = () => {
@@ -686,7 +677,8 @@
                                 <select id="editUserRole">
                                     <option value="Официант" ${userData.role === 'Официант' ? 'selected' : ''}>Официант</option>
                                     <option value="Повар" ${userData.role === 'Повар' ? 'selected' : ''}>Повар</option>
-                                    <option value="sadmin" ${userData.role === 'sadmin' ? 'selected' : ''}>sadmin</option>
+                                    <option value="Повар+Официант" ${userData.role === 'Повар+Официант' ? 'selected' : ''}>Повар+Официант</option>
+                                    <option value="sadmin" ${userData.role === 'sadmin' ? 'selected' : ''}>Владелец</option>
                                 </select>
                                 <button id="saveEditUser" data-login="${login}">Сохранить</button>
                             </div>`
@@ -741,31 +733,13 @@
             document.getElementById('addUserName').value = '';
         };
 
-        // ========== СТОЛЫ ==========
-        function renderTablesAdmin() {
+        // ========== НАСТРОЙКИ (СТОЛЫ) ==========
+        function updateTableCountDisplay() {
             const data = loadData();
             const tables = data.tables || {};
-            const container = document.getElementById('tablesStatusList');
-
-            let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">';
-            for (const key in tables) {
-                const table = tables[key] || { orders: [], total: 0 };
-                const openOrders = table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
-                const status = openOrders.length > 0 ? '🟢 Занят' : '⚪ Свободен';
-                html += `
-                    <div style="background:#f8f9fc;padding:12px;border-radius:8px;text-align:center;">
-                        <div style="font-weight:700;">Стол ${key}</div>
-                        <div style="font-size:14px;color:${openOrders.length > 0 ? '#2e7d32' : '#7f8c8d'};">${status}</div>
-                        ${openOrders.length > 0 ? `<div style="font-size:12px;color:#2d7aff;">${openOrders.reduce((sum, o) => sum + o.total, 0)} ₽</div>` : ''}
-                    </div>
-                `;
-            }
-            html += '</div>';
-            container.innerHTML = html;
             document.getElementById('tableCountInput').value = Object.keys(tables).length;
         }
 
-        // ========== ОБНОВЛЕНИЕ КОЛИЧЕСТВА СТОЛОВ ==========
         document.getElementById('updateTablesBtn').onclick = () => {
             const count = parseInt(document.getElementById('tableCountInput').value);
             if (isNaN(count) || count < 1 || count > 20) {
@@ -787,12 +761,11 @@
 
             data.tables = newTables;
             saveData(data);
-            renderTablesAdmin();
+            updateTableCountDisplay();
             renderDashboard();
             showToast(`✅ Количество столов обновлено: ${count}`);
         };
 
-        // ========== СБРОС ВСЕХ СТОЛОВ ==========
         document.getElementById('resetTablesBtn').onclick = () => {
             if (confirm('Сбросить все столы? Все заказы будут удалены!')) {
                 const data = loadData();
@@ -800,65 +773,12 @@
                     data.tables[key] = { orders: [], total: 0 };
                 }
                 saveData(data);
-                renderTablesAdmin();
                 renderDashboard();
                 showToast('✅ Все столы сброшены');
             }
         };
 
-        // ========== ЗАКАЗЫ ==========
-        let ordersFilter = 'all';
-
-        function renderOrders() {
-            const data = loadData();
-            const tables = data.tables || {};
-            const container = document.getElementById('ordersList');
-
-            let allOrders = [];
-            for (const key in tables) {
-                if (tables[key] && tables[key].orders) {
-                    tables[key].orders.forEach(order => { allOrders.push({ table: key, ...order }); });
-                }
-            }
-            allOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-            let filtered = allOrders;
-            if (ordersFilter === 'active') filtered = allOrders.filter(o => o.status !== 'closed');
-            else if (ordersFilter === 'closed') filtered = allOrders.filter(o => o.status === 'closed');
-
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="empty">Заказов не найдено</div>';
-                return;
-            }
-
-            container.innerHTML = filtered.map(order =>
-                `<div class="list-item" style="flex-direction:column;align-items:stretch;border-bottom:2px solid #eee;padding:15px 0;">
-                    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-                        <div class="info">
-                            <span class="name">🪑 Стол ${order.table}</span>
-                            <span class="detail">${new Date(order.timestamp).toLocaleString('ru-RU')}</span>
-                            <span class="badge" style="background:${order.status === 'closed' ? '#d4edda' : '#fff3cd'};">${order.status === 'closed' ? '✅ Оплачен' : '🟡 Активен'}</span>
-                        </div>
-                        <div class="info">
-                            <span style="font-weight:700;font-size:18px;color:#2d7aff;">${order.total} ₽</span>
-                            ${order.status === 'closed' ? `<span style="font-size:13px;color:#666;">Внесено: ${order.paidAmount || order.total} ₽</span>` : ''}
-                        </div>
-                    </div>
-                    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;">
-                        ${order.items.map(item => `<span style="background:#f0f2f5;padding:2px 10px;border-radius:12px;font-size:13px;">${item.emoji || '🍽️'} ${item.name} × ${item.quantity}</span>`).join('')}
-                    </div>
-                </div>`
-            ).join('');
-        }
-
-        document.getElementById('viewAllOrders').onclick = () => { ordersFilter = 'all';
-            renderOrders(); };
-        document.getElementById('viewActiveOrders').onclick = () => { ordersFilter = 'active';
-            renderOrders(); };
-        document.getElementById('viewClosedOrders').onclick = () => { ordersFilter = 'closed';
-            renderOrders(); };
-
-        // ========== НАСТРОЙКИ ==========
+        // ========== НАСТРОЙКИ (ОБЩИЕ) ==========
         document.getElementById('settingsVenueName').value = loadData().venueName || 'Кафе Уют';
         document.getElementById('saveSettingsBtn').onclick = () => {
             const name = document.getElementById('settingsVenueName').value.trim() || 'Кафе Уют';
@@ -877,8 +797,6 @@
                 data.stats = { totalOrders: 0, totalRevenue: 0 };
                 saveData(data);
                 renderDashboard();
-                renderOrders();
-                renderTablesAdmin();
                 showToast('✅ Все данные очищены');
             }
         };
@@ -888,12 +806,11 @@
             renderDashboard();
             renderMenu();
             renderUsers();
-            renderTablesAdmin();
-            renderOrders();
+            updateTableCountDisplay();
         }
         init();
 
-        console.log('✅ Управление загружено! Меню из menu.js');
+        console.log('✅ Управление загружено!');
     </script>
 </body>
 </html>
