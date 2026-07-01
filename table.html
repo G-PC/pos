@@ -294,7 +294,6 @@
             text-align: center;
         }
 
-        /* Модалка комментария */
         .modal-comment {
             display: none;
             position: fixed;
@@ -426,7 +425,6 @@
         </div>
     </div>
 
-    <!-- Модалка для комментария -->
     <div class="modal-comment" id="commentModal">
         <div class="modal-comment-content">
             <h3>💬 Комментарий к блюду</h3>
@@ -440,13 +438,11 @@
     </div>
 
     <script src="menu.js"></script>
-    <script src="users.js"></script>
     <script>
         // ============================================================
         // ВСЯ ЛОГИКА ВНУТРИ
         // ============================================================
 
-        // ========== ДАННЫЕ ==========
         function loadData() {
             const cached = localStorage.getItem('cloudData');
             if (cached) {
@@ -461,8 +457,7 @@
             const defaultData = {
                 venueName: 'Кафе Уют',
                 menu: defaultMenu,
-                users: getDefaultUsers ? getDefaultUsers() : { 'sadmin': { password: '123', role: 'sadmin',
-                    name: 'Владелец' } },
+                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
                 tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
                 stats: { totalOrders: 0, totalRevenue: 0 }
             };
@@ -474,25 +469,12 @@
             localStorage.setItem('cloudData', JSON.stringify(data));
         }
 
-        function getCurrentUser() {
-            const data = localStorage.getItem('currentUser');
-            return data ? JSON.parse(data) : null;
-        }
-
-        // ========== ПРОВЕРКА ==========
-        const user = getCurrentUser();
-        if (!user || (user.role !== 'sadmin' && user.role !== 'Официант' && user.role !== 'Повар+Официант')) {
-            alert('У вас нет прав для работы с заказами');
-            window.location.href = 'index.html';
-        }
-
         const tableNumber = parseInt(new URLSearchParams(window.location.search).get('table')) || 1;
         let cart = [];
         let currentCategory = 'Все';
         let menu = [];
         let pendingItemId = null;
 
-        // ========== DOM ==========
         const $ = id => document.getElementById(id);
         const itemsGrid = $('itemsGrid');
         const categoriesContainer = $('categoriesContainer');
@@ -506,7 +488,6 @@
         const tableTitle = $('tableTitle');
         const tableStatus = $('tableStatus');
 
-        // ========== МОДАЛКА КОММЕНТАРИЯ ==========
         function showCommentModal(itemId) {
             pendingItemId = itemId;
             document.getElementById('commentInput').value = '';
@@ -544,7 +525,6 @@
             }
         });
 
-        // ========== ТОСТ ==========
         function showToast(msg) {
             const t = document.createElement('div');
             t.className = 'toast';
@@ -553,7 +533,6 @@
             setTimeout(() => { t.remove(); }, 3000);
         }
 
-        // ========== ЗАГРУЗКА МЕНЮ ==========
         function loadMenu() {
             const data = loadData();
             menu = data.menu || [];
@@ -566,7 +545,6 @@
             return menu;
         }
 
-        // ========== РЕНДЕР КАТЕГОРИЙ ==========
         function renderCategories() {
             const data = loadData();
             menu = data.menu || [];
@@ -581,7 +559,6 @@
             });
         }
 
-        // ========== РЕНДЕР БЛЮД ==========
         function renderItems() {
             const data = loadData();
             menu = data.menu || [];
@@ -617,7 +594,6 @@
             });
         }
 
-        // ========== ДОБАВИТЬ В КОРЗИНУ ==========
         function addToCart(id, comment) {
             const item = menu.find(i => i.id === id);
             if (!item) return;
@@ -635,7 +611,6 @@
             }
         }
 
-        // ========== РЕНДЕР КОРЗИНЫ ==========
         function renderCart() {
             if (cart.length === 0) {
                 orderList.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Корзина пуста</p>';
@@ -726,7 +701,6 @@
             showToast('✅ Меню обновлено');
         }
 
-        // ========== СОБЫТИЯ ==========
         $('payBtn').onclick = () => {
             if (cart.length === 0) { alert('Корзина пуста!'); return; }
             const total = cart.reduce((a, i) => a + i.price * i.quantity, 0);
@@ -744,7 +718,7 @@
                     table.orders[i].status = 'closed';
                     table.orders[i].paidAmount = cash;
                     table.orders[i].change = change;
-                    table.orders[i].operator = user ? user.name || user.login : '';
+                    table.orders[i].operator = 'Администратор';
                     break;
                 }
             }
@@ -779,12 +753,10 @@
         searchInput.oninput = renderItems;
         $('refreshMenuBtn').onclick = refreshMenu;
 
-        // ========== АВТООБНОВЛЕНИЕ ==========
         setInterval(() => { if (cart.length > 0) saveOrder(); }, 5000);
         setInterval(() => { renderCategories();
             renderItems(); }, 10000);
 
-        // ========== ЗАПУСК ==========
         loadMenu();
         renderCategories();
         renderItems();
