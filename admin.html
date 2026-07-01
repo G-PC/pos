@@ -178,43 +178,10 @@
             border-radius: 12px;
             font-size: 12px;
         }
-        .list-item .info .emoji-big {
-            font-size: 24px;
-        }
         .empty {
             text-align: center;
             color: #888;
             padding: 30px;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-        }
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal-close {
-            float: right;
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
         }
         .toast {
             position: fixed;
@@ -290,28 +257,14 @@
 
         <div class="tabs">
             <button class="tab-btn active" data-tab="dashboard">📊 Статистика</button>
-            <button class="tab-btn" data-tab="menu">🍽️ Меню</button>
-            <button class="tab-btn" data-tab="users">👥 Пользователи</button>
             <button class="tab-btn" data-tab="settings">⚙️ Настройки</button>
         </div>
 
-        <!-- СТАТИСТИКА -->
+        <!-- СТАТИСТИКА (только заказы и выручка) -->
         <div class="tab-content active" id="tab-dashboard">
             <div class="stats-grid" id="statsGrid"></div>
             <h3>📋 Последние заказы</h3>
             <div id="recentOrdersList"></div>
-        </div>
-
-        <!-- МЕНЮ (только список) -->
-        <div class="tab-content" id="tab-menu">
-            <h3>📋 Список блюд</h3>
-            <div id="menuList"></div>
-        </div>
-
-        <!-- ПОЛЬЗОВАТЕЛИ (только просмотр) -->
-        <div class="tab-content" id="tab-users">
-            <h3>📋 Список пользователей</h3>
-            <div id="usersList"></div>
         </div>
 
         <!-- НАСТРОЙКИ -->
@@ -335,30 +288,32 @@
             <div style="margin-top:30px;border-top:2px solid #eee;padding-top:20px;">
                 <h3>🗑️ Опасные операции</h3>
                 <button id="clearAllData" class="danger" style="background:#ff4757;color:white;border:none;padding:10px 25px;border-radius:8px;cursor:pointer;font-weight:700;">Очистить все данные</button>
-                <p style="font-size:12px;color:#888;margin-top:8px;">Удаляет заказы и статистику, меню и пользователи сохраняются</p>
+                <p style="font-size:12px;color:#888;margin-top:8px;">Удаляет заказы и статистику</p>
             </div>
         </div>
     </div>
 
-    <script src="menu.js"></script>
-    <script src="users.js"></script>
     <script>
         // ============================================================
         // УНИВЕРСАЛЬНЫЕ ФУНКЦИИ
         // ============================================================
+
+        function getDefaultData() {
+            return {
+                venueName: 'Кафе Уют',
+                menu: [],
+                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
+                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
+                stats: { totalOrders: 0, totalRevenue: 0 }
+            };
+        }
 
         function loadData() {
             const cached = localStorage.getItem('cloudData');
             if (cached) {
                 try { return JSON.parse(cached); } catch (e) {}
             }
-            const defaultData = {
-                venueName: 'Кафе Уют',
-                menu: getDefaultMenu(),
-                users: getDefaultUsers(),
-                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
-                stats: { totalOrders: 0, totalRevenue: 0 }
-            };
+            const defaultData = getDefaultData();
             localStorage.setItem('cloudData', JSON.stringify(defaultData));
             return defaultData;
         }
@@ -373,12 +328,12 @@
         // ========== ПРОВЕРКА ==========
         const user = getCurrentUser();
         if (!user || user.role !== 'sadmin') {
-            alert('Доступ запрещен. Только для Владельца');
+            alert('Доступ запрещен');
             window.location.href = 'index.html';
         }
 
         document.getElementById('adminName').textContent = user.name || user.login;
-        document.getElementById('adminRole').textContent = user.role === 'sadmin' ? 'Владелец' : user.role;
+        document.getElementById('adminRole').textContent = 'Владелец';
 
         // ========== ВКЛАДКИ ==========
         document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
@@ -404,16 +359,11 @@
             const data = loadData();
             const stats = data.stats || { totalOrders: 0, totalRevenue: 0 };
             const tables = data.tables || {};
-            const menu = data.menu || [];
-            const users = data.users || {};
 
+            // Только заказы и выручка
             const cards = [
                 { label: 'Всего заказов', value: stats.totalOrders || 0 },
-                { label: 'Выручка', value: (stats.totalRevenue || 0) + ' ₽' },
-                { label: 'Активных столов', value: Object.keys(tables).filter(k => tables[k].orders?.some(o => o.status !==
-                        'closed')).length },
-                { label: 'Всего блюд', value: menu.length },
-                { label: 'Пользователей', value: Object.keys(users).length }
+                { label: 'Выручка', value: (stats.totalRevenue || 0) + ' ₽' }
             ];
 
             document.getElementById('statsGrid').innerHTML = cards.map(c =>
@@ -444,57 +394,6 @@
                     </div>`
                 ).join('');
             }
-        }
-
-        // ========== МЕНЮ (ТОЛЬКО СПИСОК) ==========
-        function renderMenu() {
-            const data = loadData();
-            const menu = data.menu || [];
-            const container = document.getElementById('menuList');
-
-            if (menu.length === 0) {
-                container.innerHTML = '<div class="empty">Меню пусто</div>';
-                return;
-            }
-
-            container.innerHTML = menu.map(item =>
-                `<div class="list-item">
-                    <div class="info">
-                        <span class="emoji-big">${item.emoji || '🍽️'}</span>
-                        <span class="name">${item.name}</span>
-                        <span class="detail">${item.price} ₽</span>
-                        <span class="badge">${item.category}</span>
-                    </div>
-                </div>`
-            ).join('');
-        }
-
-        // ========== ПОЛЬЗОВАТЕЛИ (только просмотр) ==========
-        function renderUsers() {
-            const data = loadData();
-            const users = data.users || {};
-            const entries = Object.entries(users);
-
-            const container = document.getElementById('usersList');
-            if (entries.length === 0) {
-                container.innerHTML = '<div class="empty">Нет пользователей</div>';
-                return;
-            }
-
-            container.innerHTML = entries.map(([login, userData]) => {
-                const roleColor = userData.role === 'sadmin' ? '#ff6b35' :
-                    userData.role === 'Повар+Официант' ? '#9b59b6' :
-                    userData.role === 'Повар' ? '#2ed573' : '#2d7aff';
-                const roleDisplay = userData.role === 'sadmin' ? 'Владелец' : userData.role;
-                return `<div class="list-item">
-                    <div class="info">
-                        <span class="name">${login}</span>
-                        <span class="detail">${userData.name || ''}</span>
-                        <span class="badge" style="background:${roleColor};color:white;">${roleDisplay}</span>
-                        ${login === 'sadmin' ? '🔒' : ''}
-                    </div>
-                </div>`;
-            }).join('');
         }
 
         // ========== НАСТРОЙКИ ==========
@@ -537,8 +436,7 @@
         };
 
         document.getElementById('clearAllData').onclick = () => {
-            if (!confirm('Очистить все данные? Заказы и статистика будут удалены! Меню и пользователи сохраняются.'))
-            return;
+            if (!confirm('Очистить все данные? Заказы и статистика будут удалены!')) return;
             const data = loadData();
             for (const key in data.tables) { data.tables[key] = { orders: [], total: 0 }; }
             data.stats = { totalOrders: 0, totalRevenue: 0 };
@@ -550,8 +448,6 @@
         // ========== ЗАПУСК ==========
         function init() {
             renderDashboard();
-            renderMenu();
-            renderUsers();
             updateTableCount();
         }
         init();
