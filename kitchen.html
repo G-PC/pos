@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Кухня - Заказы</title>
     <style>
         * {
@@ -11,9 +11,111 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', sans-serif;
         }
+
+        /* ========== БАЗОВЫЕ ПЕРЕМЕННЫЕ ========== */
+        :root {
+            --font-size-base: 16px;
+            --font-size-title: 24px;
+            --font-size-order: 16px;
+            --font-size-small: 13px;
+            --card-padding: 20px;
+            --grid-cols: repeat(auto-fill, minmax(340px, 1fr));
+            --gap: 20px;
+            --check-btn-size: 28px;
+        }
+
+        /* ========== СМАРТФОН (ширина < 600px) ========== */
+        @media (max-width: 600px) {
+            :root {
+                --font-size-base: 14px;
+                --font-size-title: 18px;
+                --font-size-order: 14px;
+                --font-size-small: 11px;
+                --card-padding: 12px;
+                --grid-cols: 1fr;
+                --gap: 10px;
+                --check-btn-size: 24px;
+            }
+            body {
+                padding: 8px;
+            }
+            .header {
+                padding: 10px 12px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .header h1 {
+                font-size: var(--font-size-title);
+            }
+            .status-bar {
+                justify-content: space-between;
+            }
+            .order-card {
+                padding: var(--card-padding);
+            }
+            .order-card .item {
+                padding: 4px 4px;
+                font-size: var(--font-size-order);
+            }
+            .order-card .item .item-name {
+                gap: 4px;
+            }
+            .order-card .item .check-btn {
+                width: var(--check-btn-size);
+                height: var(--check-btn-size);
+                font-size: 12px;
+            }
+            .order-card .item .qty {
+                font-size: 11px;
+                padding: 0 6px;
+            }
+            .order-card .total {
+                font-size: 14px;
+            }
+            .badge {
+                font-size: 10px;
+            }
+            .status {
+                font-size: 11px;
+                padding: 2px 10px;
+            }
+            .auto-refresh {
+                font-size: 11px;
+            }
+            .refresh-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+            .back-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+            .order-count {
+                font-size: 12px;
+                padding: 2px 10px;
+            }
+        }
+
+        /* ========== ПЛАНШЕТ (600-900px) ========== */
+        @media (min-width: 601px) and (max-width: 900px) {
+            :root {
+                --font-size-base: 15px;
+                --font-size-title: 20px;
+                --font-size-order: 15px;
+                --grid-cols: repeat(auto-fill, minmax(280px, 1fr));
+                --gap: 15px;
+            }
+            .header {
+                padding: 12px 18px;
+            }
+        }
+
+        /* ========== ОБЩИЕ СТИЛИ ========== */
         body {
             background: #f0f2f5;
             padding: 20px;
+            font-size: var(--font-size-base);
         }
         .container {
             max-width: 1200px;
@@ -33,6 +135,7 @@
         }
         .header h1 {
             color: #2d3e50;
+            font-size: var(--font-size-title);
         }
         .back-btn {
             background: #7f8c8d;
@@ -44,6 +147,7 @@
             font-weight: 600;
             text-decoration: none;
             display: inline-block;
+            font-size: var(--font-size-small);
         }
         .refresh-btn {
             background: #2d7aff;
@@ -53,19 +157,22 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
+            font-size: var(--font-size-small);
         }
         .refresh-btn:hover {
             background: #1a5fd0;
         }
+
         .orders-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 20px;
+            grid-template-columns: var(--grid-cols);
+            gap: var(--gap);
         }
+
         .order-card {
             background: white;
             border-radius: 12px;
-            padding: 20px;
+            padding: var(--card-padding);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             border-left: 4px solid #2d7aff;
             transition: 0.3s;
@@ -78,14 +185,15 @@
             border-bottom: 2px solid #eee;
             background: transparent;
             padding: 0 0 8px 0;
+            flex-wrap: wrap;
         }
         .order-card .table {
             font-weight: 700;
-            font-size: 18px;
+            font-size: var(--font-size-order);
         }
         .order-card .time {
             color: #888;
-            font-size: 14px;
+            font-size: var(--font-size-small);
         }
         .order-card .items {
             margin: 10px 0;
@@ -97,7 +205,7 @@
             padding: 6px 8px;
             border-radius: 6px;
             border-bottom: 1px solid #f5f5f5;
-            font-size: 14px;
+            font-size: var(--font-size-order);
             transition: 0.3s;
             cursor: pointer;
         }
@@ -116,7 +224,7 @@
             flex-wrap: wrap;
         }
         .order-card .item .item-name .comment {
-            font-size: 12px;
+            font-size: var(--font-size-small);
             color: #888;
             font-style: italic;
             background: #f0f2f5;
@@ -124,8 +232,8 @@
             border-radius: 4px;
         }
         .order-card .item .check-btn {
-            width: 28px;
-            height: 28px;
+            width: var(--check-btn-size);
+            height: var(--check-btn-size);
             border: 2px solid #ddd;
             border-radius: 50%;
             background: white;
@@ -150,12 +258,12 @@
             background: #e8e8e8;
             padding: 0 8px;
             border-radius: 10px;
-            font-size: 12px;
+            font-size: var(--font-size-small);
             font-weight: 600;
         }
         .order-card .total {
             font-weight: 700;
-            font-size: 16px;
+            font-size: var(--font-size-order);
             margin-top: 10px;
             padding-top: 8px;
             border-top: 2px solid #eee;
@@ -166,7 +274,7 @@
             display: inline-block;
             padding: 4px 12px;
             border-radius: 12px;
-            font-size: 12px;
+            font-size: var(--font-size-small);
             font-weight: 600;
         }
         .status.open {
@@ -178,13 +286,13 @@
             color: white;
             padding: 2px 8px;
             border-radius: 10px;
-            font-size: 11px;
+            font-size: var(--font-size-small);
         }
         .empty {
             text-align: center;
             color: #888;
             padding: 50px;
-            font-size: 18px;
+            font-size: var(--font-size-order);
         }
         .notification {
             position: fixed;
@@ -210,7 +318,7 @@
             }
         }
         .auto-refresh {
-            font-size: 12px;
+            font-size: var(--font-size-small);
             color: #888;
             margin-top: 5px;
         }
@@ -225,7 +333,7 @@
             color: white;
             padding: 2px 12px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: var(--font-size-small);
             font-weight: 600;
         }
         .toast {
@@ -262,6 +370,10 @@
 
     <script src="menu.js"></script>
     <script>
+        // ============================================================
+        // ВСЯ ЛОГИКА ВНУТРИ
+        // ============================================================
+
         function getDefaultData() {
             return {
                 venueName: 'Кафе Уют',
@@ -417,7 +529,13 @@
 
         window.toggleItemDone = toggleItemDone;
 
-        console.log('✅ Кухня загружена!');
+        // ========== ОПРЕДЕЛЕНИЕ ТИПА УСТРОЙСТВА ==========
+        const isMobile = window.innerWidth < 600;
+        const isTablet = window.innerWidth >= 600 && window.innerWidth < 900;
+
+        console.log('📱 Кухня загружена!');
+        console.log(`📐 Устройство: ${isMobile ? 'Смартфон' : isTablet ? 'Планшет' : 'ПК/Ноутбук'}`);
+        console.log(`📏 Ширина экрана: ${window.innerWidth}px`);
     </script>
 </body>
 </html>
