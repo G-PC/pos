@@ -353,76 +353,6 @@
             background: #ccc;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-        }
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            max-width: 450px;
-            width: 90%;
-        }
-        .modal-close {
-            float: right;
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .receipt {
-            font-family: 'Courier New', monospace;
-        }
-        .receipt .header {
-            text-align: center;
-            font-size: 18px;
-            font-weight: 700;
-            padding-bottom: 10px;
-            border-bottom: 2px dashed #333;
-            margin-bottom: 10px;
-        }
-        .receipt .row {
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
-            font-size: 14px;
-        }
-        .receipt .row.total {
-            font-weight: 700;
-            font-size: 16px;
-            border-top: 2px solid #333;
-            padding-top: 8px;
-        }
-        .receipt .footer {
-            text-align: center;
-            margin-top: 12px;
-            padding-top: 10px;
-            border-top: 2px dashed #333;
-            font-size: 12px;
-            color: #666;
-        }
-        .print-btn {
-            background: #2d7aff;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 10px;
-            width: 100%;
-        }
         .toast {
             position: fixed;
             bottom: 20px;
@@ -506,15 +436,6 @@
                 <button class="ok-btn" id="commentOkBtn">Добавить</button>
                 <button class="cancel-btn" id="commentCancelBtn">Отмена</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Модалка чека -->
-    <div class="modal" id="receiptModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeReceiptBtn">✕</button>
-            <div class="receipt" id="receiptContent"></div>
-            <button class="print-btn" id="printReceiptBtn">🖨️ Печать</button>
         </div>
     </div>
 
@@ -679,17 +600,14 @@
                 </div>`
             ).join('');
 
-            // Обработчик нажатия на карточку (добавление без комментария)
             document.querySelectorAll('.item-card').forEach(el => {
                 el.onclick = (e) => {
-                    // Если кликнули по кнопке "+" — не добавляем, только показываем модалку
                     if (e.target.classList.contains('add-comment-btn')) return;
                     const id = parseInt(el.dataset.id);
                     addToCart(id, null);
                 };
             });
 
-            // Обработчик кнопки "+" (комментарий)
             document.querySelectorAll('.add-comment-btn').forEach(btn => {
                 btn.onclick = (e) => {
                     e.stopPropagation();
@@ -704,7 +622,6 @@
             const item = menu.find(i => i.id === id);
             if (!item) return;
 
-            // Ищем существующий товар с таким же ID и таким же комментарием
             const existing = cart.find(i => i.id === id && i.comment === comment);
             if (existing) {
                 existing.quantity += 1;
@@ -809,25 +726,6 @@
             showToast('✅ Меню обновлено');
         }
 
-        function showReceipt(order) {
-            const data = loadData();
-            const venue = data.venueName || 'Кафе Уют';
-            let html =
-                `<div class="header">${venue}</div><div style="text-align:center;font-size:12px;color:#666;">Стол ${tableNumber} | ${new Date().toLocaleString('ru-RU')}</div><div style="border-bottom:1px dashed #999;margin:8px 0;"></div>`;
-            order.items.forEach(i => {
-                const commentText = i.comment ? ` (${i.comment})` : '';
-                html +=
-                    `<div class="row"><span>${i.emoji || '🍽️'} ${i.name}${commentText} × ${i.quantity}</span><span>${i.price * i.quantity} ₽</span></div>`;
-            });
-            html +=
-                `<div style="border-bottom:1px dashed #999;margin:8px 0;"></div><div class="row total"><span>ИТОГО</span><span>${order.total} ₽</span></div>
-                <div class="row"><span>Внесено</span><span>${order.paidAmount || order.total} ₽</span></div>
-                <div class="row"><span>Сдача</span><span>${order.change || 0} ₽</span></div>
-                <div class="footer">Спасибо!<br>${order.operator || ''}</div>`;
-            document.getElementById('receiptContent').innerHTML = html;
-            document.getElementById('receiptModal').style.display = 'flex';
-        }
-
         // ========== СОБЫТИЯ ==========
         $('payBtn').onclick = () => {
             if (cart.length === 0) { alert('Корзина пуста!'); return; }
@@ -841,37 +739,22 @@
             data.stats.totalOrders = (data.stats.totalOrders || 0) + 1;
             data.stats.totalRevenue = (data.stats.totalRevenue || 0) + total;
             const table = data.tables[tableNumber];
-            let closed = null;
             for (let i = table.orders.length - 1; i >= 0; i--) {
                 if (table.orders[i].status !== 'closed') {
                     table.orders[i].status = 'closed';
                     table.orders[i].paidAmount = cash;
                     table.orders[i].change = change;
                     table.orders[i].operator = user ? user.name || user.login : '';
-                    closed = table.orders[i];
                     break;
                 }
             }
             table.total = table.orders.filter(o => o.status !== 'closed').reduce((a, o) => a + o.total, 0);
             saveData(data);
-            if (closed) showReceipt(closed);
             cart = [];
             renderCart();
             cashInput.value = '';
             updateStatus();
             setTimeout(() => { changeDisplay.textContent = 'Сдача: 0 ₽'; }, 5000);
-        };
-
-        $('closeReceiptBtn').onclick = () => document.getElementById('receiptModal').style.display = 'none';
-        document.getElementById('receiptModal').onclick = (e) => { if (e.target === e.currentTarget) document.getElementById(
-                'receiptModal').style.display = 'none'; };
-
-        $('printReceiptBtn').onclick = () => {
-            const w = window.open('', '_blank', 'width=400,height=600');
-            w.document.write(
-                `<html><head><title>Чек</title><style>body{font-family:'Courier New',monospace;padding:20px;}.receipt{max-width:350px;margin:0 auto;}</style></head><body><div class="receipt">${document.getElementById('receiptContent').innerHTML}</div><script>window.onload=function(){window.print();setTimeout(window.close,1000);}<\/script></body></html>`
-                );
-            w.document.close();
         };
 
         $('closeTableBtn').onclick = () => {
