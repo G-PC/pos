@@ -201,6 +201,14 @@
             background: #ff6b35;
             color: white;
         }
+        .admin-links a.menu-link {
+            border-color: #9b59b6;
+            color: #9b59b6;
+        }
+        .admin-links a.menu-link:hover {
+            background: #9b59b6;
+            color: white;
+        }
 
         .hidden {
             display: none !important;
@@ -214,8 +222,8 @@
         <div class="login-box" id="loginBox">
             <h2>🔐 Вход в систему</h2>
             <form id="loginForm">
-                <input type="text" id="loginInput" placeholder="Логин" />
-                <input type="password" id="passwordInput" placeholder="Пароль" />
+                <input type="text" id="loginInput" placeholder="Логин" value="sadmin" />
+                <input type="password" id="passwordInput" placeholder="Пароль" value="123" />
                 <div class="login-remember">
                     <input type="checkbox" id="rememberMe" checked />
                     <label for="rememberMe">Запомнить меня</label>
@@ -242,12 +250,11 @@
             <div class="admin-links" id="adminLinks">
                 <a href="admin.html">⚙️ Управление</a>
                 <a href="kitchen.html" class="kitchen">🍳 Кухня (заказы)</a>
+                <a href="menu.html" class="menu-link">🍽️ Меню</a>
             </div>
         </div>
     </div>
 
-    <script src="menu.js"></script>
-    <script src="users.js"></script>
     <script>
         // ============================================================
         // ВСЯ ЛОГИКА ВНУТРИ
@@ -256,8 +263,45 @@
         function getDefaultData() {
             return {
                 venueName: 'Кафе Уют',
-                menu: getDefaultMenu(),
-                users: getDefaultUsers(),
+                menu: [
+                    { id: 1, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
+                    { id: 2, name: 'Стейк', price: 300, category: 'Мясные изделия', emoji: '🥩' },
+                    { id: 3, name: 'Паста', price: 250, category: 'Гарниры', emoji: '🍝' },
+                    { id: 4, name: 'Чай', price: 100, category: 'Напитки', emoji: '🍵' },
+                    { id: 5, name: 'Кофе', price: 130, category: 'Напитки', emoji: '☕' },
+                    { id: 6, name: 'Сырники', price: 75, category: 'Десерты', emoji: '🧀' },
+                    { id: 7, name: 'Фруктовый салат', price: 200, category: 'Салаты', emoji: '🥗' },
+                    { id: 8, name: 'Овощной салат', price: 200, category: 'Салаты', emoji: '🥗' },
+                    { id: 9, name: 'Горячий шоколад', price: 130, category: 'Напитки', emoji: '🍫' },
+                    { id: 10, name: 'Какао', price: 130, category: 'Напитки', emoji: '☕' },
+                    { id: 11, name: 'Пончик', price: 50, category: 'Десерты', emoji: '🍩' },
+                    { id: 12, name: 'Круассан', price: 50, category: 'Десерты', emoji: '🥐' },
+                    { id: 13, name: 'Кекс "Шарлотка"', price: 70, category: 'Десерты', emoji: '🍰' },
+                    { id: 14, name: 'Сосиска', price: 80, category: 'Мясные изделия', emoji: '🌭' },
+                    { id: 15, name: 'Яичница "Глазунья"', price: 85, category: 'Другое', emoji: '🍳' },
+                    { id: 16, name: 'Плов', price: 275, category: 'Гарниры', emoji: '🍚' },
+                    { id: 17, name: 'Лимонад', price: 70, category: 'Напитки', emoji: '🥤' },
+                    { id: 18, name: 'Картофель фри', price: 90, category: 'Гарниры', emoji: '🍟' },
+                    { id: 19, name: 'Картофель по-деревенски', price: 100, category: 'Гарниры', emoji: '🥔' },
+                    { id: 20, name: 'Грибной суп', price: 220, category: 'Супы', emoji: '🍄' },
+                    { id: 21, name: 'Картофельное пюре', price: 100, category: 'Гарниры', emoji: '🥔' },
+                    { id: 22, name: 'Суп-пюре', price: 220, category: 'Супы', emoji: '🍲' },
+                    { id: 23, name: 'Бургер', price: 90, category: 'Мясные изделия', emoji: '🍔' },
+                    { id: 24, name: 'Нагетсы', price: 90, category: 'Мясные изделия', emoji: '🍗' },
+                    { id: 25, name: 'Сырные нагетсы', price: 100, category: 'Мясные изделия', emoji: '🧀' },
+                    { id: 26, name: 'Хлеб', price: 35, category: 'Выпечка', emoji: '🍞' },
+                    { id: 27, name: 'Лепешка', price: 50, category: 'Выпечка', emoji: '🥙' },
+                    { id: 28, name: 'Котлета', price: 120, category: 'Мясные изделия', emoji: '🍖' },
+                    { id: 29, name: 'Сок', price: 60, category: 'Напитки', emoji: '🧃' },
+                    { id: 30, name: 'Тортик', price: 80, category: 'Десерты', emoji: '🧁' },
+                    { id: 31, name: 'Куриный суп с лапшой', price: 190, category: 'Супы', emoji: '🍜' },
+                    { id: 32, name: 'Уха', price: 210, category: 'Супы', emoji: '🐟' },
+                    { id: 33, name: 'Пицца', price: 500, category: 'Пицца', emoji: '🍕' },
+                    { id: 34, name: 'Кусочек пиццы', price: 75, category: 'Пицца', emoji: '🍕' }
+                ],
+                users: {
+                    'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' }
+                },
                 tables: {
                     '1': { orders: [], total: 0 },
                     '2': { orders: [], total: 0 },
@@ -340,12 +384,7 @@
                     ${isOccupied ? `<div style="margin-top:8px;font-weight:600;color:#2d7aff;">${totalSum} ₽</div>` : ''}
                 `;
                 card.addEventListener('click', () => {
-                    const user = getCurrentUser();
-                    if (user && (user.role === 'sadmin' || user.role === 'Официант' || user.role === 'Повар+Официант')) {
-                        window.location.href = `table.html?table=${i}`;
-                    } else {
-                        alert('У вас нет прав для работы с заказами');
-                    }
+                    window.location.href = `table.html?table=${i}`;
                 });
                 grid.appendChild(card);
             }
@@ -373,28 +412,10 @@
             document.getElementById('loginBox').style.display = 'none';
             document.getElementById('mainApp').classList.remove('hidden');
 
-            const displayName = user.name || user.login;
-            const roleDisplay = user.role === 'sadmin' ? 'Владелец' : user.role;
+            document.getElementById('userNameDisplay').textContent = user.name || user.login;
+            document.getElementById('userRoleDisplay').textContent = 'Владелец';
 
-            document.getElementById('userNameDisplay').textContent = displayName;
-            document.getElementById('userRoleDisplay').textContent = roleDisplay;
-
-            const links = document.getElementById('adminLinks');
-
-            if (user.role === 'sadmin') {
-                links.style.display = 'grid';
-                links.querySelectorAll('a').forEach(a => a.style.display = 'block');
-            } else if (user.role === 'Повар+Официант') {
-                links.style.display = 'grid';
-                links.querySelector('a[href="admin.html"]').style.display = 'none';
-                links.querySelector('a[href="kitchen.html"]').style.display = 'block';
-            } else if (user.role === 'Повар') {
-                links.style.display = 'grid';
-                links.querySelector('a[href="admin.html"]').style.display = 'none';
-                links.querySelector('a[href="kitchen.html"]').style.display = 'block';
-            } else {
-                links.style.display = 'none';
-            }
+            document.getElementById('adminLinks').style.display = 'grid';
 
             renderTables();
         }
