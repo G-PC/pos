@@ -201,6 +201,14 @@
             background: #ff6b35;
             color: white;
         }
+        .admin-links a.complete {
+            border-color: #2ed573;
+            color: #2ed573;
+        }
+        .admin-links a.complete:hover {
+            background: #2ed573;
+            color: white;
+        }
 
         .hidden {
             display: none !important;
@@ -242,6 +250,7 @@
             <div class="admin-links" id="adminLinks">
                 <a href="admin.html">⚙️ Управление</a>
                 <a href="kitchen.html" class="kitchen">🍳 Кухня (заказы)</a>
+                <a href="complete.html" class="complete">✅ Готовые блюда</a>
             </div>
         </div>
     </div>
@@ -388,10 +397,17 @@
                 links.style.display = 'grid';
                 links.querySelector('a[href="admin.html"]').style.display = 'none';
                 links.querySelector('a[href="kitchen.html"]').style.display = 'block';
+                links.querySelector('a[href="complete.html"]').style.display = 'block';
             } else if (user.role === 'Повар') {
                 links.style.display = 'grid';
                 links.querySelector('a[href="admin.html"]').style.display = 'none';
                 links.querySelector('a[href="kitchen.html"]').style.display = 'block';
+                links.querySelector('a[href="complete.html"]').style.display = 'block';
+            } else if (user.role === 'Официант') {
+                links.style.display = 'grid';
+                links.querySelector('a[href="admin.html"]').style.display = 'none';
+                links.querySelector('a[href="kitchen.html"]').style.display = 'none';
+                links.querySelector('a[href="complete.html"]').style.display = 'block';
             } else {
                 links.style.display = 'none';
             }
