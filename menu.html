@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Меню</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        .header h1 {
+            color: #2d3e50;
+        }
+        .back-btn {
+            background: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .menu-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: 0.3s;
+        }
+        .menu-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .menu-item .emoji {
+            font-size: 32px;
+        }
+        .menu-item .info {
+            flex: 1;
+        }
+        .menu-item .info .name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .menu-item .info .category {
+            font-size: 13px;
+            color: #888;
+        }
+        .menu-item .price {
+            font-weight: 700;
+            color: #2d7aff;
+            font-size: 18px;
+        }
+        .empty {
+            text-align: center;
+            color: #888;
+            padding: 50px;
+            font-size: 18px;
+        }
+        .category-title {
+            margin: 20px 0 10px 0;
+            color: #2d3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ Меню</h1>
+            <a href="index.html" class="back-btn">← На главную</a>
+        </div>
+
+        <div id="menuContainer"></div>
+    </div>
+
+    <script>
+        // ============================================================
+        // ВСЯ ЛОГИКА ВНУТРИ
+        // ============================================================
+
+        function getDefaultData() {
+            return {
+                venueName: 'Кафе Уют',
+                menu: [
+                    { id: 1, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
+                    { id: 2, name: 'Стейк', price: 300, category: 'Мясные изделия', emoji: '🥩' },
+                    { id: 3, name: 'Паста', price: 250, category: 'Гарниры', emoji: '🍝' },
+                    { id: 4, name: 'Чай', price: 100, category: 'Напитки', emoji: '🍵' },
+                    { id: 5, name: 'Кофе', price: 130, category: 'Напитки', emoji: '☕' },
+                    { id: 6, name: 'Сырники', price: 75, category: 'Десерты', emoji: '🧀' },
+                    { id: 7, name: 'Фруктовый салат', price: 200, category: 'Салаты', emoji: '🥗' },
+                    { id: 8, name: 'Овощной салат', price: 200, category: 'Салаты', emoji: '🥗' },
+                    { id: 9, name: 'Горячий шоколад', price: 130, category: 'Напитки', emoji: '🍫' },
+                    { id: 10, name: 'Какао', price: 130, category: 'Напитки', emoji: '☕' },
+                    { id: 11, name: 'Пончик', price: 50, category: 'Десерты', emoji: '🍩' },
+                    { id: 12, name: 'Круассан', price: 50, category: 'Десерты', emoji: '🥐' },
+                    { id: 13, name: 'Кекс "Шарлотка"', price: 70, category: 'Десерты', emoji: '🍰' },
+                    { id: 14, name: 'Сосиска', price: 80, category: 'Мясные изделия', emoji: '🌭' },
+                    { id: 15, name: 'Яичница "Глазунья"', price: 85, category: 'Другое', emoji: '🍳' },
+                    { id: 16, name: 'Плов', price: 275, category: 'Гарниры', emoji: '🍚' },
+                    { id: 17, name: 'Лимонад', price: 70, category: 'Напитки', emoji: '🥤' },
+                    { id: 18, name: 'Картофель фри', price: 90, category: 'Гарниры', emoji: '🍟' },
+                    { id: 19, name: 'Картофель по-деревенски', price: 100, category: 'Гарниры', emoji: '🥔' },
+                    { id: 20, name: 'Грибной суп', price: 220, category: 'Супы', emoji: '🍄' },
+                    { id: 21, name: 'Картофельное пюре', price: 100, category: 'Гарниры', emoji: '🥔' },
+                    { id: 22, name: 'Суп-пюре', price: 220, category: 'Супы', emoji: '🍲' },
+                    { id: 23, name: 'Бургер', price: 90, category: 'Мясные изделия', emoji: '🍔' },
+                    { id: 24, name: 'Нагетсы', price: 90, category: 'Мясные изделия', emoji: '🍗' },
+                    { id: 25, name: 'Сырные нагетсы', price: 100, category: 'Мясные изделия', emoji: '🧀' },
+                    { id: 26, name: 'Хлеб', price: 35, category: 'Выпечка', emoji: '🍞' },
+                    { id: 27, name: 'Лепешка', price: 50, category: 'Выпечка', emoji: '🥙' },
+                    { id: 28, name: 'Котлета', price: 120, category: 'Мясные изделия', emoji: '🍖' },
+                    { id: 29, name: 'Сок', price: 60, category: 'Напитки', emoji: '🧃' },
+                    { id: 30, name: 'Тортик', price: 80, category: 'Десерты', emoji: '🧁' },
+                    { id: 31, name: 'Куриный суп с лапшой', price: 190, category: 'Супы', emoji: '🍜' },
+                    { id: 32, name: 'Уха', price: 210, category: 'Супы', emoji: '🐟' },
+                    { id: 33, name: 'Пицца', price: 500, category: 'Пицца', emoji: '🍕' },
+                    { id: 34, name: 'Кусочек пиццы', price: 75, category: 'Пицца', emoji: '🍕' }
+                ],
+                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
+                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
+                stats: { totalOrders: 0, totalRevenue: 0 }
+            };
+        }
+
+        function loadData() {
+            const cached = localStorage.getItem('cloudData');
+            if (cached) {
+                try { return JSON.parse(cached); } catch (e) {}
+            }
+            const defaultData = getDefaultData();
+            localStorage.setItem('cloudData', JSON.stringify(defaultData));
+            return defaultData;
+        }
+
+        function renderMenu() {
+            const data = loadData();
+            const menu = data.menu || [];
+            const container = document.getElementById('menuContainer');
+
+            if (menu.length === 0) {
+                container.innerHTML = '<div class="empty">Меню пусто</div>';
+                return;
+            }
+
+            // Группировка по категориям
+            const categories = {};
+            menu.forEach(item => {
+                const cat = item.category || 'Без категории';
+                if (!categories[cat]) categories[cat] = [];
+                categories[cat].push(item);
+            });
+
+            let html = '';
+            for (const cat in categories) {
+                html += `<h3 class="category-title">${cat}</h3>`;
+                html += `<div class="menu-grid">`;
+                categories[cat].forEach(item => {
+                    html += `
+                        <div class="menu-item">
+                            <span class="emoji">${item.emoji || '🍽️'}</span>
+                            <div class="info">
+                                <div class="name">${item.name}</div>
+                                <div class="category">${item.category}</div>
+                            </div>
+                            <div class="price">${item.price} ₽</div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // ========== ЗАПУСК ==========
+        renderMenu();
+        console.log('✅ Меню загружено!');
+    </script>
+</body>
+</html>
