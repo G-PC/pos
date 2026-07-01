@@ -12,7 +12,7 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
-        /* ========== БАЗОВЫЕ ПЕРЕМЕННЫЕ ========== */
+        /* ========== БАЗОВЫЕ ПЕРЕМЕННЫЕ (ПК) ========== */
         :root {
             --font-size-base: 16px;
             --font-size-title: 24px;
@@ -22,99 +22,162 @@
             --grid-cols: repeat(auto-fill, minmax(340px, 1fr));
             --gap: 20px;
             --check-btn-size: 28px;
+            --header-padding: 15px 25px;
+            --body-padding: 20px;
+            --btn-padding: 8px 20px;
+            --border-radius: 12px;
         }
 
-        /* ========== СМАРТФОН (ширина < 600px) ========== */
+        /* ========== СМАРТФОН (ширина < 600px) — КРУПНЫЙ ШРИФТ! ========== */
         @media (max-width: 600px) {
             :root {
-                --font-size-base: 14px;
-                --font-size-title: 18px;
-                --font-size-order: 14px;
-                --font-size-small: 11px;
-                --card-padding: 12px;
+                --font-size-base: 20px;
+                --font-size-title: 28px;
+                --font-size-order: 22px;
+                --font-size-small: 18px;
+                --card-padding: 16px;
                 --grid-cols: 1fr;
-                --gap: 10px;
-                --check-btn-size: 24px;
+                --gap: 14px;
+                --check-btn-size: 40px;
+                --header-padding: 12px 16px;
+                --body-padding: 10px;
+                --btn-padding: 12px 18px;
+                --border-radius: 10px;
             }
             body {
-                padding: 8px;
+                padding: var(--body-padding);
             }
             .header {
-                padding: 10px 12px;
+                padding: var(--header-padding);
                 flex-direction: column;
                 align-items: stretch;
-                gap: 8px;
+                gap: 12px;
+                border-radius: var(--border-radius);
             }
             .header h1 {
                 font-size: var(--font-size-title);
             }
             .status-bar {
                 justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 8px;
             }
             .order-card {
                 padding: var(--card-padding);
+                border-radius: var(--border-radius);
             }
-            .order-card .item {
-                padding: 4px 4px;
+            .order-card .header {
+                padding: 0 0 8px 0;
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+            .order-card .table {
                 font-size: var(--font-size-order);
             }
+            .order-card .time {
+                font-size: var(--font-size-small);
+            }
+            .order-card .item {
+                padding: 10px 6px;
+                font-size: var(--font-size-order);
+                border-radius: 8px;
+            }
             .order-card .item .item-name {
-                gap: 4px;
+                gap: 10px;
             }
             .order-card .item .check-btn {
                 width: var(--check-btn-size);
                 height: var(--check-btn-size);
-                font-size: 12px;
+                font-size: 20px;
+                border-width: 3px;
             }
             .order-card .item .qty {
-                font-size: 11px;
-                padding: 0 6px;
+                font-size: var(--font-size-small);
+                padding: 2px 12px;
+                border-radius: 14px;
+            }
+            .order-card .item .item-name .comment {
+                font-size: var(--font-size-small);
+                padding: 2px 10px;
             }
             .order-card .total {
-                font-size: 14px;
+                font-size: var(--font-size-order);
+                padding-top: 10px;
+                margin-top: 12px;
             }
             .badge {
-                font-size: 10px;
+                font-size: var(--font-size-small);
+                padding: 4px 12px;
             }
             .status {
-                font-size: 11px;
-                padding: 2px 10px;
+                font-size: var(--font-size-small);
+                padding: 4px 14px;
             }
             .auto-refresh {
-                font-size: 11px;
+                font-size: var(--font-size-small);
             }
             .refresh-btn {
-                padding: 6px 12px;
-                font-size: 13px;
+                padding: var(--btn-padding);
+                font-size: var(--font-size-small);
+                border-radius: var(--border-radius);
             }
             .back-btn {
-                padding: 6px 12px;
-                font-size: 13px;
+                padding: var(--btn-padding);
+                font-size: var(--font-size-small);
+                border-radius: var(--border-radius);
             }
             .order-count {
-                font-size: 12px;
-                padding: 2px 10px;
+                font-size: var(--font-size-small);
+                padding: 4px 14px;
+                border-radius: 20px;
+            }
+            .empty {
+                font-size: var(--font-size-order);
+                padding: 40px 20px;
+            }
+            .notification {
+                padding: 18px 24px;
+                font-size: var(--font-size-order);
+                border-radius: var(--border-radius);
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                text-align: center;
+            }
+            .toast {
+                padding: 18px 24px;
+                font-size: var(--font-size-order);
+                border-radius: var(--border-radius);
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                text-align: center;
+            }
+            .order-card .items {
+                margin: 14px 0;
             }
         }
 
         /* ========== ПЛАНШЕТ (600-900px) ========== */
         @media (min-width: 601px) and (max-width: 900px) {
             :root {
-                --font-size-base: 15px;
-                --font-size-title: 20px;
-                --font-size-order: 15px;
+                --font-size-base: 18px;
+                --font-size-title: 22px;
+                --font-size-order: 18px;
+                --font-size-small: 15px;
                 --grid-cols: repeat(auto-fill, minmax(280px, 1fr));
-                --gap: 15px;
+                --gap: 16px;
+                --check-btn-size: 32px;
             }
             .header {
-                padding: 12px 18px;
+                padding: 14px 20px;
             }
         }
 
         /* ========== ОБЩИЕ СТИЛИ ========== */
         body {
             background: #f0f2f5;
-            padding: 20px;
+            padding: var(--body-padding);
             font-size: var(--font-size-base);
         }
         .container {
@@ -129,8 +192,8 @@
             flex-wrap: wrap;
             gap: 10px;
             background: white;
-            padding: 15px 25px;
-            border-radius: 12px;
+            padding: var(--header-padding);
+            border-radius: var(--border-radius);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
         }
         .header h1 {
@@ -141,8 +204,8 @@
             background: #7f8c8d;
             color: white;
             border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
+            padding: var(--btn-padding);
+            border-radius: var(--border-radius);
             cursor: pointer;
             font-weight: 600;
             text-decoration: none;
@@ -153,8 +216,8 @@
             background: #2d7aff;
             color: white;
             border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
+            padding: var(--btn-padding);
+            border-radius: var(--border-radius);
             cursor: pointer;
             font-weight: 600;
             font-size: var(--font-size-small);
@@ -171,7 +234,7 @@
 
         .order-card {
             background: white;
-            border-radius: 12px;
+            border-radius: var(--border-radius);
             padding: var(--card-padding);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             border-left: 4px solid #2d7aff;
@@ -534,7 +597,7 @@
         const isTablet = window.innerWidth >= 600 && window.innerWidth < 900;
 
         console.log('📱 Кухня загружена!');
-        console.log(`📐 Устройство: ${isMobile ? 'Смартфон' : isTablet ? 'Планшет' : 'ПК/Ноутбук'}`);
+        console.log(`📐 Устройство: ${isMobile ? 'Смартфон (крупный шрифт)' : isTablet ? 'Планшет' : 'ПК/Ноутбук'}`);
         console.log(`📏 Ширина экрана: ${window.innerWidth}px`);
     </script>
 </body>
