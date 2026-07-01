@@ -113,6 +113,8 @@
             text-align: center;
             cursor: pointer;
             border: 2px solid transparent;
+            transition: 0.3s;
+            position: relative;
         }
         .item-card:hover {
             border-color: #2d7aff;
@@ -128,6 +130,29 @@
         .item-card .price {
             color: #2d7aff;
             font-weight: 700;
+        }
+        .item-card .add-comment-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #2d7aff;
+            color: white;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(45, 122, 255, 0.4);
+            transition: 0.3s;
+        }
+        .item-card .add-comment-btn:hover {
+            transform: scale(1.15);
+            background: #1a5fd0;
         }
 
         .order-panel {
@@ -178,11 +203,15 @@
             align-items: center;
             gap: 8px;
             flex: 1;
+            flex-wrap: wrap;
         }
         .order-item .info .comment {
             font-size: 11px;
             color: #888;
             font-style: italic;
+            background: #f0f2f5;
+            padding: 0 8px;
+            border-radius: 4px;
         }
         .order-item .qty-control {
             display: flex;
@@ -467,12 +496,12 @@
         </div>
     </div>
 
-    <!-- Модалка для комментария к пицце -->
+    <!-- Модалка для комментария -->
     <div class="modal-comment" id="commentModal">
         <div class="modal-comment-content">
-            <h3>🍕 Комментарий к пицце</h3>
-            <p style="color:#666;font-size:14px;margin-bottom:12px;">Укажите, какая именно пицца:</p>
-            <input type="text" id="commentInput" placeholder="Например: Маргарита, Пепперони..." />
+            <h3>💬 Комментарий к блюду</h3>
+            <p style="color:#666;font-size:14px;margin-bottom:12px;">Добавьте комментарий к заказу:</p>
+            <input type="text" id="commentInput" placeholder="Например: без лука, extra сыр..." />
             <div class="btn-row">
                 <button class="ok-btn" id="commentOkBtn">Добавить</button>
                 <button class="cancel-btn" id="commentCancelBtn">Отмена</button>
@@ -540,7 +569,7 @@
         let cart = [];
         let currentCategory = 'Все';
         let menu = [];
-        let pendingItemId = null; // для комментария
+        let pendingItemId = null;
 
         // ========== DOM ==========
         const $ = id => document.getElementById(id);
@@ -588,7 +617,6 @@
             }
         });
 
-        // Обработка Enter в поле комментария
         document.getElementById('commentInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 document.getElementById('commentOkBtn').click();
@@ -647,18 +675,26 @@
                     <span class="emoji">${i.emoji || '🍽️'}</span>
                     <div class="name">${i.name}</div>
                     <div class="price">${i.price} ₽</div>
+                    <button class="add-comment-btn" data-id="${i.id}" title="Добавить комментарий">+</button>
                 </div>`
             ).join('');
+
+            // Обработчик нажатия на карточку (добавление без комментария)
             document.querySelectorAll('.item-card').forEach(el => {
-                el.onclick = () => {
+                el.onclick = (e) => {
+                    // Если кликнули по кнопке "+" — не добавляем, только показываем модалку
+                    if (e.target.classList.contains('add-comment-btn')) return;
                     const id = parseInt(el.dataset.id);
-                    const item = menu.find(i => i.id === id);
-                    // Если пицца или кусочек пиццы — показываем окно комментария
-                    if (item && (item.name === 'Пицца' || item.name === 'Кусочек пиццы')) {
-                        showCommentModal(id);
-                    } else {
-                        addToCart(id, null);
-                    }
+                    addToCart(id, null);
+                };
+            });
+
+            // Обработчик кнопки "+" (комментарий)
+            document.querySelectorAll('.add-comment-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.id);
+                    showCommentModal(id);
                 };
             });
         }
@@ -667,6 +703,8 @@
         function addToCart(id, comment) {
             const item = menu.find(i => i.id === id);
             if (!item) return;
+
+            // Ищем существующий товар с таким же ID и таким же комментарием
             const existing = cart.find(i => i.id === id && i.comment === comment);
             if (existing) {
                 existing.quantity += 1;
@@ -676,7 +714,7 @@
             renderCart();
             saveOrder();
             if (comment) {
-                showToast(`✅ ${item.name} добавлена с комментарием: "${comment}"`);
+                showToast(`✅ ${item.name} добавлен с комментарием: "${comment}"`);
             }
         }
 
