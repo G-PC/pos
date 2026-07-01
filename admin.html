@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Управление</title>
     <style>
+        /* ... все стили как раньше ... */
         * {
             margin: 0;
             padding: 0;
@@ -178,26 +179,6 @@
             border-radius: 12px;
             font-size: 12px;
         }
-        .list-item .actions {
-            display: flex;
-            gap: 8px;
-        }
-        .list-item .actions button {
-            padding: 4px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-        }
-        .list-item .actions .edit {
-            background: #ffc107;
-            color: #333;
-        }
-        .list-item .actions .delete {
-            background: #ff4757;
-            color: white;
-        }
         .empty {
             text-align: center;
             color: #888;
@@ -232,9 +213,6 @@
             padding: 6px 14px;
             border-radius: 6px;
             cursor: pointer;
-        }
-        .modal-content .form-grid {
-            margin-top: 15px;
         }
         .toast {
             position: fixed;
@@ -310,48 +288,24 @@
 
         <div class="tabs">
             <button class="tab-btn active" data-tab="dashboard">📊 Статистика</button>
-            <button class="tab-btn" data-tab="menu">🍽️ Меню</button>
             <button class="tab-btn" data-tab="users">👥 Пользователи</button>
             <button class="tab-btn" data-tab="settings">⚙️ Настройки</button>
         </div>
 
+        <!-- СТАТИСТИКА -->
         <div class="tab-content active" id="tab-dashboard">
             <div class="stats-grid" id="statsGrid"></div>
             <h3>📋 Последние заказы</h3>
             <div id="recentOrdersList"></div>
         </div>
 
-        <div class="tab-content" id="tab-menu">
-            <h3>➕ Добавить блюдо</h3>
-            <div class="form-grid">
-                <input type="text" id="addName" placeholder="Название" />
-                <input type="number" id="addPrice" placeholder="Цена" min="0" step="1" />
-                <input type="text" id="addCategory" placeholder="Категория" />
-                <input type="text" id="addEmoji" placeholder="Эмодзи (🥗)" />
-                <button id="addDishBtn">Добавить</button>
-            </div>
-            <h3>📋 Список блюд</h3>
-            <div id="menuList"></div>
-        </div>
-
+        <!-- ПОЛЬЗОВАТЕЛИ (только просмотр) -->
         <div class="tab-content" id="tab-users">
-            <h3>➕ Добавить пользователя</h3>
-            <div class="form-grid">
-                <input type="text" id="addUserLogin" placeholder="Логин" />
-                <input type="password" id="addUserPassword" placeholder="Пароль" />
-                <input type="text" id="addUserName" placeholder="Имя" />
-                <select id="addUserRole">
-                    <option value="Официант">Официант</option>
-                    <option value="Повар">Повар</option>
-                    <option value="Повар+Официант">Повар+Официант</option>
-                    <option value="sadmin">Владелец</option>
-                </select>
-                <button id="addUserBtn">Добавить</button>
-            </div>
             <h3>📋 Список пользователей</h3>
             <div id="usersList"></div>
         </div>
 
+        <!-- НАСТРОЙКИ -->
         <div class="tab-content" id="tab-settings">
             <h3>🏷️ Настройки заведения</h3>
             <div class="form-grid" style="max-width:500px;">
@@ -374,14 +328,6 @@
                 <button id="clearAllData" class="danger" style="background:#ff4757;color:white;border:none;padding:10px 25px;border-radius:8px;cursor:pointer;font-weight:700;">Очистить все данные</button>
                 <p style="font-size:12px;color:#888;margin-top:8px;">Удаляет заказы и статистику, меню и пользователи сохраняются</p>
             </div>
-        </div>
-    </div>
-
-    <div class="modal" id="editModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeEditModal">✕</button>
-            <h3 id="editModalTitle">Редактирование</h3>
-            <div id="editModalBody"></div>
         </div>
     </div>
 
@@ -435,35 +381,13 @@
             };
         });
 
-        // ========== ТОСТ И МОДАЛКА ==========
+        // ========== ТОСТ ==========
         function showToast(msg) {
             const t = document.createElement('div');
             t.className = 'toast';
             t.textContent = msg;
             document.body.appendChild(t);
             setTimeout(() => t.remove(), 3000);
-        }
-
-        function openModal(title, body) {
-            document.getElementById('editModalTitle').textContent = title;
-            document.getElementById('editModalBody').innerHTML = body;
-            document.getElementById('editModal').style.display = 'flex';
-        }
-
-        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
-        document.getElementById('closeEditModal').onclick = closeModal;
-        document.getElementById('editModal').onclick = (e) => { if (e.target === e.currentTarget) closeModal(); };
-
-        // ========== УНИВЕРСАЛЬНЫЙ РЕНДЕР СПИСКА ==========
-        function renderList(containerId, items, renderItem, onDelete, onEdit) {
-            const container = document.getElementById(containerId);
-            if (!items || items.length === 0) {
-                container.innerHTML = '<div class="empty">Пусто</div>';
-                return;
-            }
-            container.innerHTML = items.map((item, index) => renderItem(item, index)).join('');
-            container.querySelectorAll('.delete').forEach(b => b.onclick = () => onDelete(b.dataset.id));
-            container.querySelectorAll('.edit').forEach(b => b.onclick = () => onEdit(b.dataset.id));
         }
 
         // ========== СТАТИСТИКА ==========
@@ -513,82 +437,7 @@
             }
         }
 
-        // ========== МЕНЮ ==========
-        function renderMenu() {
-            const data = loadData();
-            const menu = data.menu || [];
-            renderList('menuList', menu,
-                (item) => `<div class="list-item">
-                    <div class="info">
-                        <span style="font-size:24px;">${item.emoji || '🍽️'}</span>
-                        <span class="name">${item.name}</span>
-                        <span class="detail">${item.price} ₽</span>
-                        <span class="badge">${item.category}</span>
-                    </div>
-                    <div class="actions">
-                        <button class="edit" data-id="${item.id}">✏️</button>
-                        <button class="delete" data-id="${item.id}">🗑️</button>
-                    </div>
-                </div>`,
-                (id) => {
-                    const data = loadData();
-                    data.menu = data.menu.filter(i => i.id != id);
-                    saveData(data);
-                    renderMenu();
-                    renderDashboard();
-                    showToast('✅ Блюдо удалено');
-                },
-                (id) => {
-                    const data = loadData();
-                    const item = data.menu.find(i => i.id == id);
-                    if (!item) return;
-                    openModal('Редактировать блюдо',
-                        `<div class="form-grid">
-                            <input type="text" id="editName" value="${item.name}" placeholder="Название" />
-                            <input type="number" id="editPrice" value="${item.price}" placeholder="Цена" min="0" />
-                            <input type="text" id="editCategory" value="${item.category}" placeholder="Категория" />
-                            <input type="text" id="editEmoji" value="${item.emoji || ''}" placeholder="Эмодзи" />
-                            <button id="saveEditDish" data-id="${id}">Сохранить</button>
-                        </div>`
-                    );
-                    document.getElementById('saveEditDish').onclick = () => {
-                        const name = document.getElementById('editName').value.trim();
-                        const price = parseFloat(document.getElementById('editPrice').value);
-                        const category = document.getElementById('editCategory').value.trim();
-                        const emoji = document.getElementById('editEmoji').value.trim();
-                        if (!name || isNaN(price) || !category) { alert('Заполните все поля!'); return; }
-                        const data = loadData();
-                        const idx = data.menu.findIndex(i => i.id == id);
-                        if (idx !== -1) {
-                            data.menu[idx] = { ...data.menu[idx], name, price, category, emoji };
-                            saveData(data);
-                            renderMenu();
-                            renderDashboard();
-                            closeModal();
-                            showToast('✅ Блюдо обновлено');
-                        }
-                    };
-                }
-            );
-        }
-
-        document.getElementById('addDishBtn').onclick = () => {
-            const name = document.getElementById('addName').value.trim();
-            const price = parseFloat(document.getElementById('addPrice').value);
-            const category = document.getElementById('addCategory').value.trim();
-            const emoji = document.getElementById('addEmoji').value.trim();
-            if (!name || isNaN(price) || price < 0 || !category) { alert('Заполните все поля!'); return; }
-            const data = loadData();
-            const newId = data.menu.length ? Math.max(...data.menu.map(i => i.id)) + 1 : 1;
-            data.menu.push({ id: newId, name, price, category, emoji: emoji || '🍽️' });
-            saveData(data);
-            renderMenu();
-            renderDashboard();
-            showToast('✅ Блюдо добавлено');
-            ['addName', 'addPrice', 'addCategory', 'addEmoji'].forEach(id => document.getElementById(id).value = '');
-        };
-
-        // ========== ПОЛЬЗОВАТЕЛИ ==========
+        // ========== ПОЛЬЗОВАТЕЛИ (только просмотр) ==========
         function renderUsers() {
             const data = loadData();
             const users = data.users || {};
@@ -612,80 +461,9 @@
                         <span class="badge" style="background:${roleColor};color:white;">${roleDisplay}</span>
                         ${login === 'sadmin' ? '🔒' : ''}
                     </div>
-                    <div class="actions">
-                        ${login !== 'sadmin' ? `<button class="edit" data-id="${login}">✏️</button><button class="delete" data-id="${login}">🗑️</button>` : ''}
-                    </div>
                 </div>`;
             }).join('');
-
-            container.querySelectorAll('.delete').forEach(b => {
-                b.onclick = () => {
-                    const login = b.dataset.id;
-                    if (confirm(`Удалить пользователя "${login}"?`)) {
-                        const data = loadData();
-                        delete data.users[login];
-                        saveData(data);
-                        renderUsers();
-                        renderDashboard();
-                        showToast('✅ Пользователь удалён');
-                    }
-                };
-            });
-
-            container.querySelectorAll('.edit').forEach(b => {
-                b.onclick = () => {
-                    const login = b.dataset.id;
-                    const data = loadData();
-                    const userData = data.users[login];
-                    if (!userData) return;
-                    openModal('Редактировать пользователя',
-                        `<div class="form-grid">
-                            <input type="text" id="editUserName" value="${userData.name || ''}" placeholder="Имя" />
-                            <input type="password" id="editUserPassword" placeholder="Новый пароль (оставьте пустым)" />
-                            <select id="editUserRole">
-                                <option value="Официант" ${userData.role === 'Официант' ? 'selected' : ''}>Официант</option>
-                                <option value="Повар" ${userData.role === 'Повар' ? 'selected' : ''}>Повар</option>
-                                <option value="Повар+Официант" ${userData.role === 'Повар+Официант' ? 'selected' : ''}>Повар+Официант</option>
-                                <option value="sadmin" ${userData.role === 'sadmin' ? 'selected' : ''}>Владелец</option>
-                            </select>
-                            <button id="saveEditUser" data-id="${login}">Сохранить</button>
-                        </div>`
-                    );
-                    document.getElementById('saveEditUser').onclick = () => {
-                        const name = document.getElementById('editUserName').value.trim();
-                        const password = document.getElementById('editUserPassword').value.trim();
-                        const role = document.getElementById('editUserRole').value;
-                        const data = loadData();
-                        if (data.users[login]) {
-                            data.users[login].name = name || login;
-                            if (password) data.users[login].password = password;
-                            data.users[login].role = role;
-                            saveData(data);
-                            renderUsers();
-                            renderDashboard();
-                            closeModal();
-                            showToast('✅ Пользователь обновлён');
-                        }
-                    };
-                };
-            });
         }
-
-        document.getElementById('addUserBtn').onclick = () => {
-            const login = document.getElementById('addUserLogin').value.trim();
-            const password = document.getElementById('addUserPassword').value.trim();
-            const name = document.getElementById('addUserName').value.trim();
-            const role = document.getElementById('addUserRole').value;
-            if (!login || !password) { alert('Заполните логин и пароль!'); return; }
-            const data = loadData();
-            if (data.users[login]) { alert('Пользователь уже существует!'); return; }
-            data.users[login] = { password, role, name: name || login };
-            saveData(data);
-            renderUsers();
-            renderDashboard();
-            showToast('✅ Пользователь добавлен');
-            ['addUserLogin', 'addUserPassword', 'addUserName'].forEach(id => document.getElementById(id).value = '');
-        };
 
         // ========== НАСТРОЙКИ ==========
         function updateTableCount() {
@@ -740,7 +518,6 @@
         // ========== ЗАПУСК ==========
         function init() {
             renderDashboard();
-            renderMenu();
             renderUsers();
             updateTableCount();
         }
