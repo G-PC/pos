@@ -35,19 +35,6 @@
             color: #2d3e50;
             font-size: 24px;
         }
-        .header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .header .user-info .role {
-            background: #2d7aff;
-            color: white;
-            padding: 4px 14px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
         .header .back-btn {
             background: #7f8c8d;
             color: white;
@@ -248,11 +235,7 @@
     <div class="container">
         <div class="header">
             <h1>⚙️ Управление</h1>
-            <div class="user-info">
-                <span id="adminName">sadmin</span>
-                <span class="role" id="adminRole">sadmin</span>
-                <a href="index.html" class="back-btn">← На главную</a>
-            </div>
+            <a href="index.html" class="back-btn">← На главную</a>
         </div>
 
         <div class="tabs">
@@ -260,7 +243,7 @@
             <button class="tab-btn" data-tab="settings">⚙️ Настройки</button>
         </div>
 
-        <!-- СТАТИСТИКА (только заказы и выручка) -->
+        <!-- СТАТИСТИКА -->
         <div class="tab-content active" id="tab-dashboard">
             <div class="stats-grid" id="statsGrid"></div>
             <h3>📋 Последние заказы</h3>
@@ -316,21 +299,6 @@
 
         function saveData(data) { localStorage.setItem('cloudData', JSON.stringify(data)); }
 
-        function getCurrentUser() {
-            const data = localStorage.getItem('currentUser');
-            return data ? JSON.parse(data) : null;
-        }
-
-        // ========== ПРОВЕРКА ==========
-        const user = getCurrentUser();
-        if (!user || user.role !== 'sadmin') {
-            alert('Доступ запрещен');
-            window.location.href = 'index.html';
-        }
-
-        document.getElementById('adminName').textContent = user.name || user.login;
-        document.getElementById('adminRole').textContent = 'Владелец';
-
         // ========== ВКЛАДКИ ==========
         document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
             btn.onclick = () => {
@@ -356,7 +324,6 @@
             const stats = data.stats || { totalOrders: 0, totalRevenue: 0 };
             const tables = data.tables || {};
 
-            // Только заказы и выручка
             const cards = [
                 { label: 'Всего заказов', value: stats.totalOrders || 0 },
                 { label: 'Выручка', value: (stats.totalRevenue || 0) + ' ₽' }
