@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Готовые блюда</title>
+    <title>Кухня - Заказы</title>
     <style>
         * {
             margin: 0;
@@ -57,10 +57,9 @@
         .refresh-btn:hover {
             background: #1a5fd0;
         }
-
         .orders-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 20px;
         }
         .order-card {
@@ -68,8 +67,12 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-            border-left: 4px solid #2ed573;
+            border-left: 4px solid #2d7aff;
             transition: 0.3s;
+        }
+        .order-card.completed {
+            border-left-color: #2ed573;
+            opacity: 0.8;
         }
         .order-card .header {
             display: flex;
@@ -94,14 +97,65 @@
         .order-card .item {
             display: flex;
             justify-content: space-between;
-            padding: 4px 0;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 6px;
             border-bottom: 1px solid #f5f5f5;
             font-size: 14px;
+            transition: 0.3s;
+            cursor: pointer;
         }
-        .order-card .item .comment {
+        .order-card .item:hover {
+            background: #f0f2f5;
+        }
+        .order-card .item.done {
+            background: #e8f5e9;
+            text-decoration: line-through;
+            color: #888;
+        }
+        .order-card .item .item-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .order-card .item .item-name .comment {
             font-size: 12px;
             color: #888;
             font-style: italic;
+            background: #f0f2f5;
+            padding: 0 8px;
+            border-radius: 4px;
+        }
+        .order-card .item .check-btn {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+        .order-card .item .check-btn:hover {
+            border-color: #2d7aff;
+            transform: scale(1.1);
+        }
+        .order-card .item .check-btn.done {
+            background: #2ed573;
+            border-color: #2ed573;
+            color: white;
+        }
+        .order-card .item .qty {
+            background: #e8e8e8;
+            padding: 0 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
         }
         .order-card .total {
             font-weight: 700;
@@ -109,6 +163,8 @@
             margin-top: 10px;
             padding-top: 8px;
             border-top: 2px solid #eee;
+            display: flex;
+            justify-content: space-between;
         }
         .order-card .status {
             display: inline-block;
@@ -116,6 +172,12 @@
             border-radius: 12px;
             font-size: 12px;
             font-weight: 600;
+        }
+        .status.open {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.completed {
             background: #d4edda;
             color: #155724;
         }
@@ -132,6 +194,29 @@
             padding: 50px;
             font-size: 18px;
         }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff6b35;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4);
+            z-index: 999;
+            animation: slideIn 0.5s ease;
+            display: none;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
         .auto-refresh {
             font-size: 12px;
             color: #888;
@@ -144,26 +229,12 @@
             flex-wrap: wrap;
         }
         .order-count {
-            background: #2ed573;
+            background: #ff6b35;
             color: white;
             padding: 2px 12px;
             border-radius: 20px;
             font-size: 14px;
             font-weight: 600;
-        }
-        .deliver-btn {
-            background: #2d7aff;
-            color: white;
-            border: none;
-            padding: 6px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-            margin-top: 10px;
-        }
-        .deliver-btn:hover {
-            background: #1a5fd0;
         }
         .toast {
             position: fixed;
@@ -176,23 +247,13 @@
             z-index: 9999;
             animation: slideIn 0.5s ease;
         }
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <div>
-                <h1>✅ Готовые блюда</h1>
+                <h1>🍳 Кухня — Активные заказы</h1>
                 <div class="auto-refresh">Автообновление каждые 5 секунд</div>
             </div>
             <div class="status-bar">
@@ -205,6 +266,8 @@
         <div class="orders-grid" id="ordersGrid"></div>
     </div>
 
+    <div class="notification" id="notification">🆕 Новый заказ!</div>
+
     <script src="menu.js"></script>
     <script src="users.js"></script>
     <script>
@@ -212,6 +275,7 @@
         // ВСЯ ЛОГИКА ВНУТРИ
         // ============================================================
 
+        // ========== ДАННЫЕ ==========
         function getDefaultData() {
             return {
                 venueName: 'Кафе Уют',
@@ -242,15 +306,17 @@
             return data ? JSON.parse(data) : null;
         }
 
+        // ========== ПРОВЕРКА ==========
         const user = getCurrentUser();
-        if (!user || (user.role !== 'sadmin' && user.role !== 'Повар' && user.role !== 'Повар+Официант' && user.role !==
-                'Официант')) {
-            alert('Доступ запрещен');
+        if (!user || (user.role !== 'sadmin' && user.role !== 'Повар' && user.role !== 'Повар+Официант')) {
+            alert('Доступ запрещен. Только для поваров, Повар+Официант и Владельца');
             window.location.href = 'index.html';
         }
 
-        let previousCompletedIds = new Set();
+        // ========== СОСТОЯНИЕ ==========
+        let previousOrderIds = new Set();
 
+        // ========== ТОСТ ==========
         function showToast(msg) {
             const t = document.createElement('div');
             t.className = 'toast';
@@ -259,18 +325,52 @@
             setTimeout(() => { t.remove(); }, 3000);
         }
 
-        function renderCompleted() {
+        // ========== ОТМЕТИТЬ БЛЮДО ==========
+        function toggleItemDone(tableNum, orderTimestamp, itemIndex) {
+            const data = loadData();
+            const table = data.tables[tableNum];
+            if (!table) return;
+
+            const order = table.orders.find(o => o.timestamp === orderTimestamp);
+            if (!order) return;
+
+            if (!order.items[itemIndex].done) {
+                order.items[itemIndex].done = true;
+                showToast('✅ Блюдо готово!');
+            } else {
+                order.items[itemIndex].done = false;
+                showToast('↩️ Отмечено как неготовое');
+            }
+
+            const allDone = order.items.every(item => item.done === true);
+            if (allDone && order.status !== 'closed') {
+                order.status = 'completed';
+                order.completedAt = new Date().toISOString();
+                showToast('🎉 Все блюда готовы! Заказ передан в "Готовые блюда"');
+            } else {
+                order.status = 'open';
+            }
+
+            saveData(data);
+            renderOrders();
+        }
+
+        // ========== РЕНДЕР ==========
+        function renderOrders() {
             const data = loadData();
             const grid = document.getElementById('ordersGrid');
             const tables = data.tables || {};
 
-            let completedOrders = [];
+            let allOrders = [];
             for (let tableNum = 1; tableNum <= 3; tableNum++) {
                 const table = tables[tableNum];
                 if (table && table.orders) {
-                    const completed = table.orders.filter(o => o.status === 'completed' && !o.delivered);
-                    completed.forEach(order => {
-                        completedOrders.push({
+                    // Показываем только открытые (НЕ закрытые)
+                    const visibleOrders = table.orders.filter(o => o.status !== 'closed');
+                    visibleOrders.forEach(order => {
+                        const orderId = `${tableNum}_${order.timestamp}`;
+                        allOrders.push({
+                            id: orderId,
                             table: tableNum,
                             ...order,
                             items: order.items || []
@@ -279,83 +379,86 @@
                 }
             }
 
-            completedOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            allOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-            const currentIds = new Set(completedOrders.map(o => `${o.table}_${o.timestamp}`));
-            const newOrders = [...currentIds].filter(id => !previousCompletedIds.has(id));
-            if (newOrders.length > 0 && completedOrders.length > 0) {
-                showToast(`🆕 ${newOrders.length} новых готовых блюд!`);
+            const currentIds = new Set(allOrders.map(o => o.id));
+            const newOrders = [...currentIds].filter(id => !previousOrderIds.has(id));
+            if (newOrders.length > 0) {
+                showNotification(`🆕 ${newOrders.length} новый(ых) заказ(а)!`);
             }
-            previousCompletedIds = currentIds;
+            previousOrderIds = currentIds;
 
-            document.getElementById('orderCount').textContent = completedOrders.length;
+            document.getElementById('orderCount').textContent = allOrders.length;
 
-            if (completedOrders.length === 0) {
+            if (allOrders.length === 0) {
                 grid.innerHTML =
-                    `<div class="empty" style="grid-column:1/-1;">🎉 Нет готовых блюд<br><span style="font-size:14px;color:#aaa;">Все блюда уже доставлены</span></div>`;
+                    `<div class="empty" style="grid-column:1/-1;">🎉 Все заказы выполнены!<br><span style="font-size:14px;color:#aaa;">Новых заказов нет</span></div>`;
                 return;
             }
 
-            grid.innerHTML = completedOrders.map(order => `
-                <div class="order-card">
-                    <div class="header">
-                        <span class="table">🪑 Стол ${order.table}</span>
-                        <span class="time">${new Date(order.timestamp).toLocaleTimeString('ru-RU')}</span>
-                    </div>
-                    <div style="margin-bottom:8px;">
-                        <span class="status">✅ Готово</span>
-                        <span class="badge">${order.items.length} позиций</span>
-                    </div>
-                    <div class="items">
-                        ${order.items.map(item => `
-                            <div class="item">
-                                <span>${item.emoji || '🍽️'} ${item.name} ${item.comment ? `<span class="comment">(${item.comment})</span>` : ''}</span>
-                                <span>× ${item.quantity}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="total">
-                        <span>Итого: ${order.total} ₽</span>
-                    </div>
-                    <button class="deliver-btn" data-table="${order.table}" data-timestamp="${order.timestamp}">📦 Отдать на стол ${order.table}</button>
-                </div>
-            `).join('');
+            grid.innerHTML = allOrders.map(order => {
+                const isCompleted = order.status === 'completed';
+                const allItemsDone = order.items.every(item => item.done === true);
 
-            document.querySelectorAll('.deliver-btn').forEach(btn => {
-                btn.onclick = () => {
-                    const tableNum = parseInt(btn.dataset.table);
-                    const timestamp = btn.dataset.timestamp;
-                    deliverOrder(tableNum, timestamp);
-                };
-            });
+                return `
+                    <div class="order-card ${isCompleted ? 'completed' : ''}">
+                        <div class="header">
+                            <span class="table">🪑 Стол ${order.table}</span>
+                            <span class="time">${new Date(order.timestamp).toLocaleTimeString('ru-RU')}</span>
+                        </div>
+                        <div style="margin-bottom:8px;">
+                            <span class="status ${isCompleted ? 'completed' : 'open'}">
+                                ${isCompleted ? '✅ Все готово!' : '🟡 В работе'}
+                            </span>
+                            <span class="badge">${order.items.length} позиций</span>
+                            ${allItemsDone && !isCompleted ? '<span style="color:#2ed573;font-size:12px;font-weight:600;margin-left:8px;">⚡ Всё готово!</span>' : ''}
+                        </div>
+                        <div class="items">
+                            ${order.items.map((item, idx) => `
+                                <div class="item ${item.done ? 'done' : ''}" onclick="toggleItemDone(${order.table}, '${order.timestamp}', ${idx})">
+                                    <div class="item-name">
+                                        <button class="check-btn ${item.done ? 'done' : ''}">
+                                            ${item.done ? '✓' : ''}
+                                        </button>
+                                        <span>${item.emoji || '🍽️'} ${item.name}</span>
+                                        ${item.comment ? `<span class="comment">(${item.comment})</span>` : ''}
+                                    </div>
+                                    <span class="qty">×${item.quantity}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="total">
+                            <span>Итого:</span>
+                            <span>${order.total} ₽</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        function deliverOrder(tableNum, timestamp) {
-            if (!confirm(`Отдать заказ на стол ${tableNum}?`)) return;
-
-            const data = loadData();
-            const table = data.tables[tableNum];
-            if (!table) return;
-
-            const order = table.orders.find(o => o.timestamp === timestamp);
-            if (!order) return;
-
-            order.delivered = true;
-            order.status = 'closed';
-            saveData(data);
-            renderCompleted();
-            showToast(`✅ Заказ на стол ${tableNum} доставлен`);
+        // ========== УВЕДОМЛЕНИЯ ==========
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
         }
 
+        // ========== ОБНОВЛЕНИЕ ==========
         function refresh() {
-            renderCompleted();
+            renderOrders();
         }
 
+        // ========== ЗАПУСК ==========
         document.getElementById('refreshBtn').addEventListener('click', refresh);
         setInterval(refresh, 5000);
         refresh();
 
-        console.log('✅ Готовые блюда загружены!');
+        window.toggleItemDone = toggleItemDone;
+
+        console.log('✅ Кухня загружена! Комментарии к пицце видны!');
     </script>
 </body>
 </html>
