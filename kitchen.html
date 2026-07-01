@@ -70,10 +70,6 @@
             border-left: 4px solid #2d7aff;
             transition: 0.3s;
         }
-        .order-card.completed {
-            border-left-color: #2ed573;
-            opacity: 0.8;
-        }
         .order-card .header {
             display: flex;
             justify-content: space-between;
@@ -176,10 +172,6 @@
         .status.open {
             background: #fff3cd;
             color: #856404;
-        }
-        .status.completed {
-            background: #d4edda;
-            color: #155724;
         }
         .badge {
             background: #ff6b35;
@@ -344,10 +336,7 @@
 
             const allDone = order.items.every(item => item.done === true);
             if (allDone && order.status !== 'closed') {
-                order.status = 'completed';
                 showToast('🎉 Все блюда готовы!');
-            } else {
-                order.status = 'open';
             }
 
             saveData(data);
@@ -395,21 +384,18 @@
             }
 
             grid.innerHTML = allOrders.map(order => {
-                const isCompleted = order.status === 'completed';
                 const allItemsDone = order.items.every(item => item.done === true);
 
                 return `
-                    <div class="order-card ${isCompleted ? 'completed' : ''}">
+                    <div class="order-card">
                         <div class="header">
                             <span class="table">🪑 Стол ${order.table}</span>
                             <span class="time">${new Date(order.timestamp).toLocaleTimeString('ru-RU')}</span>
                         </div>
                         <div style="margin-bottom:8px;">
-                            <span class="status ${isCompleted ? 'completed' : 'open'}">
-                                ${isCompleted ? '✅ Все готово!' : '🟡 В работе'}
-                            </span>
+                            <span class="status open">🟡 В работе</span>
                             <span class="badge">${order.items.length} позиций</span>
-                            ${allItemsDone && !isCompleted ? '<span style="color:#2ed573;font-size:12px;font-weight:600;margin-left:8px;">⚡ Всё готово!</span>' : ''}
+                            ${allItemsDone ? '<span style="color:#2ed573;font-size:12px;font-weight:600;margin-left:8px;">⚡ Всё готово!</span>' : ''}
                         </div>
                         <div class="items">
                             ${order.items.map((item, idx) => `
@@ -456,7 +442,7 @@
 
         window.toggleItemDone = toggleItemDone;
 
-        console.log('✅ Кухня загружена! Комментарии к пицце видны!');
+        console.log('✅ Кухня загружена!');
     </script>
 </body>
 </html>
