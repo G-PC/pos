@@ -261,18 +261,12 @@
     <div class="notification" id="notification">🆕 Новый заказ!</div>
 
     <script src="menu.js"></script>
-    <script src="users.js"></script>
     <script>
-        // ============================================================
-        // ВСЯ ЛОГИКА ВНУТРИ
-        // ============================================================
-
-        // ========== ДАННЫЕ ==========
         function getDefaultData() {
             return {
                 venueName: 'Кафе Уют',
                 menu: getDefaultMenu(),
-                users: getDefaultUsers(),
+                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
                 tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 },
                 '3': { orders: [], total: 0 } },
                 stats: { totalOrders: 0, totalRevenue: 0 }
@@ -293,22 +287,8 @@
             localStorage.setItem('cloudData', JSON.stringify(data));
         }
 
-        function getCurrentUser() {
-            const data = localStorage.getItem('currentUser');
-            return data ? JSON.parse(data) : null;
-        }
-
-        // ========== ПРОВЕРКА ==========
-        const user = getCurrentUser();
-        if (!user || (user.role !== 'sadmin' && user.role !== 'Повар' && user.role !== 'Повар+Официант')) {
-            alert('Доступ запрещен. Только для поваров, Повар+Официант и Владельца');
-            window.location.href = 'index.html';
-        }
-
-        // ========== СОСТОЯНИЕ ==========
         let previousOrderIds = new Set();
 
-        // ========== ТОСТ ==========
         function showToast(msg) {
             const t = document.createElement('div');
             t.className = 'toast';
@@ -317,7 +297,6 @@
             setTimeout(() => { t.remove(); }, 3000);
         }
 
-        // ========== ОТМЕТИТЬ БЛЮДО ==========
         function toggleItemDone(tableNum, orderTimestamp, itemIndex) {
             const data = loadData();
             const table = data.tables[tableNum];
@@ -343,7 +322,6 @@
             renderOrders();
         }
 
-        // ========== РЕНДЕР ==========
         function renderOrders() {
             const data = loadData();
             const grid = document.getElementById('ordersGrid');
@@ -420,7 +398,6 @@
             }).join('');
         }
 
-        // ========== УВЕДОМЛЕНИЯ ==========
         function showNotification(message) {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -430,12 +407,10 @@
             }, 3000);
         }
 
-        // ========== ОБНОВЛЕНИЕ ==========
         function refresh() {
             renderOrders();
         }
 
-        // ========== ЗАПУСК ==========
         document.getElementById('refreshBtn').addEventListener('click', refresh);
         setInterval(refresh, 5000);
         refresh();
