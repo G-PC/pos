@@ -129,6 +129,7 @@
             color: #2d7aff;
             font-weight: 700;
         }
+
         .order-panel {
             flex: 1.2;
             background: white;
@@ -177,6 +178,11 @@
             align-items: center;
             gap: 8px;
             flex: 1;
+        }
+        .order-item .info .comment {
+            font-size: 11px;
+            color: #888;
+            font-style: italic;
         }
         .order-item .qty-control {
             display: flex;
@@ -258,6 +264,66 @@
             margin-top: 4px;
             text-align: center;
         }
+
+        /* Модалка комментария */
+        .modal-comment {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-comment-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 90%;
+        }
+        .modal-comment-content h3 {
+            margin-bottom: 15px;
+            color: #2d3e50;
+        }
+        .modal-comment-content input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        .modal-comment-content .btn-row {
+            display: flex;
+            gap: 10px;
+        }
+        .modal-comment-content .btn-row button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .modal-comment-content .btn-row .ok-btn {
+            background: #2d7aff;
+            color: white;
+        }
+        .modal-comment-content .btn-row .ok-btn:hover {
+            background: #1a5fd0;
+        }
+        .modal-comment-content .btn-row .cancel-btn {
+            background: #e0e0e0;
+            color: #333;
+        }
+        .modal-comment-content .btn-row .cancel-btn:hover {
+            background: #ccc;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -401,6 +467,19 @@
         </div>
     </div>
 
+    <!-- Модалка для комментария к пицце -->
+    <div class="modal-comment" id="commentModal">
+        <div class="modal-comment-content">
+            <h3>🍕 Комментарий к пицце</h3>
+            <p style="color:#666;font-size:14px;margin-bottom:12px;">Укажите, какая именно пицца:</p>
+            <input type="text" id="commentInput" placeholder="Например: Маргарита, Пепперони..." />
+            <div class="btn-row">
+                <button class="ok-btn" id="commentOkBtn">Добавить</button>
+                <button class="cancel-btn" id="commentCancelBtn">Отмена</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Модалка чека -->
     <div class="modal" id="receiptModal">
         <div class="modal-content">
@@ -411,12 +490,13 @@
     </div>
 
     <script src="menu.js"></script>
+    <script src="users.js"></script>
     <script>
         // ============================================================
         // ВСЯ ЛОГИКА ВНУТРИ
         // ============================================================
 
-        // ========== ЕДИНАЯ ЗАГРУЗКА ДАННЫХ ==========
+        // ========== ДАННЫЕ ==========
         function loadData() {
             const cached = localStorage.getItem('cloudData');
             if (cached) {
@@ -431,7 +511,8 @@
             const defaultData = {
                 venueName: 'Кафе Уют',
                 menu: defaultMenu,
-                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
+                users: getDefaultUsers ? getDefaultUsers() : { 'sadmin': { password: '123', role: 'sadmin',
+                    name: 'Владелец' } },
                 tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
                 stats: { totalOrders: 0, totalRevenue: 0 }
             };
@@ -448,18 +529,8 @@
             return data ? JSON.parse(data) : null;
         }
 
-        // ========== ТОСТ ==========
-        function showToast(msg) {
-            const t = document.createElement('div');
-            t.className = 'toast';
-            t.textContent = msg;
-            document.body.appendChild(t);
-            setTimeout(() => { t.remove(); }, 3000);
-        }
-
         // ========== ПРОВЕРКА ==========
         const user = getCurrentUser();
-        // Разрешаем: Владелец (sadmin), Официант, Повар+Официант
         if (!user || (user.role !== 'sadmin' && user.role !== 'Официант' && user.role !== 'Повар+Официант')) {
             alert('У вас нет прав для работы с заказами');
             window.location.href = 'index.html';
@@ -469,6 +540,7 @@
         let cart = [];
         let currentCategory = 'Все';
         let menu = [];
+        let pendingItemId = null; // для комментария
 
         // ========== DOM ==========
         const $ = id => document.getElementById(id);
@@ -483,6 +555,54 @@
         const searchInput = $('searchInput');
         const tableTitle = $('tableTitle');
         const tableStatus = $('tableStatus');
+
+        // ========== МОДАЛКА КОММЕНТАРИЯ ==========
+        function showCommentModal(itemId) {
+            pendingItemId = itemId;
+            document.getElementById('commentInput').value = '';
+            document.getElementById('commentModal').style.display = 'flex';
+            document.getElementById('commentInput').focus();
+        }
+
+        function hideCommentModal() {
+            document.getElementById('commentModal').style.display = 'none';
+            pendingItemId = null;
+        }
+
+        document.getElementById('commentOkBtn').addEventListener('click', () => {
+            const comment = document.getElementById('commentInput').value.trim();
+            if (pendingItemId !== null) {
+                addToCart(pendingItemId, comment);
+                pendingItemId = null;
+                hideCommentModal();
+            }
+        });
+
+        document.getElementById('commentCancelBtn').addEventListener('click', () => {
+            hideCommentModal();
+        });
+
+        document.getElementById('commentModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                hideCommentModal();
+            }
+        });
+
+        // Обработка Enter в поле комментария
+        document.getElementById('commentInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('commentOkBtn').click();
+            }
+        });
+
+        // ========== ТОСТ ==========
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => { t.remove(); }, 3000);
+        }
 
         // ========== ЗАГРУЗКА МЕНЮ ==========
         function loadMenu() {
@@ -530,27 +650,47 @@
                 </div>`
             ).join('');
             document.querySelectorAll('.item-card').forEach(el => {
-                el.onclick = () => addToCart(parseInt(el.dataset.id));
+                el.onclick = () => {
+                    const id = parseInt(el.dataset.id);
+                    const item = menu.find(i => i.id === id);
+                    // Если пицца или кусочек пиццы — показываем окно комментария
+                    if (item && (item.name === 'Пицца' || item.name === 'Кусочек пиццы')) {
+                        showCommentModal(id);
+                    } else {
+                        addToCart(id, null);
+                    }
+                };
             });
         }
 
-        function addToCart(id) {
+        // ========== ДОБАВИТЬ В КОРЗИНУ ==========
+        function addToCart(id, comment) {
             const item = menu.find(i => i.id === id);
             if (!item) return;
-            const existing = cart.find(i => i.id === id);
-            if (existing) existing.quantity += 1;
-            else cart.push({ ...item, quantity: 1 });
+            const existing = cart.find(i => i.id === id && i.comment === comment);
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                cart.push({ ...item, quantity: 1, comment: comment || '' });
+            }
             renderCart();
             saveOrder();
+            if (comment) {
+                showToast(`✅ ${item.name} добавлена с комментарием: "${comment}"`);
+            }
         }
 
+        // ========== РЕНДЕР КОРЗИНЫ ==========
         function renderCart() {
             if (cart.length === 0) {
                 orderList.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Корзина пуста</p>';
             } else {
                 orderList.innerHTML = cart.map((item, idx) =>
                     `<div class="order-item">
-                        <div class="info"><span>${item.emoji || '🍽️'} ${item.name}</span></div>
+                        <div class="info">
+                            <span>${item.emoji || '🍽️'} ${item.name}</span>
+                            ${item.comment ? `<span class="comment">(${item.comment})</span>` : ''}
+                        </div>
                         <div class="qty-control">
                             <button data-idx="${idx}" data-act="dec">−</button>
                             <span>${item.quantity}</span>
@@ -637,8 +777,9 @@
             let html =
                 `<div class="header">${venue}</div><div style="text-align:center;font-size:12px;color:#666;">Стол ${tableNumber} | ${new Date().toLocaleString('ru-RU')}</div><div style="border-bottom:1px dashed #999;margin:8px 0;"></div>`;
             order.items.forEach(i => {
+                const commentText = i.comment ? ` (${i.comment})` : '';
                 html +=
-                    `<div class="row"><span>${i.emoji || '🍽️'} ${i.name} × ${i.quantity}</span><span>${i.price * i.quantity} ₽</span></div>`;
+                    `<div class="row"><span>${i.emoji || '🍽️'} ${i.name}${commentText} × ${i.quantity}</span><span>${i.price * i.quantity} ₽</span></div>`;
             });
             html +=
                 `<div style="border-bottom:1px dashed #999;margin:8px 0;"></div><div class="row total"><span>ИТОГО</span><span>${order.total} ₽</span></div>
