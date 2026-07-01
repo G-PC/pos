@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Готовые блюда</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        .header h1 {
+            color: #2d3e50;
+        }
+        .back-btn {
+            background: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .refresh-btn {
+            background: #2d7aff;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .refresh-btn:hover {
+            background: #1a5fd0;
+        }
+
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #2ed573;
+            transition: 0.3s;
+        }
+        .order-card .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+            background: transparent;
+            padding: 0 0 8px 0;
+        }
+        .order-card .table {
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .order-card .time {
+            color: #888;
+            font-size: 14px;
+        }
+        .order-card .items {
+            margin: 10px 0;
+        }
+        .order-card .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 14px;
+        }
+        .order-card .item .comment {
+            font-size: 12px;
+            color: #888;
+            font-style: italic;
+        }
+        .order-card .total {
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 2px solid #eee;
+        }
+        .order-card .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge {
+            background: #ff6b35;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        .empty {
+            text-align: center;
+            color: #888;
+            padding: 50px;
+            font-size: 18px;
+        }
+        .auto-refresh {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .order-count {
+            background: #2ed573;
+            color: white;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .deliver-btn {
+            background: #2d7aff;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+        .deliver-btn:hover {
+            background: #1a5fd0;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2d3e50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 9999;
+            animation: slideIn 0.5s ease;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>✅ Готовые блюда</h1>
+                <div class="auto-refresh">Автообновление каждые 5 секунд</div>
+            </div>
+            <div class="status-bar">
+                <span class="order-count" id="orderCount">0</span>
+                <button class="refresh-btn" id="refreshBtn">🔄 Обновить</button>
+                <a href="index.html" class="back-btn">← На главную</a>
+            </div>
+        </div>
+
+        <div class="orders-grid" id="ordersGrid"></div>
+    </div>
+
+    <script src="menu.js"></script>
+    <script src="users.js"></script>
+    <script>
+        // ============================================================
+        // ВСЯ ЛОГИКА ВНУТРИ
+        // ============================================================
+
+        function getDefaultData() {
+            return {
+                venueName: 'Кафе Уют',
+                menu: getDefaultMenu(),
+                users: getDefaultUsers(),
+                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 },
+                '3': { orders: [], total: 0 } },
+                stats: { totalOrders: 0, totalRevenue: 0 }
+            };
+        }
+
+        function loadData() {
+            const cached = localStorage.getItem('cloudData');
+            if (cached) {
+                try { return JSON.parse(cached); } catch (e) {}
+            }
+            const defaultData = getDefaultData();
+            localStorage.setItem('cloudData', JSON.stringify(defaultData));
+            return defaultData;
+        }
+
+        function saveData(data) {
+            localStorage.setItem('cloudData', JSON.stringify(data));
+        }
+
+        function getCurrentUser() {
+            const data = localStorage.getItem('currentUser');
+            return data ? JSON.parse(data) : null;
+        }
+
+        const user = getCurrentUser();
+        if (!user || (user.role !== 'sadmin' && user.role !== 'Повар' && user.role !== 'Повар+Официант' && user.role !==
+                'Официант')) {
+            alert('Доступ запрещен');
+            window.location.href = 'index.html';
+        }
+
+        let previousCompletedIds = new Set();
+
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => { t.remove(); }, 3000);
+        }
+
+        function renderCompleted() {
+            const data = loadData();
+            const grid = document.getElementById('ordersGrid');
+            const tables = data.tables || {};
+
+            let completedOrders = [];
+            for (let tableNum = 1; tableNum <= 3; tableNum++) {
+                const table = tables[tableNum];
+                if (table && table.orders) {
+                    const completed = table.orders.filter(o => o.status === 'completed' && !o.delivered);
+                    completed.forEach(order => {
+                        completedOrders.push({
+                            table: tableNum,
+                            ...order,
+                            items: order.items || []
+                        });
+                    });
+                }
+            }
+
+            completedOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            const currentIds = new Set(completedOrders.map(o => `${o.table}_${o.timestamp}`));
+            const newOrders = [...currentIds].filter(id => !previousCompletedIds.has(id));
+            if (newOrders.length > 0 && completedOrders.length > 0) {
+                showToast(`🆕 ${newOrders.length} новых готовых блюд!`);
+            }
+            previousCompletedIds = currentIds;
+
+            document.getElementById('orderCount').textContent = completedOrders.length;
+
+            if (completedOrders.length === 0) {
+                grid.innerHTML =
+                    `<div class="empty" style="grid-column:1/-1;">🎉 Нет готовых блюд<br><span style="font-size:14px;color:#aaa;">Все блюда уже доставлены</span></div>`;
+                return;
+            }
+
+            grid.innerHTML = completedOrders.map(order => `
+                <div class="order-card">
+                    <div class="header">
+                        <span class="table">🪑 Стол ${order.table}</span>
+                        <span class="time">${new Date(order.timestamp).toLocaleTimeString('ru-RU')}</span>
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <span class="status">✅ Готово</span>
+                        <span class="badge">${order.items.length} позиций</span>
+                    </div>
+                    <div class="items">
+                        ${order.items.map(item => `
+                            <div class="item">
+                                <span>${item.emoji || '🍽️'} ${item.name} ${item.comment ? `<span class="comment">(${item.comment})</span>` : ''}</span>
+                                <span>× ${item.quantity}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="total">
+                        <span>Итого: ${order.total} ₽</span>
+                    </div>
+                    <button class="deliver-btn" data-table="${order.table}" data-timestamp="${order.timestamp}">📦 Отдать на стол ${order.table}</button>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.deliver-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const tableNum = parseInt(btn.dataset.table);
+                    const timestamp = btn.dataset.timestamp;
+                    deliverOrder(tableNum, timestamp);
+                };
+            });
+        }
+
+        function deliverOrder(tableNum, timestamp) {
+            if (!confirm(`Отдать заказ на стол ${tableNum}?`)) return;
+
+            const data = loadData();
+            const table = data.tables[tableNum];
+            if (!table) return;
+
+            const order = table.orders.find(o => o.timestamp === timestamp);
+            if (!order) return;
+
+            order.delivered = true;
+            order.status = 'closed';
+            saveData(data);
+            renderCompleted();
+            showToast(`✅ Заказ на стол ${tableNum} доставлен`);
+        }
+
+        function refresh() {
+            renderCompleted();
+        }
+
+        document.getElementById('refreshBtn').addEventListener('click', refresh);
+        setInterval(refresh, 5000);
+        refresh();
+
+        console.log('✅ Готовые блюда загружены!');
+    </script>
+</body>
+</html>
