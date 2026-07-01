@@ -298,22 +298,18 @@
         // УНИВЕРСАЛЬНЫЕ ФУНКЦИИ
         // ============================================================
 
-        function getDefaultData() {
-            return {
+        function loadData() {
+            const cached = localStorage.getItem('cloudData');
+            if (cached) {
+                try { return JSON.parse(cached); } catch (e) {}
+            }
+            const defaultData = {
                 venueName: 'Кафе Уют',
                 menu: [],
                 users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
                 tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
                 stats: { totalOrders: 0, totalRevenue: 0 }
             };
-        }
-
-        function loadData() {
-            const cached = localStorage.getItem('cloudData');
-            if (cached) {
-                try { return JSON.parse(cached); } catch (e) {}
-            }
-            const defaultData = getDefaultData();
             localStorage.setItem('cloudData', JSON.stringify(defaultData));
             return defaultData;
         }
