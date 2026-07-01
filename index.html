@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>POS - Вход</title>
+    <title>POS - Столы</title>
     <style>
         * {
             margin: 0;
@@ -22,96 +22,6 @@
             max-width: 700px;
             width: 100%;
             padding: 30px;
-        }
-
-        .login-box {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            margin-bottom: 25px;
-        }
-        .login-box h2 {
-            margin-bottom: 15px;
-            color: #2d3e50;
-        }
-        .login-box input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 12px;
-        }
-        .login-box input:focus {
-            outline: none;
-            border-color: #2d7aff;
-        }
-        .login-box button {
-            width: 100%;
-            padding: 12px;
-            background: #2d7aff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .login-box button:hover {
-            background: #1a5fd0;
-        }
-        .login-error {
-            color: #ff4757;
-            margin-top: 8px;
-            display: none;
-            text-align: center;
-        }
-        .login-remember {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 8px 0 12px 0;
-            font-size: 14px;
-            color: #555;
-        }
-        .login-remember input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            margin: 0;
-            cursor: pointer;
-        }
-        .login-remember label {
-            cursor: pointer;
-        }
-
-        .user-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: white;
-            border-radius: 12px;
-            padding: 12px 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .user-info .role {
-            background: #e8e8e8;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .logout-btn {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 6px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
         }
 
         h1 {
@@ -219,39 +129,15 @@
 
     <div class="container" id="app">
 
-        <div class="login-box" id="loginBox">
-            <h2>🔐 Вход в систему</h2>
-            <form id="loginForm">
-                <input type="text" id="loginInput" placeholder="Логин" value="sadmin" />
-                <input type="password" id="passwordInput" placeholder="Пароль" value="123" />
-                <div class="login-remember">
-                    <input type="checkbox" id="rememberMe" checked />
-                    <label for="rememberMe">Запомнить меня</label>
-                </div>
-                <button type="submit" id="loginBtn">Войти</button>
-                <div class="login-error" id="loginError">Неверный логин или пароль</div>
-            </form>
-        </div>
+        <h1 id="venueTitle">🍽️ Кафе Уют</h1>
+        <p class="subtitle" id="venueSubtitle">Выберите стол для работы</p>
 
-        <div id="mainApp" class="hidden">
-            <div class="user-info">
-                <div>
-                    <strong id="userNameDisplay">sadmin</strong>
-                    <span class="role" id="userRoleDisplay">sadmin</span>
-                </div>
-                <button class="logout-btn" id="logoutBtn">Выйти</button>
-            </div>
+        <div class="tables-grid" id="tablesGrid"></div>
 
-            <h1 id="venueTitle">🍽️ Кафе Уют</h1>
-            <p class="subtitle" id="venueSubtitle">Выберите стол для работы</p>
-
-            <div class="tables-grid" id="tablesGrid"></div>
-
-            <div class="admin-links" id="adminLinks">
-                <a href="admin.html">⚙️ Управление</a>
-                <a href="kitchen.html" class="kitchen">🍳 Кухня (заказы)</a>
-                <a href="menu.html" class="menu-link">🍽️ Меню</a>
-            </div>
+        <div class="admin-links" id="adminLinks">
+            <a href="admin.html">⚙️ Управление</a>
+            <a href="kitchen.html" class="kitchen">🍳 Кухня (заказы)</a>
+            <a href="menu.html" class="menu-link">🍽️ Меню</a>
         </div>
     </div>
 
@@ -281,35 +167,9 @@
             localStorage.setItem('cloudData', JSON.stringify(data));
         }
 
-        function getCurrentUser() {
-            const data = localStorage.getItem('currentUser');
-            return data ? JSON.parse(data) : null;
-        }
-
-        function setCurrentUser(user) {
-            localStorage.setItem('currentUser', JSON.stringify(user));
-        }
-
-        function clearCurrentUser() {
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('savedLogin');
-        }
-
         function getVenueName() {
             const data = loadData();
             return data.venueName || 'Кафе Уют';
-        }
-
-        function saveLogin(login) {
-            if (login) {
-                localStorage.setItem('savedLogin', login);
-            } else {
-                localStorage.removeItem('savedLogin');
-            }
-        }
-
-        function getSavedLogin() {
-            return localStorage.getItem('savedLogin') || '';
         }
 
         // ========== РЕНДЕР СТОЛОВ ==========
@@ -348,77 +208,8 @@
             document.getElementById('venueTitle').textContent = '🍽️ ' + getVenueName();
         }
 
-        function showApp() {
-            const user = getCurrentUser();
-            if (!user) {
-                document.getElementById('loginBox').style.display = 'block';
-                document.getElementById('mainApp').classList.add('hidden');
-
-                const savedLogin = getSavedLogin();
-                if (savedLogin) {
-                    document.getElementById('loginInput').value = savedLogin;
-                    document.getElementById('passwordInput').value = '';
-                } else {
-                    document.getElementById('loginInput').value = '';
-                    document.getElementById('passwordInput').value = '';
-                }
-                return;
-            }
-
-            document.getElementById('loginBox').style.display = 'none';
-            document.getElementById('mainApp').classList.remove('hidden');
-
-            document.getElementById('userNameDisplay').textContent = user.name || user.login;
-            document.getElementById('userRoleDisplay').textContent = 'Владелец';
-
-            document.getElementById('adminLinks').style.display = 'grid';
-
-            renderTables();
-        }
-
-        // ========== ВХОД ==========
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            const login = document.getElementById('loginInput').value.trim();
-            const password = document.getElementById('passwordInput').value.trim();
-            const rememberMe = document.getElementById('rememberMe').checked;
-
-            const data = loadData();
-            const users = data.users || {};
-
-            if (users[login] && users[login].password === password) {
-                setCurrentUser({ login, ...users[login] });
-
-                if (rememberMe) {
-                    saveLogin(login);
-                } else {
-                    localStorage.removeItem('savedLogin');
-                }
-
-                document.getElementById('loginError').style.display = 'none';
-                showApp();
-            } else {
-                document.getElementById('loginError').style.display = 'block';
-            }
-        });
-
-        // ========== ВЫХОД ==========
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            clearCurrentUser();
-            document.getElementById('loginInput').value = '';
-            document.getElementById('passwordInput').value = '';
-            showApp();
-        });
-
         // ========== ЗАПУСК ==========
-        showApp();
-
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'cloudData' || e.key === 'currentUser') {
-                showApp();
-            }
-        });
+        renderTables();
 
         console.log('✅ POS система загружена!');
     </script>
