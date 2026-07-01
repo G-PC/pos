@@ -35,10 +35,6 @@
             margin-bottom: 15px;
             color: #2d3e50;
         }
-        .login-box form {
-            display: flex;
-            flex-direction: column;
-        }
         .login-box input {
             width: 100%;
             padding: 12px;
@@ -217,23 +213,9 @@
 
         <div class="login-box" id="loginBox">
             <h2>🔐 Вход в систему</h2>
-            <form id="loginForm" action="#" method="POST" autocomplete="on">
-                <input 
-                    type="text" 
-                    id="loginInput" 
-                    name="login" 
-                    placeholder="Логин" 
-                    autocomplete="username" 
-                    required
-                />
-                <input 
-                    type="password" 
-                    id="passwordInput" 
-                    name="password" 
-                    placeholder="Пароль" 
-                    autocomplete="current-password" 
-                    required
-                />
+            <form id="loginForm">
+                <input type="text" id="loginInput" placeholder="Логин" />
+                <input type="password" id="passwordInput" placeholder="Пароль" />
                 <div class="login-remember">
                     <input type="checkbox" id="rememberMe" checked />
                     <label for="rememberMe">Запомнить меня</label>
@@ -310,6 +292,7 @@
 
         function clearCurrentUser() {
             localStorage.removeItem('currentUser');
+            localStorage.removeItem('savedLogin');
         }
 
         function getVenueName() {
@@ -380,6 +363,9 @@
                 if (savedLogin) {
                     document.getElementById('loginInput').value = savedLogin;
                     document.getElementById('passwordInput').value = '';
+                } else {
+                    document.getElementById('loginInput').value = '';
+                    document.getElementById('passwordInput').value = '';
                 }
                 return;
             }
@@ -398,7 +384,11 @@
             if (user.role === 'sadmin') {
                 links.style.display = 'grid';
                 links.querySelectorAll('a').forEach(a => a.style.display = 'block');
-            } else if (user.role === 'Повар+Официант' || user.role === 'Повар') {
+            } else if (user.role === 'Повар+Официант') {
+                links.style.display = 'grid';
+                links.querySelector('a[href="admin.html"]').style.display = 'none';
+                links.querySelector('a[href="kitchen.html"]').style.display = 'block';
+            } else if (user.role === 'Повар') {
                 links.style.display = 'grid';
                 links.querySelector('a[href="admin.html"]').style.display = 'none';
                 links.querySelector('a[href="kitchen.html"]').style.display = 'block';
@@ -409,8 +399,8 @@
             renderTables();
         }
 
-        // ========== ОБРАБОТЧИК ВХОДА ==========
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        // ========== ВХОД ==========
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
 
             const login = document.getElementById('loginInput').value.trim();
@@ -437,23 +427,24 @@
         });
 
         // ========== ВЫХОД ==========
-        document.getElementById('logoutBtn').addEventListener('click', function() {
+        document.getElementById('logoutBtn').addEventListener('click', () => {
             clearCurrentUser();
-            // НЕ ОЧИЩАЕМ ПОЛЯ — браузер запоминает пароль
+            document.getElementById('loginInput').value = '';
+            document.getElementById('passwordInput').value = '';
             showApp();
         });
 
         // ========== ЗАПУСК ==========
         showApp();
 
-        window.addEventListener('storage', function(e) {
+        window.addEventListener('storage', (e) => {
             if (e.key === 'cloudData' || e.key === 'currentUser') {
                 showApp();
             }
         });
 
         console.log('✅ POS система загружена!');
-        console.log('👤 Для сохранения пароля нажмите "Сохранить" в браузере');
+        console.log('👤 Для входа используйте логин и пароль из списка пользователей');
     </script>
 
 </body>
