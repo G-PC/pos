@@ -117,6 +117,15 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
+        }
+        .order-card .item .item-name .comment {
+            font-size: 12px;
+            color: #888;
+            font-style: italic;
+            background: #f0f2f5;
+            padding: 0 8px;
+            border-radius: 4px;
         }
         .order-card .item .check-btn {
             width: 28px;
@@ -260,6 +269,7 @@
     <div class="notification" id="notification">🆕 Новый заказ!</div>
 
     <script src="menu.js"></script>
+    <script src="users.js"></script>
     <script>
         // ============================================================
         // ВСЯ ЛОГИКА ВНУТРИ
@@ -270,7 +280,7 @@
             return {
                 venueName: 'Кафе Уют',
                 menu: getDefaultMenu(),
-                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
+                users: getDefaultUsers(),
                 tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 },
                 '3': { orders: [], total: 0 } },
                 stats: { totalOrders: 0, totalRevenue: 0 }
@@ -296,9 +306,8 @@
             return data ? JSON.parse(data) : null;
         }
 
-        // ========== ПРОВЕРКА ПРАВ ==========
+        // ========== ПРОВЕРКА ==========
         const user = getCurrentUser();
-        // Разрешаем: sadmin, Повар, Повар+Официант
         if (!user || (user.role !== 'sadmin' && user.role !== 'Повар' && user.role !== 'Повар+Официант')) {
             alert('Доступ запрещен. Только для поваров, Повар+Официант и Владельца');
             window.location.href = 'index.html';
@@ -410,6 +419,7 @@
                                             ${item.done ? '✓' : ''}
                                         </button>
                                         <span>${item.emoji || '🍽️'} ${item.name}</span>
+                                        ${item.comment ? `<span class="comment">(${item.comment})</span>` : ''}
                                     </div>
                                     <span class="qty">×${item.quantity}</span>
                                 </div>
@@ -444,10 +454,9 @@
         setInterval(refresh, 5000);
         refresh();
 
-        // Делаем функцию глобальной
         window.toggleItemDone = toggleItemDone;
 
-        console.log('✅ Кухня загружена!');
+        console.log('✅ Кухня загружена! Комментарии к пицце видны!');
     </script>
 </body>
 </html>
