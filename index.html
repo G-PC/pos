@@ -119,10 +119,6 @@
             background: #9b59b6;
             color: white;
         }
-
-        .hidden {
-            display: none !important;
-        }
     </style>
 </head>
 <body>
@@ -143,10 +139,6 @@
 
     <script src="menu.js"></script>
     <script>
-        // ============================================================
-        // ВСЯ ЛОГИКА ВНУТРИ
-        // ============================================================
-
         function loadData() {
             const cached = localStorage.getItem('cloudData');
             if (cached) {
@@ -163,16 +155,11 @@
             return defaultData;
         }
 
-        function saveData(data) {
-            localStorage.setItem('cloudData', JSON.stringify(data));
-        }
-
         function getVenueName() {
             const data = loadData();
             return data.venueName || 'Кафе Уют';
         }
 
-        // ========== РЕНДЕР СТОЛОВ ==========
         function renderTables() {
             const data = loadData();
             const tables = data.tables || {};
@@ -208,9 +195,7 @@
             document.getElementById('venueTitle').textContent = '🍽️ ' + getVenueName();
         }
 
-        // ========== ЗАПУСК ==========
         renderTables();
-
         console.log('✅ POS система загружена!');
     </script>
 
