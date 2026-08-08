@@ -33,8 +33,71 @@ const DEFAULT_MENU = [
     { id: 31, name: 'Куриный суп с лапшой', price: 190, category: 'Супы', emoji: '🍜' },
     { id: 32, name: 'Уха', price: 210, category: 'Супы', emoji: '🐟' },
     { id: 33, name: 'Пицца', price: 500, category: 'Пицца', emoji: '🍕' },
-    { id: 34, name: 'Кусочек пиццы', price: 75, category: 'Пицца', emoji: '🍕' }
+    { id: 34, name: 'Кусочек пиццы', price: 75, category: 'Пицца', emoji: '🍕' },
+    // ========== НОВЫЕ БЛЮДА ==========
+    { id: 35, name: 'Конфета по-жульенски', price: 50, category: 'Десерты', emoji: '🍬' },
+    { id: 36, name: 'Салат со свеклой и сыром', price: 230, category: 'Салаты', emoji: '🥗' },
+    { id: 37, name: 'Курица', price: 270, category: 'Мясные изделия', emoji: '🍗' },
+    { id: 38, name: 'Чизкейк', price: 70, category: 'Десерты', emoji: '🍰' },
+    { id: 39, name: 'Хинкали', price: 90, category: 'Мясные изделия', emoji: '🥟' },
+    { id: 40, name: 'Раки', price: 100, category: 'Мясные изделия', emoji: '🦞' },
+    { id: 41, name: 'Салат из крабов', price: 240, category: 'Салаты', emoji: '🦀' },
+    { id: 42, name: 'Чебурек', price: 70, category: 'Мясные изделия', emoji: '🥟' },
+    { id: 43, name: 'Морс', price: 60, category: 'Напитки', emoji: '🍒' },
+    { id: 44, name: 'Молочный коктейль', price: 100, category: 'Напитки', emoji: '🥛' },
+    { id: 45, name: 'Кофе с яйцом', price: 140, category: 'Напитки', emoji: '☕' }
 ];
+
+// ========== ФУНКЦИИ ДЛЯ РАБОТЫ С МЕНЮ ==========
+function getDefaultMenu() {
+    return JSON.parse(JSON.stringify(DEFAULT_MENU));
+}
+
+function loadMenuFromStorage() {
+    const data = localStorage.getItem('cloudData');
+    if (data) {
+        try {
+            const parsed = JSON.parse(data);
+            if (parsed.menu && parsed.menu.length > 0) {
+                return parsed.menu;
+            }
+        } catch (e) {}
+    }
+    const defaultMenu = getDefaultMenu();
+    const fullData = {
+        venueName: 'Кафе Уют',
+        menu: defaultMenu,
+        users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
+        tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
+        stats: { totalOrders: 0, totalRevenue: 0 }
+    };
+    localStorage.setItem('cloudData', JSON.stringify(fullData));
+    return defaultMenu;
+}
+
+function saveMenuToStorage(menu) {
+    const data = localStorage.getItem('cloudData');
+    if (data) {
+        try {
+            const parsed = JSON.parse(data);
+            parsed.menu = menu;
+            localStorage.setItem('cloudData', JSON.stringify(parsed));
+            return true;
+        } catch (e) {}
+    }
+    return false;
+}
+
+function getMenu() {
+    return loadMenuFromStorage();
+}
+
+function saveMenu(menu) {
+    return saveMenuToStorage(menu);
+}
+
+console.log('📦 menu.js загружен!');
+console.log('🍽️ Блюд в меню:', DEFAULT_MENU.length);];
 
 // ========== ФУНКЦИИ ДЛЯ РАБОТЫ С МЕНЮ ==========
 function getDefaultMenu() {
