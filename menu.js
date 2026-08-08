@@ -1,4 +1,3 @@
-// ========== ОБЩЕЕ МЕНЮ ДЛЯ ВСЕЙ СИСТЕМЫ ==========
 const DEFAULT_MENU = [
     { id: 1, name: 'Борщ', price: 250, category: 'Супы', emoji: '🍲' },
     { id: 2, name: 'Стейк', price: 300, category: 'Мясные изделия', emoji: '🥩' },
@@ -48,7 +47,6 @@ const DEFAULT_MENU = [
     { id: 46, name: 'Каша', price: 140, category: 'Гарниры', emoji: '🥣' }
 ];
 
-// ========== ФУНКЦИИ ДЛЯ РАБОТЫ С МЕНЮ ==========
 function getDefaultMenu() {
     return JSON.parse(JSON.stringify(DEFAULT_MENU));
 }
@@ -75,148 +73,9 @@ function loadMenuFromStorage() {
     return defaultMenu;
 }
 
-function saveMenuToStorage(menu) {
-    const data = localStorage.getItem('cloudData');
-    if (data) {
-        try {
-            const parsed = JSON.parse(data);
-            parsed.menu = menu;
-            localStorage.setItem('cloudData', JSON.stringify(parsed));
-            return true;
-        } catch (e) {}
-    }
-    return false;
-}
-
 function getMenu() {
     return loadMenuFromStorage();
-}
-
-function saveMenu(menu) {
-    return saveMenuToStorage(menu);
-}
-
-console.log('📦 menu.js загружен!');
-console.log('🍽️ Блюд в меню:', DEFAULT_MENU.length);    // ========== НОВЫЕ БЛЮДА ==========
-    { id: 35, name: 'Конфета по-жульенски', price: 50, category: 'Десерты', emoji: '🍬' },
-    { id: 36, name: 'Салат со свеклой и сыром', price: 230, category: 'Салаты', emoji: '🥗' },
-    { id: 37, name: 'Курица', price: 270, category: 'Мясные изделия', emoji: '🍗' },
-    { id: 38, name: 'Чизкейк', price: 70, category: 'Десерты', emoji: '🍰' },
-    { id: 39, name: 'Хинкали', price: 90, category: 'Мясные изделия', emoji: '🥟' },
-    { id: 40, name: 'Раки', price: 100, category: 'Мясные изделия', emoji: '🦞' },
-    { id: 41, name: 'Салат из крабов', price: 240, category: 'Салаты', emoji: '🦀' },
-    { id: 42, name: 'Чебурек', price: 70, category: 'Мясные изделия', emoji: '🥟' },
-    { id: 43, name: 'Морс', price: 60, category: 'Напитки', emoji: '🍒' },
-    { id: 44, name: 'Молочный коктейль', price: 100, category: 'Напитки', emoji: '🥛' },
-    { id: 45, name: 'Кофе с яйцом', price: 140, category: 'Напитки', emoji: '☕' }
-];
-
-// ========== ФУНКЦИИ ДЛЯ РАБОТЫ С МЕНЮ ==========
-function getDefaultMenu() {
-    return JSON.parse(JSON.stringify(DEFAULT_MENU));
-}
-
-function loadMenuFromStorage() {
-    const data = localStorage.getItem('cloudData');
-    if (data) {
-        try {
-            const parsed = JSON.parse(data);
-            if (parsed.menu && parsed.menu.length > 0) {
-                return parsed.menu;
-            }
-        } catch (e) {}
-    }
-    const defaultMenu = getDefaultMenu();
-    const fullData = {
-        venueName: 'Кафе Уют',
-        menu: defaultMenu,
-        users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
-        tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
-        stats: { totalOrders: 0, totalRevenue: 0 }
-    };
-    localStorage.setItem('cloudData', JSON.stringify(fullData));
-    return defaultMenu;
-}
-
-function saveMenuToStorage(menu) {
-    const data = localStorage.getItem('cloudData');
-    if (data) {
-        try {
-            const parsed = JSON.parse(data);
-            parsed.menu = menu;
-            localStorage.setItem('cloudData', JSON.stringify(parsed));
-            return true;
-        } catch (e) {}
-    }
-    return false;
-}
-
-function getMenu() {
-    return loadMenuFromStorage();
-}
-
-function saveMenu(menu) {
-    return saveMenuToStorage(menu);
-}
-
-console.log('📦 menu.js загружен!');
-console.log('🍽️ Блюд в меню:', DEFAULT_MENU.length);];
-
-// ========== ФУНКЦИИ ДЛЯ РАБОТЫ С МЕНЮ ==========
-function getDefaultMenu() {
-    return JSON.parse(JSON.stringify(DEFAULT_MENU));
-}
-
-function loadMenuFromStorage() {
-    const data = localStorage.getItem('cloudData');
-    if (data) {
-        try {
-            const parsed = JSON.parse(data);
-            if (parsed.menu && parsed.menu.length > 0) {
-                return parsed.menu;
-            }
-        } catch (e) {}
-    }
-    const defaultMenu = getDefaultMenu();
-    const fullData = {
-        venueName: 'Кафе Уют',
-        menu: defaultMenu,
-        users: {
-            'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' }
-        },
-        tables: {
-            '1': { orders: [], total: 0 },
-            '2': { orders: [], total: 0 },
-            '3': { orders: [], total: 0 }
-        },
-        stats: { totalOrders: 0, totalRevenue: 0 }
-    };
-    localStorage.setItem('cloudData', JSON.stringify(fullData));
-    return defaultMenu;
-}
-
-function saveMenuToStorage(menu) {
-    const data = localStorage.getItem('cloudData');
-    if (data) {
-        try {
-            const parsed = JSON.parse(data);
-            parsed.menu = menu;
-            localStorage.setItem('cloudData', JSON.stringify(parsed));
-            return true;
-        } catch (e) {}
-    }
-    return false;
-}
-
-function getMenu() {
-    return loadMenuFromStorage();
-}
-
-function saveMenu(menu) {
-    return saveMenuToStorage(menu);
 }
 
 console.log('📦 menu.js загружен!');
 console.log('🍽️ Блюд в меню:', DEFAULT_MENU.length);
-console.log('📋 Первое блюдо:', DEFAULT_MENU[0].name);
-console.log('📋 Последнее блюдо:', DEFAULT_MENU[DEFAULT_MENU.length - 1].name);
