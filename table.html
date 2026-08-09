@@ -276,6 +276,16 @@
             font-size: 15px;
             min-width: 80px;
         }
+        .payment-area .discount-input {
+            flex: 0.5;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            min-width: 60px;
+            max-width: 80px;
+            text-align: center;
+        }
         .pay-btn {
             background: #2ed573;
             color: white;
@@ -292,6 +302,13 @@
             color: #2d7aff;
             margin-top: 4px;
             text-align: center;
+        }
+        .discount-info {
+            font-size: 14px;
+            color: #e67e22;
+            text-align: center;
+            margin-top: 4px;
+            font-weight: 600;
         }
 
         .modal-comment {
@@ -381,6 +398,12 @@
             .order-panel {
                 min-width: auto;
             }
+            .payment-area {
+                flex-direction: column;
+            }
+            .payment-area .discount-input {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
@@ -416,359 +439,23 @@
                 <div class="summary-row"><span>Позиций:</span><span id="totalItems">0</span></div>
                 <div class="summary-row"><span>Сумма:</span><span id="totalSum">0 ₽</span></div>
                 <div class="summary-row total"><span>Итого:</span><span id="grandTotal">0 ₽</span></div>
+                <div class="summary-row" id="discountRow" style="display:none;">
+                    <span>Скидка:</span>
+                    <span id="discountAmount">0 ₽</span>
+                </div>
+                <div class="summary-row total" id="finalTotalRow" style="display:none;">
+                    <span>К оплате:</span>
+                    <span id="finalTotal">0 ₽</span>
+                </div>
             </div>
             <div class="payment-area">
+                <input type="number" class="discount-input" id="discountInput" placeholder="Скидка %" min="0" max="100" value="0" />
                 <input type="number" id="cashInput" placeholder="Внесено ₽" min="0" />
                 <button class="pay-btn" id="payBtn">💳 Оплатить</button>
             </div>
             <div class="change-display" id="changeDisplay">Сдача: 0 ₽</div>
+            <div class="discount-info" id="discountInfo"></div>
         </div>
     </div>
 
-    <div class="modal-comment" id="commentModal">
-        <div class="modal-comment-content">
-            <h3>💬 Комментарий к блюду</h3>
-            <p style="color:#666;font-size:14px;margin-bottom:12px;">Добавьте комментарий к заказу:</p>
-            <input type="text" id="commentInput" placeholder="Например: без лука, extra сыр..." />
-            <div class="btn-row">
-                <button class="ok-btn" id="commentOkBtn">Добавить</button>
-                <button class="cancel-btn" id="commentCancelBtn">Отмена</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="menu.js"></script>
-    <script>
-        // ============================================================
-        // ВСЯ ЛОГИКА ВНУТРИ
-        // ============================================================
-
-        function loadData() {
-            const cached = localStorage.getItem('cloudData');
-            if (cached) {
-                try {
-                    const parsed = JSON.parse(cached);
-                    if (parsed.menu && parsed.menu.length > 0) {
-                        return parsed;
-                    }
-                } catch (e) { console.warn('Ошибка парсинга'); }
-            }
-            const defaultMenu = typeof getDefaultMenu === 'function' ? getDefaultMenu() : DEFAULT_MENU;
-            const defaultData = {
-                venueName: 'Кафе Уют',
-                menu: defaultMenu,
-                users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
-                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 }, '3': { orders: [], total: 0 } },
-                stats: { totalOrders: 0, totalRevenue: 0 }
-            };
-            localStorage.setItem('cloudData', JSON.stringify(defaultData));
-            return defaultData;
-        }
-
-        function saveData(data) {
-            localStorage.setItem('cloudData', JSON.stringify(data));
-        }
-
-        const tableNumber = parseInt(new URLSearchParams(window.location.search).get('table')) || 1;
-        let cart = [];
-        let currentCategory = 'Все';
-        let menu = [];
-        let pendingItemId = null;
-
-        const $ = id => document.getElementById(id);
-        const itemsGrid = $('itemsGrid');
-        const categoriesContainer = $('categoriesContainer');
-        const orderList = $('orderList');
-        const totalItems = $('totalItems');
-        const totalSum = $('totalSum');
-        const grandTotal = $('grandTotal');
-        const cashInput = $('cashInput');
-        const changeDisplay = $('changeDisplay');
-        const searchInput = $('searchInput');
-        const tableTitle = $('tableTitle');
-        const tableStatus = $('tableStatus');
-
-        function showCommentModal(itemId) {
-            pendingItemId = itemId;
-            document.getElementById('commentInput').value = '';
-            document.getElementById('commentModal').style.display = 'flex';
-            document.getElementById('commentInput').focus();
-        }
-
-        function hideCommentModal() {
-            document.getElementById('commentModal').style.display = 'none';
-            pendingItemId = null;
-        }
-
-        document.getElementById('commentOkBtn').addEventListener('click', () => {
-            const comment = document.getElementById('commentInput').value.trim();
-            if (pendingItemId !== null) {
-                addToCart(pendingItemId, comment);
-                pendingItemId = null;
-                hideCommentModal();
-            }
-        });
-
-        document.getElementById('commentCancelBtn').addEventListener('click', () => {
-            hideCommentModal();
-        });
-
-        document.getElementById('commentModal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) {
-                hideCommentModal();
-            }
-        });
-
-        document.getElementById('commentInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('commentOkBtn').click();
-            }
-        });
-
-        function showToast(msg) {
-            const t = document.createElement('div');
-            t.className = 'toast';
-            t.textContent = msg;
-            document.body.appendChild(t);
-            setTimeout(() => { t.remove(); }, 3000);
-        }
-
-        function loadMenu() {
-            const data = loadData();
-            menu = data.menu || [];
-            if (menu.length === 0) {
-                const defaultMenu = typeof getDefaultMenu === 'function' ? getDefaultMenu() : DEFAULT_MENU;
-                menu = defaultMenu;
-                data.menu = menu;
-                saveData(data);
-            }
-            return menu;
-        }
-
-        function renderCategories() {
-            const data = loadData();
-            menu = data.menu || [];
-            const cats = ['Все', ...new Set(menu.map(i => i.category || 'Без'))];
-            categoriesContainer.innerHTML = cats.map(c =>
-                `<button class="cat-btn ${c === currentCategory ? 'active' : ''}" data-cat="${c}">${c}</button>`
-            ).join('');
-            document.querySelectorAll('.cat-btn').forEach(b => {
-                b.onclick = () => { currentCategory = b.dataset.cat;
-                    renderCategories();
-                    renderItems(); };
-            });
-        }
-
-        function renderItems() {
-            const data = loadData();
-            menu = data.menu || [];
-            const q = searchInput.value.toLowerCase().trim();
-            const filtered = menu.filter(i => {
-                const matchCat = currentCategory === 'Все' || i.category === currentCategory;
-                const matchName = i.name.toLowerCase().includes(q);
-                return matchCat && matchName;
-            });
-            itemsGrid.innerHTML = filtered.map(i =>
-                `<div class="item-card" data-id="${i.id}">
-                    <span class="emoji">${i.emoji || '🍽️'}</span>
-                    <div class="name">${i.name}</div>
-                    <div class="price">${i.price} ₽</div>
-                    <button class="add-comment-btn" data-id="${i.id}" title="Добавить комментарий">+</button>
-                </div>`
-            ).join('');
-
-            document.querySelectorAll('.item-card').forEach(el => {
-                el.onclick = (e) => {
-                    if (e.target.classList.contains('add-comment-btn')) return;
-                    const id = parseInt(el.dataset.id);
-                    addToCart(id, null);
-                };
-            });
-
-            document.querySelectorAll('.add-comment-btn').forEach(btn => {
-                btn.onclick = (e) => {
-                    e.stopPropagation();
-                    const id = parseInt(btn.dataset.id);
-                    showCommentModal(id);
-                };
-            });
-        }
-
-        function addToCart(id, comment) {
-            const item = menu.find(i => i.id === id);
-            if (!item) return;
-
-            const existing = cart.find(i => i.id === id && i.comment === comment);
-            if (existing) {
-                existing.quantity += 1;
-            } else {
-                cart.push({ ...item, quantity: 1, comment: comment || '' });
-            }
-            renderCart();
-            saveOrder();
-            if (comment) {
-                showToast(`✅ ${item.name} добавлен с комментарием: "${comment}"`);
-            }
-        }
-
-        function renderCart() {
-            if (cart.length === 0) {
-                orderList.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Корзина пуста</p>';
-            } else {
-                orderList.innerHTML = cart.map((item, idx) =>
-                    `<div class="order-item">
-                        <div class="info">
-                            <span>${item.emoji || '🍽️'} ${item.name}</span>
-                            ${item.comment ? `<span class="comment">(${item.comment})</span>` : ''}
-                        </div>
-                        <div class="qty-control">
-                            <button data-idx="${idx}" data-act="dec">−</button>
-                            <span>${item.quantity}</span>
-                            <button data-idx="${idx}" data-act="inc">+</button>
-                        </div>
-                        <div class="item-total">${item.price * item.quantity} ₽</div>
-                        <button class="remove-item" data-idx="${idx}">✕</button>
-                    </div>`
-                ).join('');
-                document.querySelectorAll('.qty-control button').forEach(b => {
-                    b.onclick = () => {
-                        const idx = parseInt(b.dataset.idx);
-                        if (b.dataset.act === 'inc') cart[idx].quantity += 1;
-                        else { cart[idx].quantity -= 1; if (cart[idx].quantity <= 0) cart.splice(idx, 1); }
-                        renderCart();
-                        saveOrder();
-                    };
-                });
-                document.querySelectorAll('.remove-item').forEach(b => {
-                    b.onclick = () => { cart.splice(parseInt(b.dataset.idx), 1);
-                        renderCart();
-                        saveOrder(); };
-                });
-            }
-            updateSummary();
-        }
-
-        function updateSummary() {
-            const count = cart.reduce((a, i) => a + i.quantity, 0);
-            const sum = cart.reduce((a, i) => a + i.price * i.quantity, 0);
-            totalItems.textContent = count;
-            totalSum.textContent = sum + ' ₽';
-            grandTotal.textContent = sum + ' ₽';
-        }
-
-        function saveOrder() {
-            const data = loadData();
-            if (!data.tables) data.tables = {};
-            if (!data.tables[tableNumber]) data.tables[tableNumber] = { orders: [], total: 0 };
-            const table = data.tables[tableNumber];
-
-            if (cart.length === 0) {
-                table.orders = table.orders.filter(o => o.status === 'closed');
-                saveData(data);
-                return;
-            }
-
-            let openOrder = table.orders.find(o => o.status !== 'closed');
-            if (openOrder) {
-                openOrder.items = cart.map(i => ({ ...i }));
-                openOrder.total = cart.reduce((a, i) => a + i.price * i.quantity, 0);
-            } else {
-                table.orders.push({
-                    items: cart.map(i => ({ ...i })),
-                    total: cart.reduce((a, i) => a + i.price * i.quantity, 0),
-                    status: 'open',
-                    timestamp: new Date().toISOString()
-                });
-            }
-            table.total = table.orders.filter(o => o.status !== 'closed').reduce((a, o) => a + o.total, 0);
-            saveData(data);
-            updateStatus();
-        }
-
-        function updateStatus() {
-            const data = loadData();
-            const table = data.tables ? data.tables[tableNumber] : null;
-            const open = table && table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
-            tableStatus.textContent = open.length > 0 ? `🟢 Активен (${open.length} зак.)` : '⚪ Свободен';
-            tableStatus.style.color = open.length > 0 ? '#2e7d32' : '#7f8c8d';
-            tableTitle.textContent = `Стол ${tableNumber}`;
-        }
-
-        function refreshMenu() {
-            loadData();
-            renderCategories();
-            renderItems();
-            showToast('✅ Меню обновлено');
-        }
-
-        $('payBtn').onclick = () => {
-            if (cart.length === 0) { alert('Корзина пуста!'); return; }
-            const total = cart.reduce((a, i) => a + i.price * i.quantity, 0);
-            const cash = parseFloat(cashInput.value);
-            if (isNaN(cash) || cash < total) { alert(`Сумма: ${total} ₽`); return; }
-            const change = cash - total;
-            changeDisplay.textContent = `Сдача: ${change.toFixed(2)} ₽`;
-
-            const data = loadData();
-            data.stats.totalOrders = (data.stats.totalOrders || 0) + 1;
-            data.stats.totalRevenue = (data.stats.totalRevenue || 0) + total;
-            const table = data.tables[tableNumber];
-            for (let i = table.orders.length - 1; i >= 0; i--) {
-                if (table.orders[i].status !== 'closed') {
-                    table.orders[i].status = 'closed';
-                    table.orders[i].paidAmount = cash;
-                    table.orders[i].change = change;
-                    table.orders[i].operator = 'Администратор';
-                    break;
-                }
-            }
-            table.total = table.orders.filter(o => o.status !== 'closed').reduce((a, o) => a + o.total, 0);
-            saveData(data);
-            cart = [];
-            renderCart();
-            cashInput.value = '';
-            updateStatus();
-            setTimeout(() => { changeDisplay.textContent = 'Сдача: 0 ₽'; }, 5000);
-        };
-
-        $('closeTableBtn').onclick = () => {
-            if (cart.length > 0 && !confirm('Закрыть стол без оплаты?')) return;
-            const data = loadData();
-            data.tables[tableNumber] = { orders: [], total: 0 };
-            saveData(data);
-            cart = [];
-            renderCart();
-            updateStatus();
-            alert('Стол закрыт');
-            window.location.href = 'index.html';
-        };
-
-        $('clearOrderBtn').onclick = () => {
-            if (cart.length === 0) return;
-            if (confirm('Очистить заказ?')) { cart = [];
-                renderCart();
-                saveOrder(); }
-        };
-
-        searchInput.oninput = renderItems;
-        $('refreshMenuBtn').onclick = refreshMenu;
-
-        setInterval(() => { if (cart.length > 0) saveOrder(); }, 5000);
-        setInterval(() => { renderCategories();
-            renderItems(); }, 10000);
-
-        loadMenu();
-        renderCategories();
-        renderItems();
-        loadData();
-        const saved = loadData();
-        const table = saved.tables ? saved.tables[tableNumber] : null;
-        const open = table && table.orders ? table.orders.filter(o => o.status !== 'closed') : [];
-        if (open.length > 0) cart = open[open.length - 1].items.map(i => ({ ...i }));
-        renderCart();
-        updateStatus();
-
-        console.log(`✅ Стол ${tableNumber} готов`);
-    </script>
-</body>
-</html>
+    <div class="modal-comment" id="
