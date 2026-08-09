@@ -442,8 +442,7 @@
                 venueName: 'Кафе Уют',
                 menu: getDefaultMenu(),
                 users: { 'sadmin': { password: '123', role: 'sadmin', name: 'Владелец' } },
-                tables: { '1': { orders: [], total: 0 }, '2': { orders: [], total: 0 },
-                '3': { orders: [], total: 0 } },
+                tables: { '1': { orders: [], total: 0 } },
                 stats: { totalOrders: 0, totalRevenue: 0 }
             };
         }
@@ -503,8 +502,10 @@
             const tables = data.tables || {};
 
             let allOrders = [];
-            for (let tableNum = 1; tableNum <= 3; tableNum++) {
-                const table = tables[tableNum];
+            // 🔥 ДИНАМИЧЕСКИЙ ОБХОД ВСЕХ СТОЛОВ (не только 3)
+            for (const tableKey in tables) {
+                const tableNum = parseInt(tableKey);
+                const table = tables[tableKey];
                 if (table && table.orders) {
                     const visibleOrders = table.orders.filter(o => o.status !== 'closed');
                     visibleOrders.forEach(order => {
